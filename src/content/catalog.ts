@@ -1800,6 +1800,11 @@ for (const [id, template, unitLabel] of [
   q.unitLabel = unitLabel;
   q.answer = 0;
 }
+for (const [id, precision] of [
+  ['significant-figures-construction', 'decimal-places'],
+  ['significant-figures-transfer', 'significant-figures'],
+] as const)
+  questions.find((q) => q.id === id)!.precision = precision;
 for (const [id, kana, romaji, meaning, situation] of vocabulary) {
   const concept = `jp-${id}`;
   const c = concepts.find((c) => c.id === concept)!;
@@ -2031,6 +2036,8 @@ for (const [id, concept, title, prompt, answer, explanation] of detailChecks) {
     status: 'publishable',
   });
 }
+questions.find((q) => q.id === 'detail-addition-precision')!.precision =
+  'decimal-places';
 
 export const assignments: Assignment[] = [
   {

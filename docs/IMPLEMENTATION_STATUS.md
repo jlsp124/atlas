@@ -11,12 +11,12 @@ Updated: October 5, 2026. This file is the resumption contract.
 - Optional Fastify/SQLite backend: secure sessions, Argon2id, CSRF/origin checks, rate limiting, Jovan bootstrap, deletion, aggregate admin metrics and request inbox.
 - Static search and installable PWA with versioned cache; no API caching.
 - Linux Docker Compose/systemd, HTTPS/proxy/cookie and backup/restore instructions. Pinned CI and Pages workflows authored.
-- Content validation, 57 unit/backend tests and the production build pass locally.
+- Content validation, formatting/lint/type checks, 70 unit/backend tests and the 93-page production build pass locally. Forty light/dark phone/desktop accessibility scans pass.
+- Reachable-history privacy audit complete; public Pages enabled after GitHub rejected the private repository plan. The private vault remains unchanged at its recorded authority commit.
 
 ## In progress
 
-- Phone/desktop browser and accessibility verification; meaningful failures are being repaired.
-- Final privacy review, formatting/lint, Ubuntu CI/container validation and Pages deployment/live verification.
+- Ubuntu CI/container validation and Pages deployment/live verification. All 30 local phone/desktop browser flows now pass, including account/admin, with no skips.
 
 ## Next
 

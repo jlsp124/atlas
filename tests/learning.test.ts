@@ -329,6 +329,38 @@ describe('deterministic reviewed numeric families', () => {
     expect(evaluate(q, 'こんにちは。')).toBe(true);
     expect(evaluate(q, 'konbanwa')).toBe(false);
   });
+  it('preserves decimal value in typed numeric checks', () => {
+    const q = questions.find((q) => q.id === 'powered-units-construction')!;
+    expect(evaluate(q, '0.04')).toBe(true);
+    expect(evaluate(q, '4e-2')).toBe(true);
+    expect(evaluate(q, '4')).toBe(false);
+    expect(evaluate(q, '0.004')).toBe(false);
+  });
+  it('accepts equivalent counts, signed decimals and scientific notation', () => {
+    const count = questions.find(
+      (q) => q.id === 'electron-groups-construction',
+    )!;
+    expect(evaluate(count, '2.0')).toBe(true);
+    expect(evaluate(count, '２')).toBe(true);
+    expect(evaluate(count, '2.1')).toBe(false);
+    const signed = questions.find((q) => q.id === 'detail-velocity-area')!;
+    expect(evaluate(signed, '−12.0')).toBe(true);
+    expect(evaluate(signed, '12')).toBe(false);
+  });
+  it('requires the requested significant-figure precision', () => {
+    const q = questions.find((q) => q.id === 'significant-figures-transfer')!;
+    expect(evaluate(q, '7.2')).toBe(true);
+    expect(evaluate(q, '72e-1')).toBe(true);
+    expect(evaluate(q, '7.20')).toBe(false);
+    expect(evaluate(q, '72')).toBe(false);
+  });
+  it('requires the requested decimal-place precision for measured addition', () => {
+    const q = questions.find((q) => q.id === 'detail-addition-precision')!;
+    expect(evaluate(q, '12.3')).toBe(true);
+    expect(evaluate(q, '123e-1')).toBe(true);
+    expect(evaluate(q, '12.30')).toBe(false);
+    expect(evaluate(q, '123')).toBe(false);
+  });
 });
 describe('event projection and prompt boundaries', () => {
   it('merges identical UUIDs idempotently', () => {

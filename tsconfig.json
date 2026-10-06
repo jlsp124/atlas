@@ -9,5 +9,13 @@
     "noUnusedParameters": true
   },
   "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist", "node_modules", "data", "evidence", "playwright-report", "test-results", "coverage"]
+  "exclude": [
+    "dist",
+    "node_modules",
+    "data",
+    "evidence",
+    "playwright-report",
+    "test-results",
+    "coverage"
+  ]
 }

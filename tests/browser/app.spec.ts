@@ -227,6 +227,17 @@ test('system, light and dark themes persist; text spacing still reflows', async 
       () => document.documentElement.scrollWidth <= window.innerWidth + 1,
     ),
   ).toBe(true);
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth + 1,
+      ),
+    ).toBe(true);
+    await expect(
+      page.getByRole('link', { name: 'Profile and settings' }),
+    ).toBeInViewport();
+  }
 });
 
 for (const theme of ['light', 'dark'] as const)
@@ -234,11 +245,18 @@ for (const theme of ['light', 'dark'] as const)
     page,
   }) => {
     await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });
+    await skip(page);
     for (const path of [
+      '',
       'courses/physics/',
       'concepts/motion-graphs/',
       'concepts/jp-sumimasen/',
       'work/kinematics-review/',
+      'account/',
+      'help/',
+      'about/',
+      'privacy/',
+      'sources/',
     ]) {
       await open(page, path);
       await expect(page.locator('h1')).toBeVisible();
@@ -270,11 +288,7 @@ test('guests and ordinary accounts cannot authorize admin', async ({
 test('accounts sync across devices, isolate guest data, queue offline and reconnect', async ({
   page,
   browser,
-}, testInfo) => {
-  test.skip(
-    testInfo.project.name === 'phone',
-    'The same server/account flow is covered on desktop; phone learning and forms are tested separately.',
-  );
+}) => {
   const name = 'browser_' + randomBytes(4).toString('hex');
   const password = randomBytes(20).toString('base64url');
   await open(page, 'work/kinematics-review/');
@@ -331,11 +345,27 @@ test('accounts sync across devices, isolate guest data, queue offline and reconn
   await page.unroute('http://localhost:8787/**');
   await page.evaluate(() => window.dispatchEvent(new Event('online')));
   await expect(page.locator('.sync-status')).toContainText('Progress synced');
-  const session=await (await page.request.get('http://localhost:8787/session')).json();
-  await expect.poll(async()=>{
-    const response=await page.request.post('http://localhost:8787/sync',{headers:{origin:'http://localhost:4321','x-atlas-client':'atlas','x-csrf-token':session.csrf},data:{events:[],cursor:0}});
-    const data=await response.json();return (data.events??[]).filter((e:{type:string;payload:{concept?:string}})=>e.type==='concept_marked_confused'&&e.payload.concept==='vector-sign').length;
-  }).toBe(1);
+  const session = await (
+    await page.request.get('http://localhost:8787/session')
+  ).json();
+  await expect
+    .poll(async () => {
+      const response = await page.request.post('http://localhost:8787/sync', {
+        headers: {
+          origin: 'http://localhost:4321',
+          'x-atlas-client': 'atlas',
+          'x-csrf-token': session.csrf,
+        },
+        data: { events: [], cursor: 0 },
+      });
+      const data = await response.json();
+      return (data.events ?? []).filter(
+        (e: { type: string; payload: { concept?: string } }) =>
+          e.type === 'concept_marked_confused' &&
+          e.payload.concept === 'vector-sign',
+      ).length;
+    })
+    .toBe(1);
   await peer.reload();
   await peer.goto('http://localhost:4321/atlas/concepts/vector-sign/');
   await expect(peer.getByText(/You marked this confusing/)).toBeVisible();
@@ -352,12 +382,7 @@ test('accounts sync across devices, isolate guest data, queue offline and reconn
 test('request inbox and admin summaries use real authorized backend data', async ({
   page,
 }, testInfo) => {
-  test.skip(
-    testInfo.project.name === 'phone',
-    'Server authorization and admin flow are covered on desktop.',
-  );
-  const message =
-    'Browser QA: please keep the graph relationship list easy to reach.';
+  const message = `Browser QA (${testInfo.project.name}): please keep the graph relationship list easy to reach.`;
   await open(page, 'help/');
   await page.getByLabel('What do you need?').selectOption('feature');
   await page.getByLabel('Tell us a little more').fill(message);

@@ -342,7 +342,7 @@ export async function reconnect() {
   }
 }
 export async function synchronize() {
-  if (syncing || !state.user || !API) return;
+  if (syncing || !state.user || !API || !csrf) return;
   syncing = true;
   const owner = state.user.id;
   try {

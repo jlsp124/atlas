@@ -36,7 +36,7 @@ for (const [id, pages] of ids) {
   const url = `https://www.youtube.com/watch?v=${id}`;
   let title: string | null = null;
   let author: string | null = null;
-  let metadataStatus: number | string = 'not checked';
+  let metadataStatus: number | string;
   try {
     const response = await bounded(
       `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`,

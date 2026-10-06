@@ -2,12 +2,31 @@ import { readFile, readdir, writeFile, mkdir } from 'node:fs/promises';
 import { resolve, relative } from 'node:path';
 import { createHash } from 'node:crypto';
 import { validateContent } from './validate-content';
-import { concepts, questions, schedule } from '../src/content/catalog';
+import {
+  concepts,
+  questions,
+  schedule,
+  sources,
+  snapshot,
+} from '../src/content/catalog';
+import { dayDifference, schoolDate } from '../src/core/dates';
 
 const root = process.env.ATLAS_VAULT_PATH;
+const today = schoolDate();
+const errors = validateContent();
 console.log(
-  `Content errors: ${validateContent().length}. Concepts without transfer checks: ${concepts.filter((c) => !questions.some((q) => q.level === 'transfer' && q.concepts.includes(c.id))).length}. Unconfirmed dated items: ${schedule.filter((e) => e.confidence === 'unverified').length}.`,
+  `Content errors: ${errors.length}. Concepts without transfer checks: ${concepts.filter((c) => !questions.some((q) => q.level === 'transfer' && q.concepts.includes(c.id))).length}. Unconfirmed dated items: ${schedule.filter((e) => e.confidence === 'unverified').length}.`,
 );
+if (errors.length) {
+  console.error(errors.join('\n'));
+  process.exitCode = 1;
+}
+const stale = sources.filter((s) => dayDifference(s.checked, today) > 14);
+console.log(
+  `Snapshot: ${snapshot.date}. Sources checked over 14 days ago: ${stale.length}. Unavailable indexed sources: ${sources.filter((s) => s.status === 'unavailable').length}.`,
+);
+for (const source of stale)
+  console.log(`Review freshness: ${source.id} (checked ${source.checked})`);
 if (!root)
   console.log(
     'Set ATLAS_VAULT_PATH to a read-only fresh source checkout to compare evidence. No raw notes are imported or published.',

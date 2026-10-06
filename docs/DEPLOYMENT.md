@@ -8,6 +8,8 @@ The public static app works without a server. Accounts, sync, the request inbox 
 
 Enable **Settings → Pages → Source: GitHub Actions**. The project URL is `https://jlsp124.github.io/atlas/`. Private repository Pages requires an eligible GitHub plan; a public repository is the fallback when the plan prevents Pages. Before making source public, audit the complete tracked history for private source and secrets.
 
+This repository started private. GitHub returned HTTP 422 stating that the account's plan does not support Pages for it. After reviewing the reachable history and public derivative, the authorized public fallback was used and workflow Pages was enabled. Private vault material and runtime data remain excluded.
+
 Optional repository **Variables** (not frontend secrets):
 
 | Variable               | Purpose                                                  |

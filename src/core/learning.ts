@@ -314,11 +314,38 @@ export function normalizeAnswer(s: string) {
     .replace(/[。.!?！？,]/g, '')
     .replace(/\s+/g, ' ');
 }
+function numericAnswer(value: string) {
+  const normalized = value.normalize('NFKC').replace(/−/g, '-').trim();
+  const match = normalized.match(
+    /^([+-]?(?:\d+(?:\.\d*)?|\.\d+))(?:e([+-]?\d+))?$/i,
+  );
+  if (!match || !Number.isFinite(Number(normalized))) return null;
+  const mantissa = match[1].replace(/^[+-]/, '');
+  const digits = mantissa.replace('.', '').replace(/^0+/, '');
+  const decimals = mantissa.includes('.') ? mantissa.split('.')[1].length : 0;
+  return {
+    value: Number(normalized),
+    significantFigures: digits.length || Math.max(1, decimals),
+    decimalPlaces: decimals - Number(match[2] ?? 0),
+  };
+}
+function matchingPrecision(
+  q: Question,
+  given: NonNullable<ReturnType<typeof numericAnswer>>,
+  expected: NonNullable<ReturnType<typeof numericAnswer>>,
+) {
+  return (
+    !q.precision ||
+    (q.precision === 'significant-figures'
+      ? given.significantFigures === expected.significantFigures
+      : given.decimalPlaces === expected.decimalPlaces)
+  );
+}
 export function evaluate(q: Question, answer: string, unit = ''): boolean {
   if (q.format === 'numeric') {
-    if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(answer.trim()))
-      return false;
-    const n = Number(answer);
+    const parsed = numericAnswer(answer);
+    if (!parsed) return false;
+    const n = parsed.value;
     const expected = Number(q.answer);
     const aliases: Record<string, string> = {
       'm/s^2': 'm/s²',
@@ -333,12 +360,23 @@ export function evaluate(q: Question, answer: string, unit = ''): boolean {
       Number.isFinite(n) &&
       Math.abs(n - expected) <=
         (q.tolerance ?? 0.005) * Math.max(1, Math.abs(expected)) &&
-      (aliases[u] ?? u) === (q.unitLabel ?? '')
+      (aliases[u] ?? u) === (q.unitLabel ?? '') &&
+      matchingPrecision(q, parsed, numericAnswer(String(q.answer))!)
     );
   }
-  return (Array.isArray(q.answer) ? q.answer : [String(q.answer)]).some(
-    (a) => normalizeAnswer(a) === normalizeAnswer(answer),
-  );
+  const answers = Array.isArray(q.answer) ? q.answer : [String(q.answer)];
+  const expectedNumbers = answers.map(numericAnswer);
+  if (q.format === 'text' && expectedNumbers.every((n) => n !== null)) {
+    const given = numericAnswer(answer);
+    if (!given) return false;
+    return expectedNumbers.some(
+      (expected) =>
+        Math.abs(given.value - expected.value) <=
+          Number.EPSILON * 8 * Math.max(1, Math.abs(expected.value)) &&
+        matchingPrecision(q, given, expected),
+    );
+  }
+  return answers.some((a) => normalizeAnswer(a) === normalizeAnswer(answer));
 }
 export function assignmentPriority(
   a: Assignment,

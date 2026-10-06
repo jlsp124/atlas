@@ -123,6 +123,7 @@ export const questionSchema = z.object({
   answer: z.union([z.string(), z.array(z.string()), z.number()]),
   unitLabel: z.string().optional(),
   tolerance: z.number().nonnegative().optional(),
+  precision: z.enum(['significant-figures', 'decimal-places']).optional(),
   explanation: z.string(),
   hint: z.string(),
   diagnosis: id,

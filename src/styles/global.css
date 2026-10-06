@@ -89,6 +89,12 @@
   a:hover {
     text-decoration: underline;
   }
+  main p a:not(.primary):not(.secondary),
+  .prose a,
+  .settings-section li a,
+  .semantic-relationships a {
+    text-decoration: underline;
+  }
   button {
     cursor: pointer;
   }
@@ -1722,8 +1728,12 @@
   }
   .course-switch {
     padding-left: 16px;
+    flex: 1;
+    min-width: 0;
   }
   .course-switch select {
+    width: 100%;
+    min-width: 0;
     max-width: 165px;
     font-size: 0.75rem;
     padding-right: 16px;

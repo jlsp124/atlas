@@ -13,7 +13,30 @@ import {
 import * as schema from '../src/core/schema';
 import { prerequisitePath, evaluate, variant } from '../src/core/learning';
 
-export function validateContent() {
+export const publicCatalog = {
+  courses,
+  editions,
+  concepts,
+  edges,
+  questions,
+  coverageItems,
+  assignments,
+  schedule,
+  sources,
+};
+
+export function validateContent(data = publicCatalog) {
+  const {
+    courses,
+    editions,
+    concepts,
+    edges,
+    questions,
+    coverageItems,
+    assignments,
+    schedule,
+    sources,
+  } = data;
   const errors: string[] = [];
   const sets = [
     [courses, schema.courseSchema],
@@ -46,6 +69,17 @@ export function validateContent() {
   }
   const has = (rows: { id: string }[], id: string) =>
     rows.some((r) => r.id === id);
+  for (const edition of editions) {
+    if (
+      !has(courses, edition.course) ||
+      !courses
+        .find((c) => c.id === edition.course)
+        ?.units.some((u) => u.id === edition.currentUnit)
+    )
+      errors.push(`Missing edition course/unit: ${edition.id}`);
+    if (edition.end < edition.start)
+      errors.push(`Invalid edition range ${edition.id}`);
+  }
   for (const c of concepts) {
     if (
       !has(courses, c.course) ||
@@ -82,6 +116,14 @@ export function validateContent() {
     if (!has(concepts, e.from) || !has(concepts, e.to))
       errors.push(`Broken edge: ${e.from} → ${e.to}`);
   for (const q of questions) {
+    if (q.status !== 'publishable')
+      errors.push(`Unfinished question included in public catalog: ${q.id}`);
+    if (
+      !courses
+        .find((c) => c.id === q.course)
+        ?.units.some((u) => u.id === q.unit)
+    )
+      errors.push(`Missing question course/unit: ${q.id}`);
     for (const c of [...q.concepts, q.diagnosis])
       if (!has(concepts, c)) errors.push(`Missing question concept ${c}`);
     for (const id of q.coverage)
@@ -100,6 +142,15 @@ export function validateContent() {
       if (!evaluate(v, answer, v.unitLabel))
         errors.push(`Evaluator rejects own expected answer ${q.id}`);
     }
+  }
+  for (const item of coverageItems) {
+    if (!has(concepts, item.concept))
+      errors.push(`Missing coverage concept ${item.id}`);
+    for (const source of item.sources)
+      if (!has(sources, source))
+        errors.push(`Missing coverage source ${source}`);
+    if (!questions.some((q) => q.coverage.includes(item.id)))
+      errors.push(`Coverage item has no practice: ${item.id}`);
   }
   for (const a of assignments) {
     if (
@@ -123,9 +174,21 @@ export function validateContent() {
       if (!has(sources, s)) errors.push(`Missing schedule source ${s}`);
     for (const id of e.concepts)
       if (!has(concepts, id)) errors.push(`Missing schedule concept ${id}`);
+    if (e.course && !has(courses, e.course))
+      errors.push(`Missing schedule course ${e.id}`);
+    if (
+      e.edition &&
+      editions.find((x) => x.id === e.edition)?.course !== e.course
+    )
+      errors.push(`Schedule edition mismatch: ${e.id}`);
+    if (e.assignment && !has(assignments, e.assignment))
+      errors.push(`Missing schedule assignment ${e.id}`);
   }
   const serialized = JSON.stringify({
+    courses,
     concepts,
+    questions,
+    coverageItems,
     assignments,
     schedule,
     sources,
