@@ -1,415 +1,518 @@
 import { useEffect, useRef, useState } from 'react';
-import GuidedTour, { startTour, stopTour } from './GuidedTour';
+import { assignments, concepts, edges, findCourse } from '../content/catalog';
 import {
-  courses,
-  editions,
-  snapshot,
-  concepts,
-  assignments,
-} from '../content/catalog';
+  workspaceCourses,
+  searchAtlas,
+  assignmentTitle,
+  topicTitle,
+} from '../content/workspaces';
+import type { Definition } from '../content/definitions';
 import {
   emit,
   finishOnboarding,
   initialize,
-  replayOnboarding,
-  track,
   url,
   useLearner,
 } from '../client/store';
-
-export default function Shell({ course }: { course?: string }) {
+import { Coordinates, CourseMark, Icon } from './Icons';
+export default function Shell({
+  course,
+  focus = false,
+}: {
+  course?: string;
+  focus?: boolean;
+}) {
   const state = useLearner();
-  const pendingCount = state.events.filter(
-    (e) => !state.synced.includes(e.id),
-  ).length;
-  const [search, setSearch] = useState(false);
-  const [onboarding, setOnboarding] = useState(false);
-  const [step, setStep] = useState(0);
-  const [picked, setPicked] = useState<string[]>(courses.map((c) => c.id));
-  const dialog = useRef<HTMLDialogElement>(null);
-  const searchDialog = useRef<HTMLDialogElement>(null);
+  const [step, setStep] = useState(0),
+    [picked, setPicked] = useState<string[]>(workspaceCourses.map((c) => c.id));
+  const [onboarding, setOnboarding] = useState(false),
+    [search, setSearch] = useState(false),
+    [query, setQuery] = useState('');
+  const [definition, setDefinition] = useState<Definition | null>(null);
+  const onboardingRef = useRef<HTMLDialogElement>(null),
+    searchRef = useRef<HTMLDialogElement>(null),
+    inspectorRef = useRef<HTMLDialogElement>(null);
+  const trigger = useRef<HTMLElement | null>(null),
+    searchTrigger = useRef<HTMLElement | null>(null);
   useEffect(() => {
     initialize();
     const replay = () => {
       setStep(0);
       setOnboarding(true);
     };
+    const define = (e: Event) => {
+      const d = (
+        e as CustomEvent<{ definition: Definition; trigger: HTMLElement }>
+      ).detail;
+      trigger.current = d.trigger;
+      setDefinition(d.definition);
+    };
     window.addEventListener('atlas:onboarding', replay);
-    return () => window.removeEventListener('atlas:onboarding', replay);
+    window.addEventListener('atlas:definition', define);
+    return () => {
+      window.removeEventListener('atlas:onboarding', replay);
+      window.removeEventListener('atlas:definition', define);
+    };
   }, []);
   useEffect(() => {
-    if (state.ready && !state.onboarding && window.location.pathname === url())
+    if (
+      state.ready &&
+      !state.onboarding &&
+      window.location.pathname === url()
+    ) {
+      setPicked(state.selected);
       setOnboarding(true);
-  }, [state.ready, state.onboarding]);
+    }
+  }, [state.ready, state.onboarding, state.selected]);
   useEffect(() => {
-    if (onboarding && !dialog.current?.open) dialog.current?.showModal();
-    else if (!onboarding) dialog.current?.close();
+    if (onboarding && !onboardingRef.current?.open)
+      onboardingRef.current?.showModal();
+    else if (!onboarding) onboardingRef.current?.close();
   }, [onboarding]);
   useEffect(() => {
-    if (search && !searchDialog.current?.open) {
-      searchDialog.current?.showModal();
-      searchDialog.current?.querySelector<HTMLInputElement>('input')?.focus();
-    } else if (!search) searchDialog.current?.close();
+    if (search && !searchRef.current?.open) {
+      searchRef.current?.showModal();
+      searchRef.current?.querySelector('input')?.focus();
+    } else if (!search) {
+      searchRef.current?.close();
+      searchTrigger.current?.focus();
+    }
   }, [search]);
   useEffect(() => {
+    const dialog = inspectorRef.current;
+    const show = () => {
+      dialog?.close();
+      if (definition) {
+        if (matchMedia('(max-width: 800px)').matches) dialog?.showModal();
+        else dialog?.show();
+        document.documentElement.dataset.inspector = 'open';
+      } else delete document.documentElement.dataset.inspector;
+    };
+    show();
+    window.addEventListener('resize', show);
+    return () => {
+      window.removeEventListener('resize', show);
+      delete document.documentElement.dataset.inspector;
+    };
+  }, [definition]);
+  useEffect(() => {
     const key = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && search) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        setSearch(false);
-      } else if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault();
+        searchTrigger.current = document.activeElement as HTMLElement;
         setSearch((s) => !s);
+      }
+      if (e.key === 'Escape' && definition) {
+        setDefinition(null);
+        trigger.current?.focus();
       }
     };
     window.addEventListener('keydown', key);
     return () => window.removeEventListener('keydown', key);
-  }, [search]);
-  function complete() {
+  }, [definition]);
+  function finish(account = false) {
     emit('courses_selected', { courses: picked });
     finishOnboarding();
     setOnboarding(false);
-    startTour();
+    if (account) window.location.href = url('account/?create=1');
   }
-  function skip() {
-    finishOnboarding();
-    stopTour();
-    setOnboarding(false);
+  function openSearch(el: HTMLElement) {
+    searchTrigger.current = el;
+    setQuery('');
+    setSearch(true);
   }
+  const results = searchAtlas(query, state.selected);
+  const related = definition
+    ? edges
+        .filter(
+          (e) =>
+            (e.from === definition.concept || e.to === definition.concept) &&
+            e.type !== 'requires',
+        )
+        .map((e) => (e.from === definition.concept ? e.to : e.from))
+    : [];
+  const used = definition
+    ? assignments.filter(
+        (a) =>
+          a.concepts.includes(definition.concept) ||
+          a.prerequisites.includes(definition.concept),
+      )
+    : [];
   return (
     <>
-      <header className="topbar" data-ready={state.ready ? 'true' : 'false'}>
+      <header
+        className={`topbar ${focus ? 'focus-shell' : ''}`}
+        data-ready={state.ready ? 'true' : 'false'}
+      >
         <a className="wordmark" href={url()} aria-label="atlas home">
-          atlas
-          <span className="wordmark-dot" aria-hidden="true">
-            .
-          </span>
+          atlas<span>.</span>
         </a>
-        <div className="course-switch">
-          <label className="sr-only" htmlFor="course-selector">
-            Course selector
-          </label>
-          <select
-            id="course-selector"
-            value={course || ''}
-            onChange={(e) => {
-              window.location.href = e.target.value
-                ? url(`courses/${e.target.value}/`)
-                : url();
-            }}
-          >
-            <option value="">My atlas</option>
-            {courses.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.title}
-              </option>
-            ))}
-          </select>
-        </div>
-        <button
-          className="search-trigger"
-          aria-label="Search anything"
-          onClick={() => setSearch(true)}
-        >
-          <span aria-hidden="true">⌕</span> <span>Search anything</span>
-          <kbd>⌘ / Ctrl K</kbd>
-        </button>
-        <a
-          className="profile-button"
-          href={url('account/')}
-          aria-label="Profile and settings"
-        >
-          {state.user ? (
-            state.user.username.slice(0, 1).toUpperCase()
-          ) : (
-            <span aria-hidden="true">☰</span>
-          )}
-        </a>
-      </header>
-      <div className="statusbar">
-        <span>
-          {snapshot.term}{' '}
-          <span className="muted">/ course snapshot {snapshot.date}</span>
-        </span>
-        <details className="sync-status">
-          <summary>
-            <span
-              className={`status-dot ${state.connection === 'online' ? 'on' : ''}`}
-              aria-hidden="true"
-            />
-            {state.connection === 'offline'
-              ? 'Sync offline'
-              : state.connection === 'sign-in'
-                ? 'Sign in to sync'
-                : state.user
-                  ? pendingCount
-                    ? 'Sync pending'
-                    : 'Progress synced'
-                  : 'On this device'}
-          </summary>
-          <div>
-            {state.connection === 'offline'
-              ? 'atlas’s online services can’t be reached right now. Lessons, assignments, practice and local progress still work. We’ll sync automatically when service returns.'
-              : state.user
-                ? 'Your learning events sync when the service can be reached.'
-                : 'Guest progress stays on this device. An account is optional.'}
-            {state.lastSync && (
-              <p>
-                Last successful sync:{' '}
-                {new Date(state.lastSync).toLocaleString()}
-              </p>
-            )}
-            {state.user && (
-              <p>
-                {
-                  state.events.filter((e) => !state.synced.includes(e.id))
-                    .length
-                }{' '}
-                events queued.
-              </p>
-            )}
+        <nav className="sidebar" aria-label="Main navigation">
+          <a className={course ? 'nav-item' : 'nav-item home-nav'} href={url()}>
+            <Icon name="home" />
+            Home
+          </a>
+          <div className="sidebar-label">
+            <span>Courses</span>
+            <a href={url('courses/')} aria-label="Manage courses">
+              +
+            </a>
           </div>
-        </details>
-      </div>
+          <div className="sidebar-courses">
+            {workspaceCourses
+              .filter((c) => state.selected.includes(c.id))
+              .map((c) => (
+                <a
+                  key={c.id}
+                  className={`nav-item ${course === c.id ? 'selected' : ''}`}
+                  data-course={c.id}
+                  href={url(`courses/${c.id}/`)}
+                  aria-current={course === c.id ? 'page' : undefined}
+                >
+                  <CourseMark course={c.id} small />
+                  <span>{c.shortTitle}</span>
+                </a>
+              ))}
+          </div>
+          <div className="sidebar-divider" />
+          <a className="nav-item" href={url('calendar/')}>
+            <Icon name="calendar" />
+            Calendar
+          </a>
+          <button
+            className="nav-item search-button"
+            onClick={(e) => openSearch(e.currentTarget)}
+          >
+            <Icon name="search" />
+            <span>Search</span>
+            <kbd>⌘ K</kbd>
+          </button>
+          <div className="sidebar-bottom">
+            <a className="nav-item" href={url('account/')}>
+              <span className="avatar">
+                {state.user ? (
+                  state.user.username.slice(0, 1).toUpperCase()
+                ) : (
+                  <Icon name="user" size={16} />
+                )}
+              </span>
+              <span>{state.user?.username ?? 'Your setup'}</span>
+              <Icon name="more" />
+            </a>
+            <div className="sidebar-links">
+              <a href={url('help/')}>Help</a>
+              <a href={url('about/')}>About</a>
+            </div>
+          </div>
+        </nav>
+      </header>
+      {!focus && (
+        <nav className="mobile-nav" aria-label="Mobile navigation">
+          <a href={url('courses/')}>
+            <Icon name="book" />
+            <span>Courses</span>
+          </a>
+          <a href={url('calendar/')}>
+            <Icon name="calendar" />
+            <span>Calendar</span>
+          </a>
+          <button onClick={(e) => openSearch(e.currentTarget)}>
+            <Icon name="search" />
+            <span>Search</span>
+          </button>
+          <a href={url('account/')}>
+            <Icon name="user" />
+            <span>You</span>
+          </a>
+        </nav>
+      )}
       {state.storageError && (
-        <p role="alert" className="storage-alert">
-          Your browser could not save progress. Keep this tab open and export
-          progress in settings.
-        </p>
+        <div className="storage-notice" role="status">
+          Your browser couldn’t save this change. Export a backup in{' '}
+          <a href={url('account/')}>settings</a>.
+        </div>
       )}
       <dialog
-        ref={dialog}
-        className="onboarding sheet"
-        aria-labelledby="onboard-title"
-        onCancel={skip}
+        ref={onboardingRef}
+        className="onboarding"
+        aria-label="Welcome to atlas"
+        onCancel={(e) => e.preventDefault()}
       >
-        <div className="dialog-top">
-          <span className="wordmark">atlas.</span>
-          <button className="quiet" onClick={skip}>
-            Skip
-          </button>
-        </div>
-        {step === 0 ? (
-          <>
-            <p className="eyebrow">A little more connected</p>
-            <h2 id="onboard-title">
-              Your courses.
-              <br />
-              In one place.
-            </h2>
-            <p>
-              atlas is a student-built companion for the courses I’m taking.
-              Notes, assignments, schedules, practice and the connections
-              between everything.
-            </p>
-            <button className="primary" onClick={() => setStep(1)}>
-              Get started <span aria-hidden="true">→</span>
-            </button>
-          </>
-        ) : step === 1 ? (
-          <>
-            <h2 id="onboard-title">What are you taking?</h2>
-            <p>Choose the courses to keep on your home screen.</p>
-            <div className="course-picks">
-              {courses.map((c) => {
-                const e = editions.find((e) => e.course === c.id)!;
-                return (
-                  <label key={c.id} className="course-pick">
+        <div className="onboarding-content" key={step}>
+          {step === 0 ? (
+            <>
+              <Coordinates />
+              <div className="display-wordmark">
+                atlas<span>.</span>
+              </div>
+              <h1>
+                Everything from class,
+                <br />
+                without digging for it.
+              </h1>
+              <p>
+                I built atlas to keep our notes, assignments, dates and study
+                stuff in one place.
+              </p>
+              <button className="primary" onClick={() => setStep(1)}>
+                Get started
+                <Icon name="arrow" />
+              </button>
+              <button
+                className="quiet"
+                onClick={() => {
+                  finishOnboarding();
+                  setOnboarding(false);
+                }}
+              >
+                Look around without an account
+              </button>
+              <small>Designed & built by Jovan</small>
+            </>
+          ) : step === 1 ? (
+            <>
+              <button
+                className="icon-button onboarding-back"
+                aria-label="Back"
+                onClick={() => setStep(0)}
+              >
+                <Icon name="back" />
+              </button>
+              <p className="meta">1 of 2</p>
+              <h1>What are you taking?</h1>
+              <p>Make a little room for your classes.</p>
+              <div className="course-picks">
+                {workspaceCourses.map((c) => (
+                  <label
+                    className={`course-pick ${picked.includes(c.id) ? 'picked' : ''}`}
+                    key={c.id}
+                  >
+                    <CourseMark course={c.id} />
+                    <span>{c.title}</span>
                     <input
                       type="checkbox"
                       checked={picked.includes(c.id)}
-                      onChange={(event) =>
+                      onChange={(e) =>
                         setPicked((p) =>
-                          event.target.checked
+                          e.target.checked
                             ? [...p, c.id]
                             : p.filter((x) => x !== c.id),
                         )
                       }
                     />
-                    <span>
-                      <strong>{c.title}</strong>
-                      <small>
-                        P{e.period} · {e.teacher} · {e.term}
-                      </small>
-                    </span>
                   </label>
-                );
-              })}
-            </div>
-            <button
-              className="primary"
-              onClick={() => {
-                void complete();
-              }}
-            >
-              Add to my atlas
-            </button>
-          </>
-        ) : null}
+                ))}
+              </div>
+              <button
+                className="primary"
+                disabled={!picked.length}
+                onClick={() => setStep(2)}
+              >
+                Continue
+                <Icon name="arrow" />
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                className="icon-button onboarding-back"
+                aria-label="Back"
+                onClick={() => setStep(1)}
+              >
+                <Icon name="back" />
+              </button>
+              <Coordinates />
+              <p className="meta">2 of 2</p>
+              <h1>Save your setup</h1>
+              <p>
+                Your classes and progress stay synced on your other devices.
+              </p>
+              <button className="primary" onClick={() => finish(true)}>
+                Create an account
+                <Icon name="arrow" />
+              </button>
+              <button className="quiet" onClick={() => finish()}>
+                Keep it on this device
+              </button>
+            </>
+          )}
+        </div>
       </dialog>
       <dialog
-        ref={searchDialog}
-        className="search-dialog sheet"
-        aria-labelledby="search-title"
-        onCancel={() => setSearch(false)}
+        ref={searchRef}
+        className="search-dialog"
+        aria-label="Search atlas"
+        onCancel={(e) => {
+          e.preventDefault();
+          setSearch(false);
+        }}
       >
-        <div className="dialog-top">
-          <h2 id="search-title">Find your next connection</h2>
+        <div className="search-input-row">
+          <Icon name="search" />
+          <label className="sr-only" htmlFor="atlas-search">
+            Search atlas
+          </label>
+          <input
+            id="atlas-search"
+            autoComplete="off"
+            placeholder="Topics, classwork, anything…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                searchRef.current
+                  ?.querySelector<HTMLAnchorElement>('.search-result')
+                  ?.focus();
+              }
+            }}
+          />
           <button
-            className="quiet"
-            onClick={() => setSearch(false)}
+            className="icon-button"
             aria-label="Close search"
+            onClick={() => setSearch(false)}
           >
-            ×
+            <Icon name="close" />
           </button>
         </div>
-        <Search />
+        <div className="search-results">
+          {query.trim() ? (
+            results.length ? (
+              (['Learn', 'Classwork', 'Other'] as const).map((group) => {
+                const rows = results.filter((r) => r.group === group);
+                return rows.length ? (
+                  <section key={group}>
+                    <h2>{group}</h2>
+                    {rows.map((r, i) => (
+                      <a
+                        className="search-result"
+                        key={r.path + i}
+                        href={
+                          r.path.startsWith('https:') ? r.path : url(r.path)
+                        }
+                      >
+                        {r.course ? (
+                          <CourseMark course={r.course} small />
+                        ) : (
+                          <Icon name="calendar" />
+                        )}
+                        <span>
+                          <strong
+                            lang={r.course === 'japanese' ? 'ja' : undefined}
+                          >
+                            {r.title}
+                          </strong>
+                          <small>{r.detail}</small>
+                        </span>
+                        <Icon name="arrow" size={16} />
+                      </a>
+                    ))}
+                  </section>
+                ) : null;
+              })
+            ) : (
+              <p className="empty-state">
+                Nothing here yet. Try a topic or a different word.
+              </p>
+            )
+          ) : (
+            <div className="search-suggestions">
+              <p>Find the thing you’re looking for.</p>
+              {['half life', 'velocity', 'すみません'].map((q) => (
+                <button
+                  className="secondary"
+                  key={q}
+                  onClick={() => setQuery(q)}
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="search-footer">
+          <span>Topics · Classwork · Dates</span>
+          <span>Esc to close</span>
+        </div>
       </dialog>
-      <GuidedTour />
-    </>
-  );
-}
-
-type SearchResult = {
-  title: string;
-  url: string;
-  type: string;
-  detail: string;
-};
-function Search() {
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [busy, setBusy] = useState(false);
-  useEffect(() => {
-    let active = true;
-    if (!query.trim()) {
-      setResults([]);
-      return;
-    }
-    setBusy(true);
-    const timer = setTimeout(async () => {
-      const needle = query.normalize('NFKC').toLowerCase();
-      const fallback: SearchResult[] = [
-        ...concepts
-          .filter((c) =>
-            [c.title, c.model, c.representation, c.trap, ...c.aliases]
-              .join(' ')
-              .normalize('NFKC')
-              .toLowerCase()
-              .includes(needle),
-          )
-          .map((c) => ({
-            title: c.title,
-            url: url(`concepts/${c.id}/`),
-            type: c.course,
-            detail: c.model,
-          })),
-        ...courses
-          .filter((c) => c.title.toLowerCase().includes(needle))
-          .map((c) => ({
-            title: c.title,
-            url: url(`courses/${c.id}/`),
-            type: 'course',
-            detail: c.description,
-          })),
-        ...assignments
-          .filter((a) =>
-            (a.title + ' ' + a.summary).toLowerCase().includes(needle),
-          )
-          .map((a) => ({
-            title: a.title,
-            url: url(`work/${a.id}/`),
-            type: 'work',
-            detail: a.summary,
-          })),
-      ];
-      let found = fallback;
-      try {
-        const path = url('pagefind/pagefind.js');
-        const pf = await import(/* @vite-ignore */ path);
-        await pf.options({ baseUrl: url() });
-        const data = await pf.search(query);
-        const docs = await Promise.all(
-          data.results.slice(0, 8).map(
-            (r: {
-              data: () => Promise<{
-                meta: { title: string };
-                url: string;
-                excerpt: string;
-              }>;
-            }) => r.data(),
-          ),
-        );
-        if (docs.length)
-          found = docs.map((d) => ({
-            title: d.meta.title,
-            url: d.url,
-            type: 'Search',
-            detail: d.excerpt.replace(/<[^>]*>/g, ''),
-          }));
-      } catch {
-        /* Static fallback search remains available in development/offline. */
-      }
-      if (active) {
-        setResults(found.slice(0, 10));
-        setBusy(false);
-        track('search_performed');
-        if (!found.length) track('search_zero_results');
-      }
-    }, 250);
-    return () => {
-      active = false;
-      clearTimeout(timer);
-    };
-  }, [query]);
-  return (
-    <>
-      <label className="sr-only" htmlFor="global-search">
-        Search concepts, formulas, assignments or Japanese
-      </label>
-      <input
-        id="global-search"
-        className="search-input"
-        type="search"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Try acceleration, VSEPR or すみません"
-        autoComplete="off"
-      />
-      <p className="muted small" aria-live="polite">
-        {busy
-          ? 'Searching…'
-          : query
-            ? `${results.length} results`
-            : 'Concepts, equations, assignments, kana and rōmaji.'}
-      </p>
-      <ul className="search-results">
-        {results.map((r) => (
-          <li key={r.url}>
-            <a href={r.url}>
-              <small className="eyebrow">{r.type}</small>
-              <strong>{r.title}</strong>
-              <span>{r.detail}</span>
+      <dialog
+        ref={inspectorRef}
+        className="definition-inspector"
+        aria-label={
+          definition ? `Definition: ${definition.term}` : 'Definition'
+        }
+        onCancel={(e) => {
+          e.preventDefault();
+          setDefinition(null);
+          trigger.current?.focus();
+        }}
+      >
+        {definition && (
+          <div className="inspector-content">
+            <div className="sheet-heading">
+              <span className="meta">A little context</span>
+              <button
+                className="icon-button"
+                aria-label="Close definition"
+                onClick={() => {
+                  setDefinition(null);
+                  trigger.current?.focus();
+                }}
+              >
+                <Icon name="close" />
+              </button>
+            </div>
+            <h2
+              lang={/[^\u0000-\u007f]/.test(definition.term) ? 'ja' : undefined}
+            >
+              {definition.term}
+            </h2>
+            <p>{definition.definition}</p>
+            <a className="primary" href={url(`learn/${definition.concept}/`)}>
+              Learn this
+              <Icon name="arrow" />
             </a>
-          </li>
-        ))}
-      </ul>
-      {query && !busy && !results.length && (
-        <p>
-          No match yet. Try another term or{' '}
-          <a href={url('help/')}>request missing material</a>.
-        </p>
-      )}
-      <div className="button-row">
-        <a
-          href={url('account/')}
-          onClick={() => {
-            replayOnboarding();
-          }}
-        >
-          Replay introduction
-        </a>
-        <a href={url('help/')}>Need something?</a>
-      </div>
+            {used.length > 0 && (
+              <section>
+                <h3>Used in</h3>
+                {used.map((a) => (
+                  <a
+                    className="inspector-link"
+                    href={url(`work/${a.id}/`)}
+                    key={a.id}
+                  >
+                    {assignmentTitle(a.id)}
+                  </a>
+                ))}
+              </section>
+            )}
+            {related.length > 0 && (
+              <section>
+                <h3>Related</h3>
+                {[...new Set(related)]
+                  .filter((id) => concepts.some((c) => c.id === id))
+                  .slice(0, 3)
+                  .map((id) => (
+                    <a
+                      className="inspector-link"
+                      href={url(`learn/${id}/`)}
+                      key={id}
+                    >
+                      {topicTitle(id)}
+                    </a>
+                  ))}
+              </section>
+            )}
+            <small>
+              {
+                findCourse(
+                  concepts.find((c) => c.id === definition.concept)!.course,
+                ).shortTitle
+              }
+            </small>
+          </div>
+        )}
+      </dialog>
     </>
   );
 }

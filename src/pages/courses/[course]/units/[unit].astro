@@ -1,0 +1,19 @@
+---
+import Layout from '../../../../layouts/Layout.astro';
+import Unit from '../../../../components/Unit';
+import { courses } from '../../../../content/catalog';
+import { unitTitle } from '../../../../content/workspaces';
+export function getStaticPaths() {
+  return courses.flatMap((c) =>
+    c.units.map((u) => ({
+      params: { course: c.id, unit: u.id },
+      props: { course: c.id, unit: u.id },
+    })),
+  );
+}
+const { course, unit } = Astro.props;
+---
+
+<Layout title={unitTitle(course, unit)} course={course}>
+  <Unit course={course} unit={unit} client:load />
+</Layout>

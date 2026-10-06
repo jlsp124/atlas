@@ -6,13 +6,12 @@ export const GET: APIRoute = () => {
       id: `${base}/`,
       name: 'atlas',
       short_name: 'atlas',
-      description:
-        'Your courses, connected. Lessons, practice and local progress.',
+      description: 'Everything from class, without digging for it.',
       start_url: `${base}/`,
       scope: `${base}/`,
       display: 'standalone',
-      background_color: '#f8f9f6',
-      theme_color: '#245d45',
+      background_color: '#f7f6f3',
+      theme_color: '#4947ce',
       icons: [
         {
           src: `${base}/icons/icon-192.png`,

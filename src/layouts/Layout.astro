@@ -1,11 +1,12 @@
 ---
 import Shell from '../components/Shell';
-import '@fontsource-variable/inter';
+import '@fontsource-variable/geist/latin.css';
 import '../styles/global.css';
 const {
-  title = 'Your school day',
-  description = 'Your courses, connected. A student-built companion with real lessons, assignments, practice and local progress.',
+  title = 'Your atlas',
+  description = 'Everything from class, without digging for it.',
   course,
+  focus = false,
 } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const url = (path = '') => `${base}/${path}`;
@@ -18,7 +19,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#245d45" />
+    <meta name="theme-color" content="#4947ce" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/svg+xml" href={url('icon.svg')} />
@@ -40,25 +41,11 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
     <a class="skip-link" href="#main">
       Skip to content
     </a>
-    <div class="app-shell">
-      <Shell client:load course={course} />
+    <div class:list={['app-shell', { focused: focus }]}>
+      <Shell client:load course={course} focus={focus} />
       <main id="main" tabindex="-1" data-pagefind-body>
         <slot />
       </main>
-      <footer>
-        <a class="footer-wordmark" href={url()}>
-          atlas.
-        </a>
-        <span>
-          Designed & built by Jovan ·{' '}
-          <a href="https://github.com/jlsp124/atlas">Open source</a>
-        </span>
-        <nav aria-label="Help and information">
-          <a href={url('help/')}>Need something?</a>
-          <a href={url('about/')}>About</a>
-          <a href={url('privacy/')}>Privacy</a>
-        </nav>
-      </footer>
     </div>
     <script>
       if ('serviceWorker' in navigator && import.meta.env.PROD) {
