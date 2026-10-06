@@ -124,6 +124,7 @@ export const questionSchema = z.object({
   unitLabel: z.string().optional(),
   tolerance: z.number().nonnegative().optional(),
   precision: z.enum(['significant-figures', 'decimal-places']).optional(),
+  notation: z.literal('scientific').optional(),
   explanation: z.string(),
   hint: z.string(),
   diagnosis: id,

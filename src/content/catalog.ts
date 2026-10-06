@@ -1286,7 +1286,7 @@ const checks: Check[] = [
     'Which is normalized scientific notation for 0.00072?',
     '7.2 × 10⁻⁴',
     ['72 × 10⁻³', '7.2 × 10⁴'],
-    'Write 63000 using e notation, for example 1.2e3.',
+    'Write 63000 using normalized e notation, for example 1.2e3.',
     ['6.3e4', '6.3e+4'],
     'Divide 8e5 by 2e2. Use normalized e notation.',
     ['4e3', '4e+3'],
@@ -1805,6 +1805,9 @@ for (const [id, precision] of [
   ['significant-figures-transfer', 'significant-figures'],
 ] as const)
   questions.find((q) => q.id === id)!.precision = precision;
+for (const level of ['construction', 'transfer'])
+  questions.find((q) => q.id === `scientific-notation-${level}`)!.notation =
+    'scientific';
 for (const [id, kana, romaji, meaning, situation] of vocabulary) {
   const concept = `jp-${id}`;
   const c = concepts.find((c) => c.id === concept)!;

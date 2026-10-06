@@ -361,6 +361,20 @@ describe('deterministic reviewed numeric families', () => {
     expect(evaluate(q, '12.30')).toBe(false);
     expect(evaluate(q, '123')).toBe(false);
   });
+  it('requires normalized scientific notation when representation is the skill', () => {
+    const q = questions.find(
+      (q) => q.id === 'scientific-notation-construction',
+    )!;
+    expect(evaluate(q, '6.3e4')).toBe(true);
+    expect(evaluate(q, '6.3E+4')).toBe(true);
+    expect(evaluate(q, '63000')).toBe(false);
+    expect(evaluate(q, '63e3')).toBe(false);
+    const transfer = questions.find(
+      (q) => q.id === 'scientific-notation-transfer',
+    )!;
+    expect(evaluate(transfer, '4e3')).toBe(true);
+    expect(evaluate(transfer, '4000')).toBe(false);
+  });
 });
 describe('event projection and prompt boundaries', () => {
   it('merges identical UUIDs idempotently', () => {

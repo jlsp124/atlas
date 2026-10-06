@@ -327,6 +327,10 @@ function numericAnswer(value: string) {
     value: Number(normalized),
     significantFigures: digits.length || Math.max(1, decimals),
     decimalPlaces: decimals - Number(match[2] ?? 0),
+    normalizedScientific:
+      match[2] !== undefined &&
+      Math.abs(Number(match[1])) >= 1 &&
+      Math.abs(Number(match[1])) < 10,
   };
 }
 function matchingPrecision(
@@ -335,10 +339,11 @@ function matchingPrecision(
   expected: NonNullable<ReturnType<typeof numericAnswer>>,
 ) {
   return (
-    !q.precision ||
-    (q.precision === 'significant-figures'
-      ? given.significantFigures === expected.significantFigures
-      : given.decimalPlaces === expected.decimalPlaces)
+    (!q.notation || given.normalizedScientific) &&
+    (!q.precision ||
+      (q.precision === 'significant-figures'
+        ? given.significantFigures === expected.significantFigures
+        : given.decimalPlaces === expected.decimalPlaces))
   );
 }
 export function evaluate(q: Question, answer: string, unit = ''): boolean {
