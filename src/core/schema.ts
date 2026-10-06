@@ -1,0 +1,268 @@
+import { z } from 'zod';
+
+const id = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+const date = z.iso.date();
+export const courseSchema = z.object({
+  id,
+  title: z.string(),
+  shortTitle: z.string(),
+  symbol: z.string(),
+  description: z.string(),
+  units: z.array(
+    z.object({
+      id,
+      title: z.string(),
+      status: z.enum(['current', 'review', 'upcoming']),
+    }),
+  ),
+});
+export const editionSchema = z.object({
+  id,
+  course: id,
+  teacher: z.string(),
+  term: z.string(),
+  period: z.number().int().min(1).max(4),
+  start: date,
+  end: date,
+  status: z.enum(['active', 'archived']),
+  verified: date,
+  currentUnit: id,
+  notes: z.string(),
+  resources: z.array(z.url()),
+});
+export const sourceSchema = z.object({
+  id,
+  title: z.string(),
+  type: z.enum([
+    'vault-notes',
+    'teacher-site',
+    'teacher-calendar',
+    'reference',
+    'original',
+  ]),
+  url: z.url().optional(),
+  reference: z.string().optional(),
+  author: z.string(),
+  checked: date,
+  rights: z.enum(['link-only', 'original', 'licensed']),
+  status: z.enum(['checked', 'unavailable', 'snapshot']),
+  notes: z.string(),
+});
+export const conceptSchema = z.object({
+  id,
+  course: id,
+  unit: id,
+  title: z.string(),
+  kind: z.enum(['concept', 'procedure', 'vocabulary', 'kana', 'situation']),
+  model: z.string().min(15),
+  why: z.string().min(20),
+  representation: z.string(),
+  formula: z.string().optional(),
+  example: z.object({ prompt: z.string(), steps: z.array(z.string()).min(1) }),
+  trap: z.string(),
+  prerequisites: z.array(id),
+  depth: z.enum(['core', 'preview', 'optional']),
+  memorize: z.string(),
+  derive: z.string(),
+  reference: z.string(),
+  review: z.array(z.string()),
+  deeper: z.string(),
+  aliases: z.array(z.string()),
+  annotations: z.array(
+    z.object({
+      term: z.string(),
+      definition: z.string(),
+      concept: id.optional(),
+    }),
+  ),
+  sources: z.array(id).min(1),
+  status: z.enum(['draft', 'reviewed', 'publishable']),
+});
+export const edgeSchema = z.object({
+  from: id,
+  to: id,
+  type: z.enum([
+    'requires',
+    'causes',
+    'explains',
+    'leads-to',
+    'represented-by',
+    'used-in',
+    'contrasts-with',
+    'example-of',
+    'part-of',
+    'commonly-confused-with',
+    'preview-of',
+    'means',
+    'written-as',
+    'pronounced-as',
+    'situation-fit',
+    'formal-version-of',
+  ]),
+  reason: z.string(),
+});
+export const questionSchema = z.object({
+  id,
+  course: id,
+  unit: id,
+  concepts: z.array(id).min(1),
+  coverage: z.array(id).min(1),
+  level: z.enum(['recognition', 'construction', 'transfer']),
+  purpose: z.enum([
+    'diagnostic',
+    'teaching-check',
+    'mastery',
+    'transfer',
+    'retention',
+    'coverage',
+  ]),
+  format: z.enum(['choice', 'text', 'numeric']),
+  archetype: id,
+  prompt: z.string(),
+  choices: z.array(z.string()).optional(),
+  answer: z.union([z.string(), z.array(z.string()), z.number()]),
+  unitLabel: z.string().optional(),
+  tolerance: z.number().nonnegative().optional(),
+  explanation: z.string(),
+  hint: z.string(),
+  diagnosis: id,
+  sources: z.array(id).min(1),
+  status: z.enum(['draft', 'reviewed', 'publishable']),
+  template: z
+    .enum(['velocity', 'acceleration', 'conversion', 'half-life'])
+    .optional(),
+});
+export const coverageSchema = z.object({
+  id,
+  course: id,
+  unit: id,
+  concept: id,
+  title: z.string(),
+  required: z.boolean(),
+  type: z.enum([
+    'concept',
+    'term',
+    'procedure',
+    'representation',
+    'convention',
+    'edge-item',
+    'preview',
+  ]),
+  sources: z.array(id).min(1),
+});
+export const assignmentSchema = z.object({
+  id,
+  course: id,
+  edition: id,
+  title: z.string(),
+  teacher: z.string(),
+  assigned: date.optional(),
+  due: date.optional(),
+  status: z.enum(['current', 'past', 'upcoming']),
+  summary: z.string(),
+  tasks: z
+    .array(z.object({ id, title: z.string(), instructions: z.string() }))
+    .min(1),
+  concepts: z.array(id).min(1),
+  prerequisites: z.array(id),
+  sources: z.array(id).min(1),
+  difficulty: z.array(z.string()),
+  rights: z.literal('original-companion'),
+  originalUrl: z.url().optional(),
+  originalAvailability: z.string(),
+  notes: z.string(),
+});
+export const scheduleSchema = z.object({
+  id,
+  course: id.optional(),
+  edition: id.optional(),
+  title: z.string(),
+  type: z.enum([
+    'test',
+    'quiz',
+    'assignment',
+    'project',
+    'research',
+    'holiday',
+    'milestone',
+  ]),
+  start: date.optional(),
+  end: date.optional(),
+  dateNote: z.string().optional(),
+  confidence: z.enum(['teacher-confirmed', 'student-confirmed', 'unverified']),
+  status: z.enum(['scheduled', 'date-unconfirmed', 'past']),
+  sources: z.array(id).min(1),
+  verified: date,
+  notes: z.string(),
+  concepts: z.array(id),
+  assignment: id.optional(),
+  public: z.literal(true),
+});
+export type Course = z.infer<typeof courseSchema>;
+export type Edition = z.infer<typeof editionSchema>;
+export type Source = z.infer<typeof sourceSchema>;
+export type Concept = z.infer<typeof conceptSchema>;
+export type Edge = z.infer<typeof edgeSchema>;
+export type Question = z.infer<typeof questionSchema>;
+export type CoverageItem = z.infer<typeof coverageSchema>;
+export type Assignment = z.infer<typeof assignmentSchema>;
+export type ScheduleEvent = z.infer<typeof scheduleSchema>;
+
+const base = { id: z.uuid(), device: z.uuid(), at: z.iso.datetime() };
+export const eventSchema = z.discriminatedUnion('type', [
+  z
+    .object({
+      ...base,
+      type: z.literal('question_answered'),
+      payload: z
+        .object({
+          question: id,
+          concept: id,
+          correct: z.boolean(),
+          hints: z.number().int().min(0).max(10),
+          seed: z.number().int().nonnegative(),
+          durationMs: z.number().int().min(0).max(3600000),
+        })
+        .strict(),
+    })
+    .strict(),
+  z
+    .object({
+      ...base,
+      type: z.enum([
+        'concept_marked_confused',
+        'concept_self_reported_known',
+        'lesson_viewed',
+      ]),
+      payload: z.object({ concept: id }).strict(),
+    })
+    .strict(),
+  z
+    .object({
+      ...base,
+      type: z.literal('assignment_task'),
+      payload: z
+        .object({ assignment: id, task: id, done: z.boolean() })
+        .strict(),
+    })
+    .strict(),
+  z
+    .object({
+      ...base,
+      type: z.literal('courses_selected'),
+      payload: z.object({ courses: z.array(id).max(30) }).strict(),
+    })
+    .strict(),
+  z
+    .object({
+      ...base,
+      type: z.literal('theme_changed'),
+      payload: z
+        .object({ theme: z.enum(['system', 'light', 'dark']) })
+        .strict(),
+    })
+    .strict(),
+]);
+export type LearnerEvent = z.infer<typeof eventSchema>;
+export type EvidenceState =
+  'unseen' | 'exposed' | 'developing' | 'stable' | 'review due' | 'conflict';

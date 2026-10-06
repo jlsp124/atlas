@@ -1,0 +1,156 @@
+import { pathToFileURL } from 'node:url';
+import {
+  assignments,
+  concepts,
+  courses,
+  coverageItems,
+  edges,
+  editions,
+  questions,
+  schedule,
+  sources,
+} from '../src/content/catalog';
+import * as schema from '../src/core/schema';
+import { prerequisitePath, evaluate, variant } from '../src/core/learning';
+
+export function validateContent() {
+  const errors: string[] = [];
+  const sets = [
+    [courses, schema.courseSchema],
+    [editions, schema.editionSchema],
+    [concepts, schema.conceptSchema],
+    [edges, schema.edgeSchema],
+    [questions, schema.questionSchema],
+    [coverageItems, schema.coverageSchema],
+    [assignments, schema.assignmentSchema],
+    [schedule, schema.scheduleSchema],
+    [sources, schema.sourceSchema],
+  ] as const;
+  for (const [rows, validator] of sets)
+    for (const row of rows) {
+      const result = validator.safeParse(row);
+      if (!result.success) errors.push(JSON.stringify(result.error.issues));
+    }
+  for (const rows of [
+    courses,
+    editions,
+    concepts,
+    questions,
+    coverageItems,
+    assignments,
+    schedule,
+    sources,
+  ]) {
+    const ids = rows.map((r) => r.id);
+    if (ids.length !== new Set(ids).size) errors.push('Duplicate stable ID');
+  }
+  const has = (rows: { id: string }[], id: string) =>
+    rows.some((r) => r.id === id);
+  for (const c of concepts) {
+    if (
+      !has(courses, c.course) ||
+      !courses
+        .find((x) => x.id === c.course)
+        ?.units.some((u) => u.id === c.unit)
+    )
+      errors.push(`Missing course/unit: ${c.id}`);
+    if (c.status !== 'publishable')
+      errors.push(`Unfinished content included in public catalog: ${c.id}`);
+    for (const s of c.sources)
+      if (!has(sources, s)) errors.push(`Missing provenance ${s}`);
+    try {
+      prerequisitePath(c.id, concepts);
+    } catch (e) {
+      errors.push(String(e));
+    }
+    if (
+      !questions.some(
+        (q) => q.concepts.includes(c.id) && q.level === 'construction',
+      )
+    )
+      errors.push(`No construction practice: ${c.id}`);
+    if (
+      !questions.some(
+        (q) => q.concepts.includes(c.id) && q.level === 'transfer',
+      )
+    )
+      errors.push(`No transfer practice: ${c.id}`);
+    if (!edges.some((e) => e.from === c.id || e.to === c.id))
+      errors.push(`Orphan concept: ${c.id}`);
+  }
+  for (const e of edges)
+    if (!has(concepts, e.from) || !has(concepts, e.to))
+      errors.push(`Broken edge: ${e.from} → ${e.to}`);
+  for (const q of questions) {
+    for (const c of [...q.concepts, q.diagnosis])
+      if (!has(concepts, c)) errors.push(`Missing question concept ${c}`);
+    for (const id of q.coverage)
+      if (!has(coverageItems, id)) errors.push(`Missing coverage ${id}`);
+    for (const s of q.sources)
+      if (!has(sources, s)) errors.push(`Missing question source ${s}`);
+    if (
+      q.format === 'choice' &&
+      (!q.choices?.includes(String(q.answer)) ||
+        new Set(q.choices).size !== q.choices.length)
+    )
+      errors.push(`Invalid choices ${q.id}`);
+    for (let seed = 0; seed < 20; seed++) {
+      const v = variant(q, seed);
+      const answer = Array.isArray(v.answer) ? v.answer[0] : String(v.answer);
+      if (!evaluate(v, answer, v.unitLabel))
+        errors.push(`Evaluator rejects own expected answer ${q.id}`);
+    }
+  }
+  for (const a of assignments) {
+    if (
+      !has(editions, a.edition) ||
+      editions.find((e) => e.id === a.edition)?.course !== a.course
+    )
+      errors.push(`Assignment edition mismatch: ${a.id}`);
+    for (const id of [...a.concepts, ...a.prerequisites])
+      if (!has(concepts, id)) errors.push(`Missing assignment concept ${id}`);
+    if (a.due && a.assigned && a.due < a.assigned)
+      errors.push(`Due before assigned: ${a.id}`);
+    for (const s of a.sources)
+      if (!has(sources, s)) errors.push(`Missing assignment source ${s}`);
+  }
+  for (const e of schedule) {
+    if (e.end && e.start && e.end < e.start)
+      errors.push(`Invalid schedule range ${e.id}`);
+    if (!e.start && !e.dateNote)
+      errors.push(`Undated event without uncertainty ${e.id}`);
+    for (const s of e.sources)
+      if (!has(sources, s)) errors.push(`Missing schedule source ${s}`);
+    for (const id of e.concepts)
+      if (!has(concepts, id)) errors.push(`Missing schedule concept ${id}`);
+  }
+  const serialized = JSON.stringify({
+    concepts,
+    assignments,
+    schedule,
+    sources,
+    editions,
+  });
+  for (const forbidden of [
+    /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/,
+    /"(?:password|password_hash|grades|privateProfile|personalPhone)"\s*:/i,
+    /\bgh[opusr]_[A-Za-z0-9]{20,}/,
+    /\b\(?\d{3}\)?[- ]\d{3}[- ]\d{4}\b/,
+  ])
+    if (forbidden.test(serialized))
+      errors.push(`Private data pattern: ${forbidden}`);
+  return errors;
+}
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href
+) {
+  const errors = validateContent();
+  if (errors.length) {
+    console.error(errors.join('\n'));
+    process.exitCode = 1;
+  } else
+    console.log(
+      `Content PASS: ${courses.length} courses, ${concepts.length} concepts, ${questions.length} question archetypes, ${coverageItems.length} coverage items, ${assignments.length} companions.`,
+    );
+}

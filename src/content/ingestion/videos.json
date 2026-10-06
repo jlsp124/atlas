@@ -1,0 +1,90 @@
+{
+  "checked": "2026-10-06T01:20:39.119Z",
+  "scope": "Bounded linked-video metadata and permitted public-caption availability check; raw captions remain ignored internal evidence",
+  "videos": [
+    {
+      "id": "DVouQRAKxYo",
+      "url": "https://www.youtube.com/watch?v=DVouQRAKxYo",
+      "title": "Classification",
+      "author": "Amoeba Sisters",
+      "checked": "2026-10-06T01:20:39.119Z",
+      "metadataStatus": 200,
+      "sourcePages": ["bleecker-c18"],
+      "rights": "link-only",
+      "captionStatus": "No publicly retrievable caption track at the checked endpoint; availability is unverified",
+      "captionHash": null,
+      "language": null,
+      "segmentMapping": "Not reviewed; no timestamp-to-concept claims"
+    },
+    {
+      "id": "KziWbJWwntg",
+      "url": "https://www.youtube.com/watch?v=KziWbJWwntg",
+      "title": "How Did Life Begin? Neil deGrasse Tyson on Life on Earth & Beyond",
+      "author": "Science Time",
+      "checked": "2026-10-06T01:20:39.119Z",
+      "metadataStatus": 200,
+      "sourcePages": ["bleecker-c17"],
+      "rights": "link-only",
+      "captionStatus": "No publicly retrievable caption track at the checked endpoint; availability is unverified",
+      "captionHash": null,
+      "language": null,
+      "segmentMapping": "Not reviewed; no timestamp-to-concept claims"
+    },
+    {
+      "id": "IuqmtcogwsE",
+      "url": "https://www.youtube.com/watch?v=IuqmtcogwsE",
+      "title": "How Life Began Origins Nova Neil Degrasse Tyson HD",
+      "author": "Pete Olson",
+      "checked": "2026-10-06T01:20:39.119Z",
+      "metadataStatus": 200,
+      "sourcePages": ["bleecker-c17"],
+      "rights": "link-only",
+      "captionStatus": "No publicly retrievable caption track at the checked endpoint; availability is unverified",
+      "captionHash": null,
+      "language": null,
+      "segmentMapping": "Not reviewed; no timestamp-to-concept claims"
+    },
+    {
+      "id": "JoTK6DdcPcg",
+      "url": "https://www.youtube.com/watch?v=JoTK6DdcPcg",
+      "title": "Earth is Born Origins Nova Neil DeGrasse Tyson HD 1080p",
+      "author": "The Internet's Own Boy",
+      "checked": "2026-10-06T01:20:39.119Z",
+      "metadataStatus": 200,
+      "sourcePages": ["bleecker-c17"],
+      "rights": "link-only",
+      "captionStatus": "No publicly retrievable caption track at the checked endpoint; availability is unverified",
+      "captionHash": null,
+      "language": null,
+      "segmentMapping": "Not reviewed; no timestamp-to-concept claims"
+    },
+    {
+      "id": "FGnS-Xk0ZqU",
+      "url": "https://www.youtube.com/watch?v=FGnS-Xk0ZqU",
+      "title": "Endosymbiotic Theory",
+      "author": "Amoeba Sisters",
+      "checked": "2026-10-06T01:20:39.119Z",
+      "metadataStatus": 200,
+      "sourcePages": ["bleecker-c17"],
+      "rights": "link-only",
+      "captionStatus": "No publicly retrievable caption track at the checked endpoint; availability is unverified",
+      "captionHash": null,
+      "language": null,
+      "segmentMapping": "Not reviewed; no timestamp-to-concept claims"
+    },
+    {
+      "id": "_C6cqsOf2mI",
+      "url": "https://www.youtube.com/watch?v=_C6cqsOf2mI",
+      "title": null,
+      "author": null,
+      "checked": "2026-10-06T01:20:39.119Z",
+      "metadataStatus": 404,
+      "sourcePages": ["bleecker-cladograms"],
+      "rights": "link-only",
+      "captionStatus": "No publicly retrievable caption track at the checked endpoint; availability is unverified",
+      "captionHash": null,
+      "language": null,
+      "segmentMapping": "Not reviewed; no timestamp-to-concept claims"
+    }
+  ]
+}
