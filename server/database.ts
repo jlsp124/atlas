@@ -1,5 +1,5 @@
 import Database from 'better-sqlite3';
-import { mkdirSync } from 'node:fs';
+import { chmodSync, mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const migrations = [
@@ -42,6 +42,7 @@ export function openDatabase(
 ) {
   if (!memory) mkdirSync(resolve(dir), { recursive: true, mode: 0o700 });
   const db = new Database(memory ? ':memory:' : resolve(dir, 'atlas.sqlite'));
+  if (!memory) chmodSync(resolve(dir, 'atlas.sqlite'), 0o600);
   db.pragma('foreign_keys = ON');
   db.pragma('journal_mode = WAL');
   db.pragma('busy_timeout = 5000');

@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
-          node-version: 24.11.1
+          node-version: 24.21.0
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
@@ -25,11 +25,12 @@ jobs:
       - name: Linux container runtime
         run: |
           docker build -t atlas-qa .
-          docker run -d --name atlas-qa --read-only --tmpfs /tmp -p 127.0.0.1:8788:8787 -e ALLOWED_ORIGIN=https://jlsp124.github.io -e COOKIE_SECURE=true -e COOKIE_SAME_SITE=none -v atlas-qa-data:/app/data atlas-qa
+          docker run -d --name atlas-qa --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges=true -p 127.0.0.1:8788:8787 -e ALLOWED_ORIGIN=https://jlsp124.github.io -e COOKIE_SECURE=true -e COOKIE_SAME_SITE=none -v atlas-qa-data:/app/data atlas-qa
           for attempt in $(seq 1 20); do
             if curl --fail --silent http://127.0.0.1:8788/health; then break; fi
             sleep 2
           done
           curl --fail --silent http://127.0.0.1:8788/health
           docker exec atlas-qa node --import tsx server/backup.ts
+          docker exec atlas-qa node --input-type=module -e "import {statSync,readdirSync} from 'node:fs'; const modes=['/app/data/atlas.sqlite',...readdirSync('/app/data/backups').map(p=>'/app/data/backups/'+p)].map(p=>statSync(p).mode&511); if(process.getuid()===0 || modes.some(m=>m!==384) || (statSync('/app/data').mode&511)!==448) throw new Error('Private storage permissions failed'); console.log('Non-root runtime and private SQLite/backup permissions passed');"
           docker stop atlas-qa

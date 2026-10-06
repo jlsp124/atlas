@@ -8,7 +8,7 @@ The public app is static. Lessons, assignments, graphs, search and guest progres
 
 ## Development
 
-Requires Node 24.11+ and npm.
+Requires Node 24.11+ and npm for local development. Production CI and the container use Node 24.21.0 LTS.
 
 ```sh
 npm ci

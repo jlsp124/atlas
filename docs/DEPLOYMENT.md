@@ -44,6 +44,8 @@ curl --fail http://127.0.0.1:8787/health
 
 Compose exposes only `127.0.0.1:8787`, persists SQLite in the `atlas-data` volume, runs as an unprivileged user, drops capabilities and uses a read-only root filesystem. Do not change the binding to a public interface or configure router port forwarding.
 
+The image uses Node 24.21.0 LTS. A separate build stage installs Python/Make/C++ to compile the SQLite binding; those build tools are omitted from the runtime image. Fresh data directories are `700`, database/backup files are `600`, and CI verifies these permissions on Linux.
+
 ### HTTPS and browser cookies
 
 Point an existing HTTPS reverse proxy or Cloudflare Tunnel to `http://127.0.0.1:8787`. Configure the public API hostname in `PUBLIC_API_URL`, then rebuild Pages. Trust proxy headers only when your deployment actually controls the proxy path; if enabling `TRUST_PROXY=true`, the API must remain reachable only through that trusted local proxy.
@@ -90,7 +92,7 @@ Account deletion removes live account-linked rows. Old protected backups may ret
 
 ## Linux with systemd
 
-The alternate example is [`deploy/atlas.service`](../deploy/atlas.service). Install Node 24.11+ and dependencies with `npm ci --omit=dev` in `/opt/atlas`. Create a dedicated non-login `atlas` account, give it `/var/lib/atlas`, and set `/etc/atlas/server.env` to owner-readable configuration:
+The alternate example is [`deploy/atlas.service`](../deploy/atlas.service). Install Node 24.21.0 LTS (or a newer maintained Node 24 patch) and dependencies with `npm ci --omit=dev` in `/opt/atlas`. The SQLite binding needs Python and a C++ build toolchain; on Debian/Ubuntu, install `python3` and `build-essential` before dependency installation. Create a dedicated non-login `atlas` account, give it a private `/var/lib/atlas` directory, and set `/etc/atlas/server.env` to owner-readable configuration:
 
 ```dotenv
 NODE_ENV=production

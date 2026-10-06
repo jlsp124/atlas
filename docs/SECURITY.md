@@ -32,6 +32,8 @@ Account deletion rechecks the password and cascades live events, sessions, activ
 
 The service disables routine request logging and redacts headers/body. It logs lifecycle and safe error codes, rather than credentials or user submissions. Rate limiting uses network addresses transiently; proxy/GitHub hosting logs are controlled by those operators. Choose a narrow retention policy for any operator logs and backups.
 
+On Linux, database files are explicitly owner-readable/writable (`600`), including first creation through bootstrap rather than the service wrapper. Backup creation sets a private umask and owner-only file permissions. A fresh container data directory is `700`. Windows ACLs are platform-controlled; Linux CI checks the actual POSIX modes while running non-root with dropped capabilities and a read-only root filesystem.
+
 ## Next authentication milestone
 
 MFA/passkeys/TOTP and recovery email are not shipped. Add them in versioned migrations and a dedicated authentication module before widening administrator use:

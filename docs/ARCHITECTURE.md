@@ -22,3 +22,5 @@ Source workspace: `jlsp124/obsidian-vaults`, branch `main`, snapshot `01c9644647
 Graph choice: Cytoscape breadth-first layout, with no continuous force simulation. Backend choice: Fastify, SQLite and Node 24 rather than another service stack. Anonymous analytics are opt-in; learning progress is useful without analytics.
 
 Current stable versions were checked against npm and official docs on October 5, 2026. See [Astro Pages](https://docs.astro.build/en/guides/deploy/github/), [Pagefind](https://pagefind.app/docs/), [Cytoscape](https://js.cytoscape.org/) and [Fastify](https://fastify.dev/docs/latest/).
+
+Production CI and Docker use Node 24.21.0, the maintained LTS release checked against the [official Node.js download page](https://nodejs.org/en/download) and release index. Local compatibility was also exercised on the installed Node 24.11.1. The SQLite binding is compiled in a separate Docker build stage, keeping the runtime image free of compiler tooling.

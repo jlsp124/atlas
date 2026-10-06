@@ -29,7 +29,7 @@ The generated PWA cache contains 291 static resources (about 4.7 MiB), including
 
 ## Release verification
 
-- Ubuntu CI and Docker runtime: pending first release push.
+- Ubuntu suite: [first verification](https://github.com/jlsp124/atlas/actions/runs/37401090178) passed all application checks and dependency audit. Its container build exposed the missing native SQLite toolchain in the slim image. A separate compiler build stage and owner-only storage checks are implemented; the corrected Linux container run is pending.
 - GitHub Pages and live deep-route/browser verification: pending deployment.
 
 ## Operator checks not run
