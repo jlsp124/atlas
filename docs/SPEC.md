@@ -1,25 +1,38 @@
-# atlas product contract
+# atlas V2 product specification
 
-Student-built by Jovan Pahal, always lowercase. Four active Fall 2026 courses in verified P1–P4 order: Physics 11, Life Sciences 11, Introductory Japanese 11 and Chemistry 11. Do not add unrelated courses or invent future teaching/assessment scope.
+atlas keeps notes, work, dates and study in one place. [UX.md](UX.md) is the student design authority.
 
-The October 5 implementation brief is the product authority. The three older Science Course Pages Site vault plans provide detailed learning architecture where compatible. The private vault remains read-only source; atlas is its reviewed, publishable derivative.
+## Core model
 
-The core experience is: today's work → original assignment companion → underlying concept → relationship map → original practice → possible prerequisite diagnosis → repair that branch → retry → explainable evidence and independent coverage. Static content and guest/local progress remain useful when the optional Linux server is unavailable.
+**Course → Unit → Learn / Classwork.** Independent Physics 11, Chemistry 11, Life Sciences 11 and Introductory Japanese 11 workspaces. Teacher/edition belongs to the course. Personal periods and verified course order never appear. Past units remain accessible. Calendar owns dates.
 
-Use Astro, TypeScript, small React islands, accessible HTML/CSS, KaTeX, Pagefind and stable directional Cytoscape graphs. Use Node/Fastify/SQLite for accounts, opaque-cookie authentication, idempotent event sync, admin aggregates and a request inbox. Deploy the static portion to GitHub Pages and provide a secure Linux deployment path.
+## Primary flows
 
-Required quality boundaries:
+1. Onboarding: promise → choose courses → account or this device. Preserve existing setup. No coach marks.
+2. Home: Up next, My courses, one Continue action. Compact desktop viewport.
+3. Course: units, current unit, subtle teacher. Unit: Learn / Classwork. Resources/dates secondary.
+4. Learn: ordered path, one idea/representation/example/check at a time. Optional Why/detail. Strong learners can check quickly.
+5. Foundation repair: small check → Fix this first → teach/check → automatically return to target. No graph or engine terminology.
+6. Classwork: unit/material-set grouping. Typeset authorized work; clearly identified original companions for restricted handouts. Preserve checklist IDs; answers disclosed per question.
+7. Terms: definition inspector/sheet → Learn this; Related and Used in backlinks.
+8. Learn this first: assignment-required ideas → focused teaching/checks → exact worksheet return, preserving reading position and checked tasks.
+9. Practice: Quick check / Review unit. Prepare for test contextually. One question, feedback, Continue. Summary: Looks good / Review / Still to check.
+10. Calendar: Week/Month, selected-course events/no-school days, uncertain dates separate; event links to related course/unit/work/prep.
+11. Search: Cmd/Ctrl+K dialog, Learn / Classwork / Other, aliases/formulas/kana/romaji/resources/tests.
+12. Account/settings, About/Help, privacy and dense admin retain actual functionality.
 
-- Courses and class editions are distinct. Dates, teacher, period and pacing belong to an edition.
-- Evidence states are unseen, exposed, developing, stable, review due and conflict. Recognition or self-report alone cannot establish stability.
-- Coverage is independently meaningful-tested items, including long-tail facts/representations; repeated accuracy never covers unseen content.
-- Preview/optional ideas never block current core learning. Unsupported content stays visibly unfinished.
-- Practice uses reviewed original questions and deterministic science templates; no unchecked live LLM generation.
-- Japanese is first-class, with actual kana/production/situation practice and a boundary against AI/translator-written submitted work.
-- Schedules have provenance, freshness and explicit date uncertainty. Research block endings do not imply submission deadlines.
-- No private grades/profiles, classmates, keys, copyrighted worksheet scans, full transcripts, secrets or personal phone numbers in public source/build.
-- Guest mode is excellent. Account/admin authority always comes from the server. Secure bootstrap reserves admin username `Jovan` with no hardcoded password.
-- Light, dark and system themes, realistic phones, keyboard flow, accessible graph lists, reflow, math and Japanese rendering receive real QA.
-- No social feed, messaging, rankings, payments, subscriptions, generic chatbot or required cloud service for basic study.
+## Content and learning guarantees
 
-Maintain coherent commits and [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md). Continue through high-value functionality, tests and deployment; report incomplete items honestly. The final release report covers repository/site URLs, architecture, deployment, features/content, Bleecker ingestion, verification, gaps, security/copyright boundaries and the next milestone.
+Preserve IDs, prerequisites, question selection, deterministic variants, spacing, coverage blueprint and events. Self-report never awards mastery. Wrong unhinted answers count as tested but need review. Hints do not prove mastery. All small required items remain reachable through Still to check.
+
+The reviewed blueprint is not necessarily the entire teacher syllabus. Unknown Chapter 19 content, unconfirmed dates and unknown assessment scope are stated plainly in first person. Preserve copyright/source safeguards: restricted sheets are linked, never fabricated as transcriptions. Japanese assessed-work safeguards stay in tutor context.
+
+## Architecture and migration
+
+Retain Astro static/PWA, React islands, cookie/CSRF accounts, event sync, SQLite, admin, ingestion and server tooling. No server rearchitecture. Existing atlas:v1:* account/guest state remains valid without reset. Keep legacy links functional. Internal graph remains; optional Explore is omitted until it merits inclusion.
+
+## Acceptance
+
+Persistent desktop sidebar, main pane and contextual inspector. Four-item mobile navigation, focused Learn/practice and definition sheets. Warm neutral light/graphite dark, no green, restrained course accents, self-hosted Geist/native Japanese/KaTeX. No dashboard, graph controls, evidence jargon or practice-mode panel.
+
+Run engine/backend/offline/account tests plus V2 flow checks. Inspect accessibility and screenshots at 1920×1080, 1440×900, 1366×768 and phones, both themes, with more than one visual pass. Home primary content fits approximately one desktop viewport. Completion requires live deployment and visual inspection of the deployed site.

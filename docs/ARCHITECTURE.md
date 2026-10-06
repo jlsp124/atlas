@@ -1,5 +1,11 @@
 # Architecture
 
+## V2 presentation authority
+
+Student UX follows [UX.md](UX.md) and [SPEC.md](SPEC.md): Course → Unit → Learn / Classwork, persistent desktop sidebar, compact mobile navigation, focused teaching/practice, contextual definitions and a calendar/search escape hatch. The former timetable/dashboard/graph presentation is retired. Global color is neutral with indigo interactions; green is permanently excluded.
+
+The catalog, core learning algorithms, learner-event format, local/account storage, PWA, backend, admin and ingestion are retained. V2 adds a presentation model for units/material sets, search and definitions rather than changing semantic IDs or server architecture. Existing users require no storage reset. Historic presentation details below are implementation history, not design authority.
+
 Visual thesis: a quiet study workspace with precise typography, warm paper surfaces and a restrained green accent; equally readable in light and dark.
 
 Content plan: today and upcoming work first, a clear course workspace second, then focused assignment and concept pages with contextual relationships and practice. No marketing hero inside the app.
