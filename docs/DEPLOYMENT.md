@@ -1,6 +1,6 @@
 # Deploy atlas
 
-The public static app works without a server. Accounts, sync, the request inbox and real admin data become available only when you connect the optional API. No home-server deployment credentials were supplied for this implementation.
+The public static app works without a server. Accounts, sync, the request inbox and real admin data become available only when you connect the optional API. As of October 6, 2026, this host has no `/opt/atlas` deployment, running Atlas container, API URL, custom Pages domain or Atlas tunnel. The existing Pages release remains the guest/offline product.
 
 ## GitHub Pages
 
@@ -29,7 +29,7 @@ The production image remains bound to `127.0.0.1:8787`. The named Cloudflare Tun
 
 Backups use `server/backup.ts`'s SQLite online backup API and live in the persistent Docker volume at `/app/data/backups`. The daily timer retains 30 days. This protects against application mistakes but is still on the same host; arrange an encrypted off-host copy separately if desired. Nothing uploads backups automatically.
 
-The deployment watcher runs as a systemd timer every two minutes, not as a self-hosted Actions runner. It queries the public repository's Actions run for the exact `origin/main` SHA, and deploys only an event=`push`, branch=`main`, completed successful `Verify atlas` run. `atlasctl update` runs the same guarded process. `atlasctl stop` never removes data.
+The repository contains a systemd watcher template (every two minutes), not a self-hosted Actions runner. It is **not installed or enabled on this host yet**. After provisioning, it will query the public repository's Actions run for the exact `origin/main` SHA, and deploy only an event=`push`, branch=`main`, completed successful `Verify atlas` run. `atlasctl update` will run the same guarded process. `atlasctl stop` never removes data.
 
 The existing GitHub Pages workflow is preserved. The repository variable `PUBLIC_API_URL` is public build configuration; after DNS and the HTTPS API hostname exist, set it to the API origin and configure the Pages custom domain under the same parent domain. No support email is inferred.
 

@@ -1,5 +1,9 @@
 # atlas server cheat sheet
 
+**Current host status (October 6, 2026): not provisioned.** `~/atlas` is present; `/opt/atlas`, the production container/volume, `atlasctl`, timers and public API tunnel are not. These commands become available after an operator runs `sudo bash ~/atlas/deploy/install-host.sh` in an interactive terminal, then logs in again for Docker group access. A domain and Cloudflare DNS authorization are also required before enabling public API access.
+
+After provisioning:
+
 Attach: `atlasctl console`
 
 Status: `atlasctl status`
@@ -21,18 +25,16 @@ In the console, **Ctrl+B then D** detaches; Atlas keeps running.
 ## This server
 
 - Development checkout: `~/atlas`. Only pushed, verified `main` commits are deployed.
-- Production checkout: `/opt/atlas`.
-- API: `https://api.atlas.<your-domain>` (pending domain and tunnel authorization).
-- Frontend: `https://atlas.<your-domain>` after the GitHub Pages custom domain is configured. The Pages URL remains `https://jlsp124.github.io/atlas/`.
-- SQLite: Docker named volume `atlas_atlas-data`, mounted at `/app/data`.
-- Consistent backups: `/app/data/backups` inside that persistent volume; daily at 02:30 with 30-day retention. Backups stay on this server and are not uploaded.
-- Auto deploy: `atlas-deploy.timer` / `atlas-deploy.service`, every two minutes. Logs: `/var/log/atlas/deploy.log` and `journalctl -u atlas-deploy.service`.
-- Daily backup: `atlas-backup.timer` / `atlas-backup.service`.
-- HTTPS tunnel: named Cloudflare Tunnel to `http://127.0.0.1:8787` (pending domain and Cloudflare authorization). Existing Tailscale Funnel is left untouched.
+- Production checkout (planned): `/opt/atlas`.
+- API: not configured. The intended endpoint is `https://api.atlas.<your-domain>` after domain/DNS and Cloudflare Tunnel setup.
+- Frontend: `https://jlsp124.github.io/atlas/`. No Pages custom domain is configured.
+- SQLite volume and backups: not created yet. The planned Compose volume is `atlas_atlas-data`; the backup command uses `/app/data/backups` in that volume.
+- Auto deploy and backup timers: unit files are in `deploy/systemd/`, but neither timer is installed or active. After provisioning, deploy checks run every two minutes and daily backups retain 30 days. Intended logs are `/var/log/atlas/deploy.log` and `journalctl -u atlas-deploy.service`.
+- HTTPS tunnel: none for Atlas. The existing Tailscale Funnel still routes its hostname to another app on `127.0.0.1:3000`; it has not been changed.
 
 ## Deploy and recovery
 
-The server fetches `origin/main` and only deploys the exact SHA after its `Verify atlas` workflow completed successfully for a push to `main`. It takes a SQLite backup, builds an image tagged with that commit, restarts the service, and checks local health. A failed health check restores the previous application image and code; the database is retained. Review migrations before manually rolling back code across a schema change.
+Once installed and initialized, the watcher fetches `origin/main` and deploys only the exact SHA after its `Verify atlas` workflow completed successfully for a push to `main`. It takes a SQLite backup, builds an image tagged with that commit, restarts the service, and checks local health. A failed health check restores the previous application image and code; the database is retained. Review migrations before manually rolling back code across a schema change.
 
 To pause automatic deployment: `sudo systemctl stop atlas-deploy.timer`. Re-enable: `sudo systemctl start atlas-deploy.timer`. These commands do not stop Atlas.
 
