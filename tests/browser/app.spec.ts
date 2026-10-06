@@ -242,6 +242,20 @@ test('home and course fit desktop and units have just two primary choices', asyn
   await expect(page.locator('main')).not.toContainText(
     /P1|Verified|coverage|Graph relationship/i,
   );
+  if (info.project.name === 'desktop') {
+    await open(page, 'learn/velocity/');
+    for (const viewport of [
+      { width: 1440, height: 900 },
+      { width: 1366, height: 768 },
+    ]) {
+      await page.setViewportSize(viewport);
+      await open(page);
+      await expect(page.locator('.continue-row')).toBeVisible();
+      expect(
+        await page.evaluate(() => document.documentElement.scrollHeight),
+      ).toBeLessThanOrEqual(viewport.height);
+    }
+  }
 });
 test('assignment checking, unchecking and individual answers survive refresh', async ({
   page,

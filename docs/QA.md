@@ -1,43 +1,45 @@
-# Verification evidence
+# V2 verification evidence
 
-Checked October 5, 2026, in America/Vancouver. Commands run against the actual application and optional service; local backend tests use isolated generated credentials and disposable databases. Raw browser traces, credentials, server data and source captures are ignored.
+Checked October 5, 2026, in America/Vancouver. The redesign started from fetched main bd9d057d2bc51ffffcc269b540ccf1dc44de05e8, after inspecting the V1 live site, routes, models, content and tests. The baseline complete suite passed: 71 unit/backend and 32 browser tests.
 
-## Local verification
+## Local gates
 
-| Check                      | Result | Evidence                                                                                                            |
-| -------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------- |
-| Formatting / ESLint        | PASS   | `npm run check`; no diagnostics                                                                                     |
-| Astro / TypeScript         | PASS   | 56 checked files; zero errors, warnings or hints                                                                    |
-| Unit / backend integration | PASS   | 71 tests in four files                                                                                              |
-| Content publication        | PASS   | Four courses, 61 concepts, 198 archetypes, 76 coverage items and four original companions                           |
-| Production build           | PASS   | 93 generated routes; Pagefind indexes 91 pages                                                                      |
-| Browser flows              | PASS   | 32 tests across desktop and phone, including account sync, admin/request flows and waiting-update navigation        |
-| Accessibility / reflow     | PASS   | 10 page types × two themes × two viewports; 40 axe scans without violations                                         |
-| Dependency audit           | PASS   | `npm audit --audit-level=high`: zero vulnerabilities                                                                |
-| Source-update workflow     | PASS   | Fresh vault fetch matches `01c9644647ee197de2a4e06f004a5d1c77535f28`; no source hash additions, changes or removals |
-| Publication privacy        | PASS   | Reachable history reviewed; raw evidence, runtime data, profile narrative, grades and personal contact excluded     |
+| Check                    | Result | Evidence                                                                        |
+| ------------------------ | ------ | ------------------------------------------------------------------------------- |
+| Formatting / ESLint      | PASS   | npm run check; no diagnostics                                                   |
+| Astro / TypeScript       | PASS   | 70 files; zero errors, warnings or hints                                        |
+| Unit / backend           | PASS   | 78 tests in five files; original 71 retained                                    |
+| Content                  | PASS   | Four courses, 61 concepts, 198 questions, 76 items, four original companions    |
+| Production build         | PASS   | 173 routes; Pagefind indexes 171 pages                                          |
+| Browser flows            | PASS   | 44 tests across desktop and phone; no skips                                     |
+| Accessibility            | PASS   | 21 states × two themes × two viewports = 84 axe scans                           |
+| Dependency audit         | PASS   | npm audit --audit-level=high; zero vulnerabilities                              |
+| Engine/data preservation | PASS   | No diff in core, client/store, catalog, ingestion, backend or offline generator |
 
-Learning tests cover prerequisite ordering, cycles/missing targets, nearest missing bridges, self-report boundaries, construction/transfer evidence, seven-day review, conflict, independent coverage, unseen-item selection, long-tail checks, numeric variants/units/precision, kana and AI tutor context.
+The seven new presentation tests ensure every published concept and required small item remains reachable, each companion maps to its actual unit, required learning stays ordered and bounded, teacher links match the ingestion index, search includes related classwork/prep and Japanese, and missing content/dates stay honest.
 
-Backend tests cover Argon2id, session expiry/revocation, role/origin/CSRF checks, login throttling, account isolation, retry and batch UUID conflicts, 201-event download pagination, raw-answer rejection, consent, actual admin totals, request authorization and password-confirmed deletion. A file-backed WAL test checks a consistent online backup, database integrity, reopen persistence, migration idempotency and foreign keys.
+Browser checks cover three-screen onboarding; course selection/account entry; V1 stored choices/theme/tasks/evidence; unit Learn/Classwork; answer disclosure; definitions/backlinks/Escape/focus restoration; stepwise math; confusion/known checks; prerequisite repair preserving the original question and seed; hinted answers requiring review; complete Learn this first with exact worksheet scroll/task return; Japanese typed production and guarded AI context; three-group search; Calendar/prep/unknown content; theme/text-spacing/reflow; real two-device sync and guest isolation; authorized admin/requests; production base paths; offline persistence; and installed waiting-worker updates across navigation.
 
-Browser checks exercise actual onboarding, checklist refresh/unchecking, confusion/known probes, copied tutor prompts, Japanese production, math, graph/list navigation, repair/retry, coverage, keyboard search, themes/text spacing, accounts across two browser contexts, API disconnection/reconnection, guest isolation, authorized requests/admin and production-base-path offline routes. Accessibility scans are useful evidence, not a complete manual WCAG certification.
+Accessibility scans include all three introduction steps, 14 ordinary routes, an active question and its feedback, definition and search overlays in light/dark at desktop/phone sizes. Reflow/text spacing also passes at 320px. These automated checks supplement keyboard/focus and visual inspection; they are not a complete manual WCAG certification.
 
-Visual inspection covers the 1365-pixel desktop and 390-pixel phone dashboard plus dark science lessons and Japanese text. Narrow header/reflow regressions also pass at 320 and 390 pixels, including increased text spacing. The rebuild and affected production/offline checks pass after that layout repair.
+## Visual acceptance
 
-The generated PWA cache contains 291 static resources (about 4.7 MiB), including unvisited lessons and Pagefind files. API responses are not cached. Installation is atomic; updates require an explicit action. Cache lookups handle static module/font `Vary: Origin` responses and ignore retry query strings on immutable assets. A real service-worker lifecycle regression reproduces a waiting update, navigates to another page, applies it and verifies the clean reload on desktop and phone. The update notice checks existing waiting workers as well as newly installed workers.
+Multiple screenshot passes cover 1920×1080, 1440×900, 1366×768, 390×844 and 360×800 in light/dark. Screens include introduction/setup, Home, course, unit, Classwork, Learn/representation, companion, definition sheet/inspector, Learn this first, active practice, Calendar, Search, account, assessment prep and About.
 
-## Release verification
+The initial pass found form ownership during nested repair, reading controls on phones, oversized question text and short-desktop Home spacing. These were corrected and rechecked. Home fits the requested desktop viewports, including a Continue action at 1440×900 and 1366×768. Long companions scroll intentionally. No horizontal overflow or JavaScript page errors appeared in the completed local screenshot pass.
 
-- Release gate: [Verify atlas](https://github.com/jlsp124/atlas/actions/workflows/verify.yml) runs the complete suite; [Deploy atlas](https://github.com/jlsp124/atlas/actions/workflows/pages.yml) publishes the exact successful verification commit. The pre-update-fix release `66c4e084750ef95cb37ff2a3c7ad086cd302a86a` passed [Ubuntu verification](https://github.com/jlsp124/atlas/actions/runs/37402860343) and [Pages deployment](https://github.com/jlsp124/atlas/actions/runs/37403164328). The waiting-update fix adds two browser cases to the same release gate; current immutable run evidence is available in [Actions](https://github.com/jlsp124/atlas/actions).
-- Ubuntu runs Node 24.21.0, unit/backend and desktop/phone browser tests, formatting/lint/type/content/build checks, the dependency audit and Linux container checks. All checks must pass before automatic deployment.
-- The Linux image builds the native SQLite binding in a separate compiler stage. It passes health and consistent-backup checks while non-root, with a read-only root and dropped capabilities. CI checks data directory mode `700` and database/backup file mode `600`.
-- Live https://jlsp124.github.io/atlas/: eight route types × two themes × two viewports give 32 successful axe/reflow checks. Graph canvas/list navigation, kana/romaji search, mathematics and deep links work without page or asset errors.
-- Live installed-cache test: an unvisited C17 companion opens offline, its checklist survives refresh, and Japanese recognition/typed production work offline. Narrow reflow passes at 320 pixels.
-- The current published scientific-notation question rejects a plain decimal when normalized e notation is requested and accepts the correct normalized transfer answer. Equivalent numeric values remain accepted for count/conversion questions; measured precision is checked separately.
+Screenshots and measured report.json files are delivery artifacts outside the Git repository. The final delivery records the immutable deployed SHA and live screenshot pass. A local build or historical V1 release does not establish V2 live acceptance.
 
-## Operator checks not run
+## Release gate and live checks
 
-The actual home server, reverse proxy/tunnel, DNS, real-device cross-site cookies, production credentials and production backup restore were not available. Linux CI container verification does not establish that the bedroom server is deployed. No optional API URL or support email is configured in the public build.
+[Verify atlas](https://github.com/jlsp124/atlas/actions/workflows/verify.yml) runs the entire suite on Ubuntu/Node 24.21.0, dependency audit and existing Linux container checks. [Deploy atlas](https://github.com/jlsp124/atlas/actions/workflows/pages.yml) publishes that exact successful commit.
 
-Human subject review, a complete syllabus bank, caption/timestamp curation, administrator MFA/recovery and authoritative Japanese listening/handwriting checks remain documented product/content milestones.
+After deployment, inspect https://jlsp124.github.io/atlas/ with fresh browser contexts at all five sizes/both themes. Check published modules/fonts, deep routes, Japanese/math, Search, definitions and guest persistence. Check the real service worker and an unvisited route offline. Record actual screenshots and release identity before declaring completion.
+
+The generated PWA caches 445 static assets, about 5.3 MiB. The unchanged cache mechanism includes static deep routes, fonts and Pagefind; never API responses. Updates remain explicit and actionable across navigation.
+
+## Limits
+
+Real accounts/sync are verified against the local optional API. No public API variable is currently configured. Production server DNS/TLS, real-device cross-site cookies and production backup restore are separate operator checks. Linux container execution is established by CI, not by Windows tests.
+
+The reviewed bank is a subset of classroom material. Chapter 19, confirmed assessment scope/dates, captions, subject review, recovery/MFA and authoritative Japanese audio/handwriting remain documented content/operator work.
