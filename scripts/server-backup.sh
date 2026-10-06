@@ -10,7 +10,7 @@ ATLAS_IMAGE_TAG="$sha" ATLAS_DEPLOY_SHA="$sha" docker compose exec -T atlas node
   const dir = "/app/data/backups";
   const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
   for (const name of await readdir(dir)) {
-    if (!/^atlas-[0-9T-]+\.sqlite$/.test(name)) continue;
+    if (!/^atlas-[0-9TZ-]+\.sqlite$/.test(name)) continue;
     const path = join(dir, name);
     const info = await stat(path);
     if (info.isFile() && info.mtimeMs < cutoff) await unlink(path);
