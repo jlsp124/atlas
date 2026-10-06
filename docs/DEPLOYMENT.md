@@ -1,6 +1,6 @@
 # Deploy atlas
 
-The public static app works without a server. Accounts, sync, the request inbox and real admin data become available only when you connect the optional API. As of October 6, 2026, this host has no `/opt/atlas` deployment, running Atlas container, API URL, custom Pages domain or Atlas tunnel. The existing Pages release remains the guest/offline product.
+The public static app works without a server. Accounts, sync, the request inbox and real admin data use the optional API. As of October 6, 2026, `/opt/atlas` is running on the home server and exposed through Tailscale Funnel at `https://glucose-games-server.tail428a5c.ts.net:8443`; the listener remains loopback-only at `127.0.0.1:8787`. GitHub Pages remains `https://jlsp124.github.io/atlas/` as the guest/offline layer.
 
 ## GitHub Pages
 
@@ -25,22 +25,22 @@ For a custom site path, set `ATLAS_SITE` and `ATLAS_BASE` at build time. Keep th
 
 For the home-server deployment tooling and operator cheat sheet, see [SERVER_OPERATIONS.md](SERVER_OPERATIONS.md). The watcher only deploys a successful **Verify atlas** run for the exact pushed `main` SHA. The deployment tree is `/opt/atlas`; `~/atlas` is development-only. A file lock serializes deployments, each update creates a consistent SQLite backup, and each image has its immutable source SHA tag. Local health gates marking a release deployed. On failure, code/image returns to the previous SHA while the database stays intact. Review schema migrations before attempting any code rollback.
 
-The production image remains bound to `127.0.0.1:8787`. The named Cloudflare Tunnel public hostname must target `http://127.0.0.1:8787`; do not forward router ports or change the bind address. The production frontend and API use sibling HTTPS hostnames under one registrable domain, `COOKIE_SAME_SITE=lax`, `COOKIE_SECURE=true`, and the exact frontend origin in `ALLOWED_ORIGIN`. Keep `TRUST_PROXY=true` only when the tunnel is the sole path to the loopback listener.
+The production image remains bound to `127.0.0.1:8787`. The separate Tailscale Funnel hostname on port 8443 targets `http://127.0.0.1:8787`; do not forward router ports or change the bind address. The current GitHub Pages and `ts.net` endpoints are cross-site, so production uses `COOKIE_SAME_SITE=none`, `COOKIE_SECURE=true`, and the exact Pages origin in `ALLOWED_ORIGIN`. Some browsers block third-party cookies; same-parent custom hostnames are the long-term fix. `TRUST_PROXY=true` is set because the tunnel is the public path to the loopback listener.
 
-Backups use `server/backup.ts`'s SQLite online backup API and live in the persistent Docker volume at `/app/data/backups`. The daily timer retains 30 days. This protects against application mistakes but is still on the same host; arrange an encrypted off-host copy separately if desired. Nothing uploads backups automatically.
+Backups use `server/backup.ts`'s SQLite online backup API and are stored on the host at `/home/jovan/.local/share/atlas/backups`, mounted into the container at `/app/data/backups`. The daily `atlas-backup.timer` retains 30 days. This is still on the same host; arrange an encrypted off-host copy separately if desired. Nothing uploads backups automatically.
 
-The repository contains a systemd watcher template (every two minutes), not a self-hosted Actions runner. It is **not installed or enabled on this host yet**. After provisioning, it will query the public repository's Actions run for the exact `origin/main` SHA, and deploy only an event=`push`, branch=`main`, completed successful `Verify atlas` run. `atlasctl update` will run the same guarded process. `atlasctl stop` never removes data.
+The systemd watcher runs every two minutes; it is not a self-hosted Actions runner. It queries GitHub Actions for the exact `origin/main` SHA and deploys only an event=`push`, branch=`main`, completed successful `Verify atlas` run. It backs up before deploying and rolls code/image back on failure while preserving the database. `atlasctl update` runs the same guarded process. `atlasctl stop` never removes data.
 
 The existing GitHub Pages workflow is preserved. The repository variable `PUBLIC_API_URL` is public build configuration; after DNS and the HTTPS API hostname exist, set it to the API origin and configure the Pages custom domain under the same parent domain. No support email is inferred.
 
-The server is currently configured for this hostname pair once a domain is authorized:
+When the domain is available, use this hostname pair:
 
 ```text
 Frontend: https://atlas.<your-domain>
 API:      https://api.atlas.<your-domain>
 ```
 
-Until the domain and Cloudflare zone are available, the public API remains unconfigured. Keep the existing GitHub Pages guest/offline app available and do not change cookie security or substitute browser-stored bearer tokens.
+The current API endpoint is the Tailscale Funnel URL above. Keep the existing GitHub Pages guest/offline app available and do not change cookie security or substitute browser-stored bearer tokens. The root `jovanpahal.com` does not need a web destination; only `atlas` and `api.atlas` DNS records are needed for the planned setup.
 
 Install Docker Engine and the Compose plugin using your distribution's supported instructions. Clone this repository to a directory you control. Create `.env.server` with permissions `600`; this file is ignored by Git:
 
@@ -71,7 +71,7 @@ Point an existing HTTPS reverse proxy or Cloudflare Tunnel to `http://127.0.0.1:
 
 GitHub Pages and a separate API domain are cross-site. `SameSite=None; Secure` is necessary for that setup, but browsers can still block third-party cookies. atlas verifies cookie acceptance before reporting sign-in success and keeps guest learning available if blocked. For dependable account sync, use a custom Pages domain and API subdomain under the **same parent domain**, then use `COOKIE_SAME_SITE=lax`. Test Safari, Firefox and your actual phones before announcing synced accounts.
 
-No new tunnel, DNS record, router rule or home-server port has been configured by this repository.
+The Pages build has `PUBLIC_API_URL` set as a repository variable. Current browser account registration from the in-app browser did not complete; see [SERVER_OPERATIONS.md](SERVER_OPERATIONS.md) for the tested endpoints and cross-site cookie limitation.
 
 ### Bootstrap Jovan once
 

@@ -1,8 +1,8 @@
 # atlas server cheat sheet
 
-**Current host status (October 6, 2026): not provisioned.** `~/atlas` is present; `/opt/atlas`, the production container/volume, `atlasctl`, timers and public API tunnel are not. These commands become available after an operator runs `sudo bash ~/atlas/deploy/install-host.sh` in an interactive terminal, then logs in again for Docker group access. A domain and Cloudflare DNS authorization are also required before enabling public API access.
+**Current host status (October 6, 2026): running.** Atlas is deployed from verified GitHub `main` on this Linux server. The API uses a Tailscale Funnel HTTPS endpoint while a custom domain is pending.
 
-After provisioning:
+Everyday commands:
 
 Attach: `atlasctl console`
 
@@ -25,19 +25,23 @@ In the console, **Ctrl+B then D** detaches; Atlas keeps running.
 ## This server
 
 - Development checkout: `~/atlas`. Only pushed, verified `main` commits are deployed.
-- Production checkout (planned): `/opt/atlas`.
-- API: not configured. The intended endpoint is `https://api.atlas.<your-domain>` after domain/DNS and Cloudflare Tunnel setup.
-- Frontend: `https://jlsp124.github.io/atlas/`. No Pages custom domain is configured.
-- SQLite volume and backups: not created yet. The planned Compose volume is `atlas_atlas-data`; the backup command uses `/app/data/backups` in that volume.
-- Auto deploy and backup timers: unit files are in `deploy/systemd/`, but neither timer is installed or active. After provisioning, deploy checks run every two minutes and daily backups retain 30 days. Intended logs are `/var/log/atlas/deploy.log` and `journalctl -u atlas-deploy.service`.
-- HTTPS tunnel: none for Atlas. The existing Tailscale Funnel still routes its hostname to another app on `127.0.0.1:3000`; it has not been changed.
+- Production checkout: `/opt/atlas`; deploys only exact verified `origin/main` commits.
+- API: `https://glucose-games-server.tail428a5c.ts.net:8443`; Tailscale Funnel forwards to `http://127.0.0.1:8787`.
+- Frontend: `https://jlsp124.github.io/atlas/`.
+- SQLite: Docker named volume `atlas_atlas-data`, mounted at `/app/data`.
+- Backups: `/home/jovan/.local/share/atlas/backups` (host directory, mode 700; files mode 600), made through SQLite's online backup API. Daily timer retains 30 days; nothing uploads them.
+- Auto deploy timer: `atlas-deploy.timer`, every two minutes. Backup timer: `atlas-backup.timer`, daily. Logs: `/var/log/atlas/deploy.log` and `journalctl -u atlas-deploy.service`.
+- Tailscale: existing Funnel on 443 still serves the unrelated service on port 3000. Atlas has a separate Funnel listener on 8443 to loopback port 8787. No router ports are open.
+- Admin account: `Jovan` has not been bootstrapped. Bootstrap requires the operator to enter a new unique 16–128 character password interactively; do not put it in `.env.server` or source control.
 
 ## Deploy and recovery
 
-Once installed and initialized, the watcher fetches `origin/main` and deploys only the exact SHA after its `Verify atlas` workflow completed successfully for a push to `main`. It takes a SQLite backup, builds an image tagged with that commit, restarts the service, and checks local health. A failed health check restores the previous application image and code; the database is retained. Review migrations before manually rolling back code across a schema change.
+The watcher fetches `origin/main` and deploys only the exact SHA after its `Verify atlas` workflow completed successfully for a push to `main`. It takes a SQLite backup, builds an image tagged with that commit, restarts the service, and checks local health. A failed health check restores the previous application image and code; the database is retained. Review migrations before manually rolling back code across a schema change.
 
 To pause automatic deployment: `sudo systemctl stop atlas-deploy.timer`. Re-enable: `sudo systemctl start atlas-deploy.timer`. These commands do not stop Atlas.
 
-For a manual code rollback, first inspect `atlasctl version` and available backups. Check out the intended known-good commit in `/opt/atlas`, build it with that commit SHA as `ATLAS_IMAGE_TAG` and `ATLAS_DEPLOY_SHA`, then recreate the service and verify `atlasctl health`. Do not restore an older database unless a reviewed migration rollback requires it. Keep automatic updates paused until the cause is resolved.
+For a manual code rollback, pause `atlas-deploy.timer`, inspect `atlasctl version` and available backups, then use the guarded deployment script with a known-good verified commit after confirming migration compatibility. Verify `atlasctl health` before re-enabling the timer. Do not restore an older database unless a reviewed migration rollback requires it.
+
+When `jovanpahal.com` is available, use `atlas.jovanpahal.com` for Pages and `api.atlas.jovanpahal.com` for the API. Configure only those subdomains; the apex `jovanpahal.com` can remain without DNS records. Update the Pages custom domain, repository variable `PUBLIC_API_URL`, `.env.server` origin and Tailscale/Cloudflare routing as appropriate. A shared parent domain allows `SameSite=Lax` cookies. No Cloudflare access is currently configured.
 
 `atlasctl stop` and `atlasctl restart` never remove the volume. Do not run `docker compose down -v`.
