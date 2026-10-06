@@ -118,7 +118,7 @@ export default function Shell({
     emit('courses_selected', { courses: picked });
     finishOnboarding();
     setOnboarding(false);
-    if (account) window.location.href = url('account/?create=1');
+    window.location.href = url(account ? 'account/?create=1' : 'courses/');
   }
   function openSearch(el: HTMLElement) {
     searchTrigger.current = el;

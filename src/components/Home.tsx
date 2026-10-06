@@ -1,5 +1,6 @@
 import {
   assignments,
+  concepts,
   findCourse,
   findEdition,
   schedule,
@@ -11,7 +12,6 @@ import {
   eventTitle,
   topicTitle,
   unitTitle,
-  unitUrl,
 } from '../content/workspaces';
 import { schoolDate, dayDifference } from '../core/dates';
 import { useLearner, url } from '../client/store';
@@ -32,11 +32,17 @@ export default function Home({ chooser = false }: { chooser?: boolean }) {
     .slice(0, 5);
   const recent = [...state.events]
     .reverse()
-    .find(
-      (e) =>
-        (e.type === 'lesson_viewed' || e.type === 'assignment_task') &&
-        (!('concept' in e.payload) ||
-          workspaceCourses.some((c) => state.selected.includes(c.id))),
+    .find((e) =>
+      e.type === 'lesson_viewed'
+        ? state.selected.includes(
+            concepts.find((c) => c.id === e.payload.concept)?.course ?? '',
+          )
+        : e.type === 'assignment_task'
+          ? state.selected.includes(
+              assignments.find((a) => a.id === e.payload.assignment)?.course ??
+                '',
+            )
+          : false,
     );
   const resume =
     recent?.type === 'lesson_viewed'
@@ -173,9 +179,6 @@ export default function Home({ chooser = false }: { chooser?: boolean }) {
           </span>
           <span>Fall 2026</span>
         </div>
-      )}
-      {chooser && assignments.length === 0 && (
-        <a href={url(unitUrl('physics', 'kinematics'))}>Start here</a>
       )}
     </div>
   );

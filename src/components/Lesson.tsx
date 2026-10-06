@@ -3,7 +3,12 @@ import katex from 'katex';
 import { concepts, questions, findConcept } from '../content/catalog';
 import { evidence, nearestGap } from '../core/learning';
 import { emit, getState, url, useLearner } from '../client/store';
-import { topicTitle, unitTitle, unitUrl } from '../content/workspaces';
+import {
+  topicTitle,
+  unitTitle,
+  unitUrl,
+  unitTopics,
+} from '../content/workspaces';
 import Glossary from './Glossary';
 import { Icon } from './Icons';
 import LearningVisual from './LearningVisual';
@@ -123,6 +128,9 @@ export function Lesson({
         onFinish={finish}
       />
     );
+  const nextTopic = unitTopics(c.course, c.unit)[
+    unitTopics(c.course, c.unit).findIndex((t) => t.id === id) + 1
+  ];
   if (phase === 'done')
     return (
       <>
@@ -141,9 +149,14 @@ export function Lesson({
           </a>
           <a
             className="primary"
-            href={url(`courses/${c.course}/practice/?target=${id}`)}
+            href={url(
+              nextTopic ? `learn/${nextTopic.id}/` : unitUrl(c.course, c.unit),
+            )}
           >
-            Quick check
+            {nextTopic
+              ? `Next: ${topicTitle(nextTopic.id)}`
+              : `Back to ${unitTitle(c.course, c.unit)}`}
+            <Icon name="arrow" size={16} />
           </a>
         </div>
       </>

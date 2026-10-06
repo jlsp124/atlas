@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { concepts, coverageItems, questions } from '../content/catalog';
 import {
   coverage,
@@ -12,7 +12,11 @@ import { emit, getState, track, url } from '../client/store';
 import { topicTitle } from '../content/workspaces';
 import Glossary from './Glossary';
 import { Icon } from './Icons';
-export type SessionResult = { concept: string; correct: boolean };
+export type SessionResult = {
+  concept: string;
+  correct: boolean;
+  independent: boolean;
+};
 export default function QuestionSession({
   course,
   ids,
@@ -30,6 +34,7 @@ export default function QuestionSession({
   onRepair?: (id: string, retry: () => void) => void;
   skipSummary?: boolean;
 }) {
+  const formId = useId();
   const [seed] = useState(() => Date.now() % 1000000000);
   const [queue] = useState(() =>
     selectQuestions(
@@ -63,7 +68,10 @@ export default function QuestionSession({
     if (!current || !answer.trim() || result !== null) return;
     const correct = evaluate(current, answer, unit);
     setResult(correct);
-    setResults((r) => [...r, { concept: current.concepts[0], correct }]);
+    setResults((r) => [
+      ...r,
+      { concept: current.concepts[0], correct, independent: !hint },
+    ]);
     emit('question_answered', {
       question: current.id,
       concept: current.concepts[0],
@@ -75,7 +83,7 @@ export default function QuestionSession({
   }
   function next() {
     if (skipSummary && index + 1 === queue.length) {
-      onFinish(results.every((r) => r.correct));
+      onFinish(results.every((r) => r.correct && r.independent));
       return;
     }
     if (index + 1 === queue.length)
@@ -92,7 +100,11 @@ export default function QuestionSession({
       questions,
     );
     const bad = [
-        ...new Set(results.filter((r) => !r.correct).map((r) => r.concept)),
+        ...new Set(
+          results
+            .filter((r) => !r.correct || !r.independent)
+            .map((r) => r.concept),
+        ),
       ],
       good = [
         ...new Set(
@@ -178,7 +190,7 @@ export default function QuestionSession({
           <Glossary text={current.prompt} />
         </h1>
         <form
-          id="question-answer"
+          id={formId}
           onSubmit={(e) => {
             e.preventDefault();
             check();
@@ -287,7 +299,7 @@ export default function QuestionSession({
           <button
             className="primary"
             type="submit"
-            form="question-answer"
+            form={formId}
             disabled={!answer.trim()}
           >
             Check answer
