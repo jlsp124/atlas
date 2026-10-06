@@ -38,6 +38,7 @@ Accounts, synced progress, the private request inbox and administrator data requ
 - [Content and source updates](docs/CONTENT.md)
 - [Privacy and security](docs/SECURITY.md)
 - [Verification evidence](docs/QA.md)
+- [Release report](docs/RELEASE_REPORT.md)
 - [Contributing](CONTRIBUTING.md)
 
 Student-made and unofficial. Verify important deadlines with the teacher. Source snapshots are dated; unfinished and uncertain material is labeled.

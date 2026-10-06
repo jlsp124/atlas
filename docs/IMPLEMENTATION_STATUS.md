@@ -11,18 +11,20 @@ Updated: October 5, 2026. This file is the resumption contract.
 - Optional Fastify/SQLite backend: secure sessions, Argon2id, CSRF/origin checks, rate limiting, Jovan bootstrap, deletion, aggregate admin metrics and request inbox.
 - Static search and installable PWA with versioned cache; no API caching.
 - Linux Docker Compose/systemd, HTTPS/proxy/cookie and backup/restore instructions. Pinned CI and Pages workflows authored.
-- Content validation, formatting/lint/type checks, 70 unit/backend tests and the 93-page production build pass locally. Forty light/dark phone/desktop accessibility scans pass.
+- Content validation, formatting/lint/type checks, 71 unit/backend tests and the 93-page production build pass locally and on Ubuntu. All 30 phone/desktop browser tests pass without skips; forty local light/dark accessibility scans pass.
 - Reachable-history privacy audit complete; public Pages enabled after GitHub rejected the private repository plan. The private vault remains unchanged at its recorded authority commit.
+- GitHub Pages is live at https://jlsp124.github.io/atlas/. Live desktop/phone checks cover 32 route/theme combinations, graphs, search, math, Japanese and original companions without asset errors or axe violations. Live offline assignment/checklist/Japanese practice and the published scientific-notation grading fix pass.
+- The Node 24.21.0 Linux container builds native SQLite in a separate stage, starts with a read-only root and dropped capabilities, creates a consistent backup, and verifies non-root execution plus private database/backup permissions in CI.
 
 ## In progress
 
-- Ubuntu CI/container validation and Pages deployment/live verification. All 30 local phone/desktop browser flows now pass, including account/admin, with no skips.
+- No implementation work remains open for this release. Accounts/admin/private requests are implemented and tested, but need an operator-connected API before they are available on the public site.
 
 ## Next
 
-1. Finish and commit the QA/release milestone, push it, and verify Ubuntu CI and live Pages deep routes.
+1. Refresh near-term class announcements, independently review the Physics/C17 bank, and curate Chapter 19 from verified evidence.
 2. Connect the optional API on Jovan's Linux server behind HTTPS; configure dedicated support/API variables and verify real phone cookies and backup restoration.
-3. Refresh near-term class announcements, independently review the Physics/C17 bank, and curate Chapter 19 from verified evidence.
+3. Expand the reviewed bank and expose archived editions when those sources exist.
 4. Add administrator passkeys/MFA and recovery before widening administrator use.
 
 ## Blocked / content gaps

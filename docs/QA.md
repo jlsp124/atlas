@@ -8,7 +8,7 @@ Checked October 5, 2026, in America/Vancouver. Commands run against the actual a
 | -------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------- |
 | Formatting / ESLint        | PASS   | `npm run check`; no diagnostics                                                                                     |
 | Astro / TypeScript         | PASS   | 56 checked files; zero errors, warnings or hints                                                                    |
-| Unit / backend integration | PASS   | 70 tests in four files                                                                                              |
+| Unit / backend integration | PASS   | 71 tests in four files                                                                                              |
 | Content publication        | PASS   | Four courses, 61 concepts, 198 archetypes, 76 coverage items and four original companions                           |
 | Production build           | PASS   | 93 generated routes; Pagefind indexes 91 pages                                                                      |
 | Browser flows              | PASS   | 30 tests across desktop and phone, including account sync and authorized admin/request flows                        |
@@ -29,8 +29,12 @@ The generated PWA cache contains 291 static resources (about 4.7 MiB), including
 
 ## Release verification
 
-- Ubuntu suite: [first verification](https://github.com/jlsp124/atlas/actions/runs/37401090178) passed all application checks and dependency audit. Its container build exposed the missing native SQLite toolchain in the slim image. A separate compiler build stage and owner-only storage checks are implemented; the corrected Linux container run is pending.
-- GitHub Pages and live deep-route/browser verification: pending deployment.
+- Verified application commit: `8ec93a46463fc547c355a6d628ae601134510aa6`. [Ubuntu verification](https://github.com/jlsp124/atlas/actions/runs/37402099437) and [Pages deployment](https://github.com/jlsp124/atlas/actions/runs/37402335802) pass. Later documentation-only commits run the same full pipeline; current runs are available in [Actions](https://github.com/jlsp124/atlas/actions).
+- Ubuntu runs Node 24.21.0, 71 unit/backend tests, all 30 browser tests, formatting/lint/type/content/build checks and the dependency audit with no skips or vulnerabilities.
+- The Linux image builds the native SQLite binding in a separate compiler stage. It passes health and consistent-backup checks while non-root, with a read-only root and dropped capabilities. CI checks data directory mode `700` and database/backup file mode `600`.
+- Live https://jlsp124.github.io/atlas/: eight route types × two themes × two viewports give 32 successful axe/reflow checks. Graph canvas/list navigation, kana/romaji search, mathematics and deep links work without page or asset errors.
+- Live installed-cache test: an unvisited C17 companion opens offline, its checklist survives refresh, and Japanese recognition/typed production work offline. Narrow reflow passes at 320 pixels.
+- The current published scientific-notation question rejects a plain decimal when normalized e notation is requested and accepts the correct normalized transfer answer. Equivalent numeric values remain accepted for count/conversion questions; measured precision is checked separately.
 
 ## Operator checks not run
 
