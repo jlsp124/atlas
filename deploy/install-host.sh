@@ -11,7 +11,13 @@ getent group docker >/dev/null || groupadd docker
 usermod -aG docker "$DEPLOY_USER"
 install -d -o "$DEPLOY_USER" -g "$DEPLOY_USER" -m 0750 "$ROOT"
 install -d -o "$DEPLOY_USER" -g "$DEPLOY_USER" -m 0700 /var/log/atlas
+install -d -o "$DEPLOY_USER" -g "$DEPLOY_USER" -m 0700 "$USER_HOME/.local/share/atlas/backups"
 install -d -o "$DEPLOY_USER" -g "$DEPLOY_USER" -m 0700 "$USER_HOME/.config/atlas"
+if [[ ! -e "$ROOT/.env" ]]; then
+  printf "ATLAS_BACKUP_HOST_DIR=%s/.local/share/atlas/backups\n" "$USER_HOME" > "$ROOT/.env"
+  chown "$DEPLOY_USER:$DEPLOY_USER" "$ROOT/.env"
+  chmod 600 "$ROOT/.env"
+fi
 if [[ ! -d "$ROOT/.git" ]]; then
   runuser -u "$DEPLOY_USER" -- git clone --branch main https://github.com/jlsp124/atlas.git "$ROOT"
 fi

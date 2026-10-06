@@ -5,10 +5,11 @@ ROOT=${ATLAS_ROOT:-/opt/atlas}
 REPO=jlsp124/atlas
 REMOTE=origin
 BRANCH=main
-LOCK=${ATLAS_DEPLOY_LOCK:-/run/lock/atlas-deploy.lock}
 STATE="$ROOT/.deployed-sha"
 LOG=${ATLAS_DEPLOY_LOG:-/var/log/atlas/deploy.log}
 mkdir -p "$(dirname "$LOG")"
+# The service runs as the deployment user, who cannot create files in /run/lock.
+LOCK=${ATLAS_DEPLOY_LOCK:-$(dirname "$LOG")/deploy.lock}
 exec 9>"$LOCK"
 if ! flock -n 9; then
   echo "$(date -Is) another deployment is running" >>"$LOG"
