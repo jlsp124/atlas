@@ -23,6 +23,25 @@ For a custom site path, set `ATLAS_SITE` and `ATLAS_BASE` at build time. Keep th
 
 ## Linux with Docker Compose
 
+For the configured home server, see the operator cheat sheet in [SERVER_OPERATIONS.md](SERVER_OPERATIONS.md). Its automation only deploys a successful **Verify atlas** run for the exact pushed `main` SHA. The deployment tree is `/opt/atlas`; `~/atlas` is development-only. A file lock serializes deployments, each update creates a consistent SQLite backup, and each image has its immutable source SHA tag. Local health gates marking a release deployed. On failure, code/image returns to the previous SHA while the database stays intact. Review schema migrations before attempting any code rollback.
+
+The production image remains bound to `127.0.0.1:8787`. The named Cloudflare Tunnel public hostname must target `http://127.0.0.1:8787`; do not forward router ports or change the bind address. The production frontend and API use sibling HTTPS hostnames under one registrable domain, `COOKIE_SAME_SITE=lax`, `COOKIE_SECURE=true`, and the exact frontend origin in `ALLOWED_ORIGIN`. Keep `TRUST_PROXY=true` only when the tunnel is the sole path to the loopback listener.
+
+Backups use `server/backup.ts`'s SQLite online backup API and live in the persistent Docker volume at `/app/data/backups`. The daily timer retains 30 days. This protects against application mistakes but is still on the same host; arrange an encrypted off-host copy separately if desired. Nothing uploads backups automatically.
+
+The deployment watcher runs as a systemd timer every two minutes, not as a self-hosted Actions runner. It queries the public repository's Actions run for the exact `origin/main` SHA, and deploys only an event=`push`, branch=`main`, completed successful `Verify atlas` run. `atlasctl update` runs the same guarded process. `atlasctl stop` never removes data.
+
+The existing GitHub Pages workflow is preserved. The repository variable `PUBLIC_API_URL` is public build configuration; after DNS and the HTTPS API hostname exist, set it to the API origin and configure the Pages custom domain under the same parent domain. No support email is inferred.
+
+The server is currently configured for this hostname pair once a domain is authorized:
+
+```text
+Frontend: https://atlas.<your-domain>
+API:      https://api.atlas.<your-domain>
+```
+
+Until the domain and Cloudflare zone are available, the public API remains unconfigured. Keep the existing GitHub Pages guest/offline app available and do not change cookie security or substitute browser-stored bearer tokens.
+
 Install Docker Engine and the Compose plugin using your distribution's supported instructions. Clone this repository to a directory you control. Create `.env.server` with permissions `600`; this file is ignored by Git:
 
 ```dotenv

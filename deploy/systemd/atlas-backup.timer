@@ -1,0 +1,11 @@
+[Unit]
+Description=Back up atlas daily
+
+[Timer]
+OnCalendar=*-*-* 02:30:00
+RandomizedDelaySec=10m
+Persistent=true
+Unit=atlas-backup.service
+
+[Install]
+WantedBy=timers.target

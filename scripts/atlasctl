@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+ROOT=${ATLAS_ROOT:-/opt/atlas}
+STATE="$ROOT/.deployed-sha"
+command=${1:-help}
+shift || true
+cd "$ROOT" 2>/dev/null || { echo "atlas production directory is missing: $ROOT" >&2; exit 1; }
+deployed=$(cat "$STATE" 2>/dev/null || git rev-parse HEAD 2>/dev/null || echo unknown)
+compose() { ATLAS_IMAGE_TAG="$deployed" ATLAS_DEPLOY_SHA="$deployed" docker compose "$@"; }
+api_url=$(sed -n 's/^PUBLIC_API_URL=//p' .env.server 2>/dev/null | tail -n1 | tr -d '\r"' || true)
+
+case "$command" in
+  start) compose up -d ;;
+  stop) compose stop ;;
+  restart) compose restart atlas ;;
+  status)
+    compose ps
+    printf 'deployed SHA: %s\n' "$deployed"
+    if [[ -f "$STATE" ]]; then printf 'last deployment: %s\n' "$(date -d "$(stat -c %y "$STATE")" -Is 2>/dev/null || stat -c %y "$STATE")"; else echo 'last deployment: not recorded'; fi
+    curl -fsS --max-time 4 http://127.0.0.1:8787/health || echo 'local API: unavailable'
+    if [[ -n "$api_url" ]]; then curl -fsS --max-time 8 "$api_url/health" || echo 'public API: unavailable'; fi
+    ;;
+  health)
+    curl --fail --show-error --max-time 4 http://127.0.0.1:8787/health
+    if [[ -n "$api_url" ]]; then curl --fail --show-error --max-time 8 "$api_url/health"; fi
+    ;;
+  logs) compose logs -f --tail=100 atlas ;;
+  console)
+    if ! tmux has-session -t atlas-prod 2>/dev/null; then
+      tmux new-session -d -s atlas-prod -n logs -c "$ROOT" 'docker compose logs -f --tail=100 atlas'
+      tmux new-window -t atlas-prod -n shell -c "$ROOT"
+    fi
+    exec tmux attach-session -t atlas-prod
+    ;;
+  backup)
+    exec "$ROOT/scripts/server-backup.sh"
+    ;;
+  update) exec "$ROOT/scripts/server-deploy.sh" ;;
+  version)
+    echo "deployed commit: $deployed"
+    printf 'origin/main: '
+    git ls-remote origin refs/heads/main | cut -f1
+    echo 'latest Pages deployment:'
+    gh run list --repo jlsp124/atlas --workflow 'Deploy atlas' --branch main --limit 1 \
+      --json displayTitle,headSha,status,conclusion,updatedAt \
+      --template '{{range .}}{{.displayTitle}} · {{.headSha}} · {{.status}}/{{.conclusion}} · {{.updatedAt}}{{"\n"}}{{end}}' 2>/dev/null || echo 'GitHub Actions information unavailable'
+    ;;
+  help|-h|--help)
+    cat <<'HELP'
+atlasctl — operate the production atlas service
+
+  atlasctl start      Start the Docker stack
+  atlasctl stop       Stop atlas without deleting its database
+  atlasctl restart    Restart the application container
+  atlasctl status     Show container, deployment and API status
+  atlasctl health     Check local and configured public API health
+  atlasctl logs       Follow recent application logs
+  atlasctl console    Attach to the persistent atlas-prod tmux console
+  atlasctl backup     Create a consistent SQLite backup
+  atlasctl update     Deploy the verified origin/main commit now
+  atlasctl version    Show deployed, origin/main and Pages release SHAs
+  atlasctl help       Show this help
+
+In the tmux console, Ctrl+B then D detaches without stopping atlas.
+HELP
+    ;;
+  *) echo "Unknown command: $command" >&2; echo 'Run atlasctl help.' >&2; exit 2 ;;
+esac

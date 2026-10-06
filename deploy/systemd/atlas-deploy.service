@@ -1,0 +1,17 @@
+[Unit]
+Description=Deploy the latest verified atlas main commit
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+User=jovan
+Group=jovan
+SupplementaryGroups=docker
+WorkingDirectory=/opt/atlas
+Environment=PATH=/home/jovan/.local/share/mise/shims:/home/jovan/.local/share/mise/bin:/usr/local/bin:/usr/bin
+EnvironmentFile=/home/jovan/.config/atlas/gh.env
+ExecStart=/opt/atlas/scripts/server-deploy.sh
+UMask=0077
+NoNewPrivileges=true
