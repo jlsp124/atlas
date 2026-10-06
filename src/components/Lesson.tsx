@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react';
 import katex from 'katex';
 import { concepts, questions, findConcept } from '../content/catalog';
+import {
+  exampleSteps,
+  representationCopy,
+  representationFormulas,
+} from '../content/presentation';
 import { evidence, nearestGap } from '../core/learning';
 import { emit, getState, url, useLearner } from '../client/store';
 import {
@@ -144,9 +149,13 @@ export function Lesson({
           </p>
         </div>
         <div className="flow-footer">
-          <a className="quiet" href={url(unitUrl(c.course, c.unit))}>
-            Back to {unitTitle(c.course, c.unit)}
-          </a>
+          {nextTopic ? (
+            <a className="quiet" href={url(unitUrl(c.course, c.unit))}>
+              Back to {unitTitle(c.course, c.unit)}
+            </a>
+          ) : (
+            <span className="meta">{topicTitle(id)}</span>
+          )}
           <a
             className="primary"
             href={url(
@@ -195,18 +204,21 @@ export function Lesson({
         ) : step === 1 ? (
           <>
             <p className="representation">
-              <Glossary text={c.representation} />
+              <Glossary text={representationCopy[id] ?? c.representation} />
             </p>
             {c.formula && (
               <div
                 className="formula"
                 dangerouslySetInnerHTML={{
-                  __html: katex.renderToString(c.formula, {
-                    displayMode: true,
-                    throwOnError: false,
-                    trust: false,
-                    output: 'htmlAndMathml',
-                  }),
+                  __html: katex.renderToString(
+                    representationFormulas[id] ?? c.formula,
+                    {
+                      displayMode: true,
+                      throwOnError: false,
+                      trust: false,
+                      output: 'htmlAndMathml',
+                    },
+                  ),
                 }}
               />
             )}
@@ -216,7 +228,7 @@ export function Lesson({
           <>
             <h2>{c.example.prompt}</h2>
             <ol className="worked-steps">
-              {c.example.steps.map((s, i) => (
+              {(exampleSteps[id] ?? c.example.steps).map((s, i) => (
                 <li key={i}>
                   <Glossary text={s} />
                 </li>

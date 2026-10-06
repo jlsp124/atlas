@@ -7,7 +7,7 @@ Checked October 5, 2026, in America/Vancouver. The redesign started from fetched
 | Check                    | Result | Evidence                                                                        |
 | ------------------------ | ------ | ------------------------------------------------------------------------------- |
 | Formatting / ESLint      | PASS   | npm run check; no diagnostics                                                   |
-| Astro / TypeScript       | PASS   | 70 files; zero errors, warnings or hints                                        |
+| Astro / TypeScript       | PASS   | 71 files; zero errors, warnings or hints                                        |
 | Unit / backend           | PASS   | 78 tests in five files; original 71 retained                                    |
 | Content                  | PASS   | Four courses, 61 concepts, 198 questions, 76 items, four original companions    |
 | Production build         | PASS   | 173 routes; Pagefind indexes 171 pages                                          |
@@ -29,6 +29,8 @@ Multiple screenshot passes cover 1920×1080, 1440×900, 1366×768, 390×844 and 
 The initial pass found form ownership during nested repair, reading controls on phones, oversized question text and short-desktop Home spacing. These were corrected and rechecked. Home fits the requested desktop viewports, including a Continue action at 1440×900 and 1366×768. Long companions scroll intentionally. No horizontal overflow or JavaScript page errors appeared in the completed local screenshot pass.
 
 Screenshots and measured report.json files are delivery artifacts outside the Git repository. The final delivery records the immutable deployed SHA and live screenshot pass. A local build or historical V1 release does not establish V2 live acceptance.
+
+Live review also removed duplicate plain-text equations beside rendered math. The source catalog stays intact; the presentation supplies a short explanation and typesets all three constant-acceleration relations.
 
 ## Release gate and live checks
 

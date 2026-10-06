@@ -7,6 +7,13 @@
 .session-holder[hidden] {
   display: none;
 }
+.flow-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 18;
+  flex-shrink: 0;
+  background: var(--bg);
+}
 .answer-choices {
   border: 0;
   padding: 0;

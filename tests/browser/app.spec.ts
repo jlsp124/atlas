@@ -336,6 +336,11 @@ test('learn teaches one step, renders math, keeps confusion evidence and seconda
       ),
     ),
   ).toBe(true);
+  await open(page, 'learn/half-life/');
+  await page.getByRole('button', { name: 'Next', exact: true }).click();
+  await expect(
+    page.getByRole('button', { name: 'Next', exact: true }),
+  ).toBeInViewport();
 });
 test('self-report cannot create mastery and leads to a real foundation check', async ({
   page,

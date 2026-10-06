@@ -10,7 +10,7 @@ The old graph renderer, coach marks, evidence dashboard and ten-mode practice pa
 
 The engine, event store, catalog, ingestion, backend and server operations have no redesign changes. Existing atlas:v1:* data stays valid. Browser checks explicitly load V1 course choices, theme, tasks and question events without a reset. Account tests still use the real optional API, two browser contexts, disconnection, queued events and reconnection.
 
-Local release checks pass: formatting, lint, 70-file typecheck, 78 unit/backend tests, content validation, 173-route build and 44 desktop/phone browser tests. The browser suite includes 84 axe scans and a real waiting-worker lifecycle across navigation. See [QA.md](QA.md). Publication is gated by the exact successful Ubuntu verification commit; final live identity and screenshot receipts belong to the release delivery.
+Local release checks pass: formatting, lint, 71-file typecheck, 78 unit/backend tests, content validation, 173-route build and 44 desktop/phone browser tests. The browser suite includes 84 axe scans and a real waiting-worker lifecycle across navigation. See [QA.md](QA.md). Publication is gated by the exact successful Ubuntu verification commit; final live identity and screenshot receipts belong to the release delivery.
 
 ## Preserved server work
 
