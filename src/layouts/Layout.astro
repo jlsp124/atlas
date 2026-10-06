@@ -67,26 +67,35 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
           void navigator.serviceWorker
             .register(path)
             .then((reg) => {
-              reg.addEventListener('updatefound', () => {
-                const worker = reg.installing;
+              const showUpdate = (worker: ServiceWorker | null) => {
+                if (
+                  !worker ||
+                  !navigator.serviceWorker.controller ||
+                  document.querySelector('.update-notice')
+                )
+                  return;
+                const notice = document.createElement('div');
+                notice.className = 'update-notice';
+                notice.setAttribute('role', 'status');
+                notice.append('A fresh atlas is ready. ');
+                const button = document.createElement('button');
+                button.textContent = 'Update';
+                button.onclick = () => {
+                  (reg.waiting ?? worker).postMessage({ type: 'SKIP_WAITING' });
+                };
+                notice.append(button);
+                document.body.append(notice);
+              };
+              const watchInstalling = (worker: ServiceWorker | null) => {
                 worker?.addEventListener('statechange', () => {
-                  if (
-                    worker.state === 'installed' &&
-                    navigator.serviceWorker.controller
-                  ) {
-                    const notice = document.createElement('div');
-                    notice.className = 'update-notice';
-                    notice.setAttribute('role', 'status');
-                    notice.append('A fresh atlas is ready. ');
-                    const button = document.createElement('button');
-                    button.textContent = 'Update';
-                    button.onclick = () => {
-                      worker.postMessage({ type: 'SKIP_WAITING' });
-                    };
-                    notice.append(button);
-                    document.body.append(notice);
-                  }
+                  if (worker.state === 'installed')
+                    showUpdate(reg.waiting ?? worker);
                 });
+              };
+              showUpdate(reg.waiting);
+              watchInstalling(reg.installing);
+              reg.addEventListener('updatefound', () => {
+                watchInstalling(reg.installing);
               });
             })
             .catch(() => {});

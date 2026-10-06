@@ -9,9 +9,9 @@ Updated: October 5, 2026. This file is the resumption contract.
 - Responsive light/dark/system interface, annotations, math, Japanese, contextual graphs with accessible lists, practice, prerequisite repair/retry, independent coverage and known-to-target paths.
 - Guest/account-isolated local events, cross-device event reconciliation, offline navigation with queued account events, once-per-browser onboarding and actual guided work/concept flow.
 - Optional Fastify/SQLite backend: secure sessions, Argon2id, CSRF/origin checks, rate limiting, Jovan bootstrap, deletion, aggregate admin metrics and request inbox.
-- Static search and installable PWA with versioned cache; no API caching.
+- Static search and installable PWA with versioned cache, offline routes and an update notice that survives navigation while a worker is waiting; no API caching.
 - Linux Docker Compose/systemd, HTTPS/proxy/cookie and backup/restore instructions. Pinned CI and Pages workflows authored.
-- Content validation, formatting/lint/type checks, 71 unit/backend tests and the 93-page production build pass locally and on Ubuntu. All 30 phone/desktop browser tests pass without skips; forty local light/dark accessibility scans pass.
+- Content validation, formatting/lint/type checks, 71 unit/backend tests and the 93-page production build pass. All 32 phone/desktop browser tests pass without skips; forty local light/dark accessibility scans pass. The same full suite gates Ubuntu verification and Pages deployment.
 - Reachable-history privacy audit complete; public Pages enabled after GitHub rejected the private repository plan. The private vault remains unchanged at its recorded authority commit.
 - GitHub Pages is live at https://jlsp124.github.io/atlas/. Live desktop/phone checks cover 32 route/theme combinations, graphs, search, math, Japanese and original companions without asset errors or axe violations. Live offline assignment/checklist/Japanese practice and the published scientific-notation grading fix pass.
 - The Node 24.21.0 Linux container builds native SQLite in a separate stage, starts with a read-only root and dropped capabilities, creates a consistent backup, and verifies non-root execution plus private database/backup permissions in CI.

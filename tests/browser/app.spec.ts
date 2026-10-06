@@ -446,3 +446,41 @@ test('production Pages base path, search index, deep links and cached offline ro
   await expect(page.getByRole('checkbox').first()).toBeChecked();
   await page.context().setOffline(false);
 });
+
+test('an installed waiting update remains actionable after navigation', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const register = navigator.serviceWorker.register.bind(
+      navigator.serviceWorker,
+    );
+    navigator.serviceWorker.register = (script, options) =>
+      register(
+        location.pathname === '/atlas/' ? `${script}?initial-worker=1` : script,
+        options,
+      );
+  });
+  await page.goto('http://localhost:4322/atlas/');
+  await page.evaluate(async () => {
+    await navigator.serviceWorker.ready;
+    if (!navigator.serviceWorker.controller)
+      await new Promise((resolve) =>
+        navigator.serviceWorker.addEventListener('controllerchange', resolve, {
+          once: true,
+        }),
+      );
+  });
+  await page.goto('http://localhost:4322/atlas/about/');
+  await page.waitForFunction(async () =>
+    Boolean((await navigator.serviceWorker.getRegistration())?.waiting),
+  );
+  await expect(page.locator('.update-notice')).toBeVisible();
+  await page.goto('http://localhost:4322/atlas/courses/physics/');
+  await expect(page.locator('.update-notice')).toBeVisible();
+  await page.getByRole('button', { name: 'Update', exact: true }).click();
+  await page.waitForFunction(() =>
+    navigator.serviceWorker.controller?.scriptURL.endsWith('/atlas/sw.js'),
+  );
+  await expect(page.locator('.update-notice')).not.toBeVisible();
+  await expect(page.locator('h1')).toContainText('Physics 11');
+});
