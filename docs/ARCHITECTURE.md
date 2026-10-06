@@ -1,32 +1,31 @@
 # Architecture
 
-## V2 presentation authority
+## V2 presentation
 
-Student UX follows [UX.md](UX.md) and [SPEC.md](SPEC.md): Course → Unit → Learn / Classwork, persistent desktop sidebar, compact mobile navigation, focused teaching/practice, contextual definitions and a calendar/search escape hatch. The former timetable/dashboard/graph presentation is retired. Global color is neutral with indigo interactions; green is permanently excluded.
+[UX.md](UX.md) is the design authority. Course → Unit → Learn / Classwork. Astro renders static routes; React islands manage the persistent shell, onboarding, contextual definitions, ordered Learn, questions, classwork, Calendar and account controls. Semantic relationships support the engine and backlinks; the old graph renderer and coach marks are removed.
 
-The catalog, core learning algorithms, learner-event format, local/account storage, PWA, backend, admin and ingestion are retained. V2 adds a presentation model for units/material sets, search and definitions rather than changing semantic IDs or server architecture. Existing users require no storage reset. Historic presentation details below are implementation history, not design authority.
+`src/content/workspaces.ts` maps existing stable content into unit/material-set workspaces, ordered assignment learning plans, useful search groups and plain event copy. It does not modify the catalog. `definitions.ts` adds short original definitions referencing real concept IDs. No server or stored-event schema change is required.
 
-Visual thesis: a quiet study workspace with precise typography, warm paper surfaces and a restrained green accent; equally readable in light and dark.
+Learn presents model → representation → worked example → checks. The unchanged prerequisite engine selects a small foundation probe/repair. Assignment learning runs in a focused dialog, retaining the document DOM, reading position and task state. A contextual desktop inspector becomes a mobile sheet. Practice preserves its original queue/seed during a repair and retries the same question.
 
-Content plan: today and upcoming work first, a clear course workspace second, then focused assignment and concept pages with contextual relationships and practice. No marketing hero inside the app.
+Search uses the catalog/aliases and joins matching concepts to work and assessments, available offline. Pagefind still builds the static index. V2 keeps legacy concepts/course-section deep links functional. New canonical learning routes are `learn/:id`; unit routes are `courses/:course/units/:unit`.
 
-Interaction thesis: brief dialog/sheet entrances, immediate evidence and checklist updates, and stable directional graphs with a keyboard-accessible relationship list. Reduced motion removes transitions.
+## Engine and persistence boundaries
 
-## Boundaries
+- TypeScript/Zod models courses, editions, concepts, semantic edges, questions, coverage, assignments, schedules and sources. Edition metadata never enters shared concept identity. Personal periods remain historical data and are never rendered in student UI.
+- Deterministic questions and evidence rules retain recognition/construction/transfer, spacing, diagnostic selection and long-tail coverage. A self-report is not mastery. Preview prerequisites do not block core learning.
+- UUID-addressed learner events retain the existing `atlas:v1:*` guest/account format. No migration or reset is needed. Checklist task IDs, choices, answers, source IDs and all concepts remain unchanged.
+- Optional backend accepts validated idempotent events and paginated sequence cursors. Offline account work queues separately from guest data.
+- Fastify/SQLite WAL, versioned migrations, Argon2id, opaque hashed sessions, HttpOnly cookies, CSRF/origin checks, throttling and server-side roles remain unchanged.
+- Generated versioned PWA precaches static routes/fonts/math/assets, never API responses. Waiting updates remain actionable after navigation. Offline deep links remain covered by browser tests.
+- Admin retains dense operational views. Backend, ingestion, deployment and server operations are outside this presentation redesign.
 
-- Astro statically renders every content route. React islands manage only local interaction. Base-path helpers support GitHub project Pages.
-- TypeScript/Zod model courses, editions, concepts, semantic edges, questions, coverage, assignments, schedules and provenance. Edition dates never enter shared concept identity.
-- Reviewed, deterministic question families and transparent evidence rules drive all practice modes. Recognition alone cannot establish stable evidence. Preview knowledge does not block core progress.
-- Client events are UUID-addressed and stored on-device. The optional backend accepts validated idempotent events and paginates downloads with a server sequence cursor. Local work continues through disconnects.
-- SQLite with WAL and versioned migrations backs a small Fastify service. Argon2id passwords, opaque hashed session identifiers, HttpOnly cookies, CSRF tokens, origin checks, throttling and server-side roles protect online routes.
-- Pagefind indexes rendered content; a compact fallback index supports development and offline search. A generated, versioned service worker caches the static learning application and never API responses.
+## Content authority
 
-## Authority
+Read-only source snapshot: `jlsp124/obsidian-vaults@01c9644647ee197de2a4e06f004a5d1c77535f28`, checked October 5, 2026. Raw/private source stays outside this repository. Original companions remain distinct from restricted teacher handouts. All 61 concepts, 198 questions, 76 coverage items and four companions are retained. Chapter 19 lessons and unknown assessment dates/scopes remain explicitly unfinished.
 
-Source workspace: `jlsp124/obsidian-vaults`, branch `main`, snapshot `01c9644647ee197de2a4e06f004a5d1c77535f28` (checked October 5, 2026). The atlas brief supersedes older plans to publish only at semester end or omit Japanese/accounts. The vault checkout is read-only; raw private source stays outside this repository.
+## Runtime and deployment
 
-Graph choice: Cytoscape breadth-first layout, with no continuous force simulation. Backend choice: Fastify, SQLite and Node 24 rather than another service stack. Anonymous analytics are opt-in; learning progress is useful without analytics.
+CI/Docker pin Node 24.21.0; local checks use installed Node 24.11.1. Static GitHub project Pages keeps the `/atlas/` base. The optional API is configured through PUBLIC_API_URL; an absent value preserves local functionality and accurately disables online account/request actions. This redesign does not configure or replace the separately operated server.
 
-Current stable versions were checked against npm and official docs on October 5, 2026. See [Astro Pages](https://docs.astro.build/en/guides/deploy/github/), [Pagefind](https://pagefind.app/docs/), [Cytoscape](https://js.cytoscape.org/) and [Fastify](https://fastify.dev/docs/latest/).
-
-Production CI and Docker use Node 24.21.0, the maintained LTS release checked against the [official Node.js download page](https://nodejs.org/en/download) and release index. Local compatibility was also exercised on the installed Node 24.11.1. The SQLite binding is compiled in a separate Docker build stage, keeping the runtime image free of compiler tooling.
+See [DEPLOYMENT.md](DEPLOYMENT.md), [SERVER_OPERATIONS.md](SERVER_OPERATIONS.md), [CONTENT.md](CONTENT.md), [SECURITY.md](SECURITY.md), and [SPEC.md](SPEC.md).

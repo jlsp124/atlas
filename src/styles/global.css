@@ -387,11 +387,11 @@ hr {
   border: 1px solid transparent;
 }
 .primary {
-  background: var(--accent);
+  background: #4947ce;
   color: #fff;
 }
 .primary:hover {
-  background: var(--accent-hover);
+  background: #3936b0;
   color: #fff;
 }
 .secondary {

@@ -1,132 +1,300 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import katex from 'katex';
 import {
   assignments,
   concepts,
-  questions,
   findCourse,
+  questions,
+  sources,
 } from '../content/catalog';
-import { assignmentPriority, evidence, taskDone } from '../core/learning';
-import { emit, track, url, useLearner } from '../client/store';
-import { displayDate } from '../core/dates';
-import Graph from './Graph';
-
+import {
+  assignmentTitle,
+  assignmentUnits,
+  learningPlan,
+  topicTitle,
+  unitTitle,
+  unitUrl,
+} from '../content/workspaces';
+import { taskDone, variant } from '../core/learning';
+import { emit, url, useLearner } from '../client/store';
+import Glossary from './Glossary';
+import { Icon } from './Icons';
+import { Lesson } from './Lesson';
+import Sheet from './Sheet';
 export default function Assignment({ id }: { id: string }) {
-  const state = useLearner();
-  const a = assignments.find((a) => a.id === id)!;
-  const p = assignmentPriority(a, state.events, questions);
-  const done = a.tasks.filter((t) => taskDone(id, t.id, state.events)).length;
-  useEffect(() => track('assignment_opened', a.course), [a.course]);
+  const a = assignments.find((a) => a.id === id)!,
+    state = useLearner(),
+    unit = assignmentUnits[id],
+    plan = learningPlan(a);
+  const [source, setSource] = useState(false),
+    [learn, setLearn] = useState(false),
+    [index, setIndex] = useState(0),
+    [review, setReview] = useState<string[]>([]),
+    [message, setMessage] = useState(''),
+    [answers, setAnswers] = useState<string[]>([]);
+  const dialog = useRef<HTMLDialogElement>(null),
+    position = useRef(0),
+    trigger = useRef<HTMLButtonElement>(null);
+  const practice = [
+    ...new Map(
+      a.concepts.flatMap((cid) => {
+        const q = questions.find(
+          (q) => q.concepts.includes(cid) && q.level === 'construction',
+        );
+        return q ? [[q.id, variant(q, 6)] as const] : [];
+      }),
+    ).values(),
+  ].slice(0, 3);
+  const formula = concepts.find(
+    (c) => a.concepts.includes(c.id) && c.formula,
+  )?.formula;
+  function close() {
+    setLearn(false);
+    dialog.current?.close();
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: position.current, behavior: 'instant' });
+      trigger.current?.focus({ preventScroll: true });
+    });
+  }
+  useEffect(() => {
+    if (learn && !dialog.current?.open) dialog.current?.showModal();
+  }, [learn]);
   return (
-    <>
+    <div className="assignment-screen" data-course={a.course}>
       <div className="breadcrumbs">
-        <a href={url(`courses/${a.course}/work/`)}>
-          {findCourse(a.course).title} / Work
+        <a href={url(`courses/${a.course}/`)}>
+          {findCourse(a.course).shortTitle}
         </a>
-        <span>Original companion</span>
-      </div>
-      <p className="eyebrow">
-        {a.teacher} ·{' '}
-        {a.assigned ? `Captured ${displayDate(a.assigned)}` : 'Current course'}
-      </p>
-      <h1 className="reading-title">{a.title}</h1>
-      <p className="lede">{a.summary}</p>
-      <div className="meta-line">
-        <span className="badge">
-          {a.due ? `Due ${displayDate(a.due)}` : 'Due date not confirmed'}
-        </span>
-        <span className="badge">{p.label}</span>
+        <span>/</span>
+        <a href={url(unitUrl(a.course, unit, 'classwork'))}>
+          {unitTitle(a.course, unit)}
+        </a>
+        <span>/</span>
+        <span>Classwork</span>
       </div>
       <div className="assignment-layout">
-        <section>
-          <div className="section-heading">
-            <h2>Your checklist</h2>
-            <span>
-              {done} / {a.tasks.length}
-            </span>
+        <article className="assignment-document">
+          <div className="assignment-meta">
+            <span>Original atlas companion</span>
+            <span>{a.teacher}</span>
           </div>
-          <p className="small muted">
-            {p.reason} Completion is your local checklist, not a submission to
-            your teacher.
+          <h1>{assignmentTitle(id)}</h1>
+          <p className="intro">
+            <Glossary text={a.summary} />
           </p>
-          <div className="task-list">
+          {formula && (
+            <div
+              className="formula"
+              dangerouslySetInnerHTML={{
+                __html: katex.renderToString(formula, {
+                  displayMode: true,
+                  throwOnError: false,
+                  trust: false,
+                }),
+              }}
+            />
+          )}
+          <ol className="task-list">
             {a.tasks.map((t, i) => (
-              <label className="task" key={t.id}>
-                <input
-                  type="checkbox"
-                  disabled={!state.ready}
-                  checked={taskDone(id, t.id, state.events)}
-                  onChange={(e) => {
-                    emit('assignment_task', {
-                      assignment: id,
-                      task: t.id,
-                      done: e.target.checked,
-                    });
-                    if (e.target.checked && done + 1 === a.tasks.length)
-                      track('assignment_completed', a.course);
-                  }}
-                />
-                <span>
-                  <small className="eyebrow">TASK {i + 1}</small>
-                  <strong>{t.title}</strong>
-                  <span>{t.instructions}</span>
-                </span>
-              </label>
-            ))}
-          </div>
-          <section className="original-source">
-            <h2>The original work</h2>
-            <p>{a.originalAvailability}</p>
-            <p className="small muted">{a.notes}</p>
-            {a.originalUrl && (
-              <a href={a.originalUrl} target="_blank" rel="noreferrer">
-                Open original resource location ↗
-              </a>
-            )}
-          </section>
-        </section>
-        <aside className="assignment-context">
-          <h2>What this practices</h2>
-          <ul className="concept-context-list">
-            {a.concepts.map((id) => {
-              const c = concepts.find((c) => c.id === id)!;
-              return (
-                <li key={id}>
-                  <a href={url(`concepts/${id}/`)}>{c.title}</a>
-                  <span className="evidence-state">
-                    {evidence(id, state.events, questions).state}
+              <li className="assignment-task" id={t.id} key={t.id}>
+                <div className="task-heading">
+                  <span className="task-number">
+                    {String(i + 1).padStart(2, '0')}
                   </span>
-                </li>
-              );
-            })}
-          </ul>
-          <a
-            className="primary"
-            href={url(
-              `courses/${a.course}/practice/?target=${a.concepts[0]}&mode=Review%20this%20branch`,
-            )}
-          >
-            Practise this branch →
-          </a>
-          <h3>Helpful prerequisites</h3>
-          <ul>
-            {a.prerequisites.map((id) => (
-              <li key={id}>
-                <a href={url(`concepts/${id}/`)}>
-                  {concepts.find((c) => c.id === id)?.title}
-                </a>
+                  <h2>{t.title}</h2>
+                  <label>
+                    <input
+                      type="checkbox"
+                      aria-label={t.title}
+                      disabled={!state.ready}
+                      checked={Boolean(taskDone(id, t.id, state.events))}
+                      onChange={(e) =>
+                        emit('assignment_task', {
+                          assignment: id,
+                          task: t.id,
+                          done: e.target.checked,
+                        })
+                      }
+                    />
+                    <span>Done</span>
+                  </label>
+                </div>
+                <p>
+                  <Glossary text={t.instructions} />
+                </p>
               </li>
             ))}
-          </ul>
-          <a
-            href={url(
-              `courses/${a.course}/practice/?target=${a.concepts[0]}&mode=Fill%20my%20gaps`,
-            )}
+          </ol>
+          <section className="original-checks">
+            <h2>A few checks</h2>
+            <p>
+              Original practice for this companion. Try each one before opening
+              its answer.
+            </p>
+            {practice.map((q, i) => (
+              <div className="original-question" key={q.id}>
+                <p>
+                  <strong>{i + 1}.</strong> <Glossary text={q.prompt} />
+                </p>
+                {q.choices && (
+                  <ol type="a">
+                    {q.choices.map((c) => (
+                      <li key={c}>{c}</li>
+                    ))}
+                  </ol>
+                )}
+                <button
+                  className="secondary"
+                  aria-expanded={answers.includes(q.id)}
+                  onClick={() =>
+                    setAnswers((old) =>
+                      old.includes(q.id)
+                        ? old.filter((x) => x !== q.id)
+                        : [...old, q.id],
+                    )
+                  }
+                >
+                  {answers.includes(q.id) ? 'Hide answer' : 'Check answer'}
+                </button>
+                {answers.includes(q.id) && (
+                  <div className="solution">
+                    <strong>
+                      {Array.isArray(q.answer) ? q.answer[0] : String(q.answer)}
+                      {q.unitLabel ? ' ' + q.unitLabel : ''}
+                    </strong>
+                    <Glossary text={q.explanation} />
+                  </div>
+                )}
+              </div>
+            ))}
+          </section>
+        </article>
+        <aside className="assignment-sidebar">
+          <button
+            ref={trigger}
+            className="primary"
+            disabled={!state.ready}
+            onClick={() => {
+              position.current = window.scrollY;
+              setIndex(0);
+              setReview([]);
+              setMessage('');
+              setLearn(true);
+            }}
           >
-            I’m stuck · find the gap →
-          </a>
-          <Graph course={a.course} focus={a.concepts.at(-1)} />
+            Learn this first
+            <Icon name="arrow" size={16} />
+          </button>
+          <p>
+            A short path through the ideas this work uses. Then right back here.
+          </p>
+          <button className="quiet" onClick={() => setSource(true)}>
+            Original & sources
+            <Icon name="external" size={15} />
+          </button>
+          <p>
+            {a.tasks.filter((t) => taskDone(id, t.id, state.events)).length} of{' '}
+            {a.tasks.length} sections checked
+          </p>
         </aside>
       </div>
-    </>
+      {message && (
+        <div className="return-notice" role="status">
+          {message}
+          <button
+            className="icon-button"
+            aria-label="Dismiss"
+            onClick={() => setMessage('')}
+          >
+            <Icon name="close" size={16} />
+          </button>
+        </div>
+      )}
+      <Sheet
+        open={source}
+        title="Original & sources"
+        onClose={() => setSource(false)}
+      >
+        <p>
+          This is an original atlas companion. Keep your teacher’s handout for
+          the exact assigned questions.
+        </p>
+        {a.originalUrl && (
+          <a
+            className="primary"
+            href={a.originalUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Open class resource
+            <Icon name="external" size={16} />
+          </a>
+        )}
+        <details>
+          <summary>Source details</summary>
+          {a.sources.map((id) => {
+            const s = sources.find((s) => s.id === id)!;
+            return (
+              <p key={id}>
+                {s.url ? (
+                  <a href={s.url} target="_blank" rel="noreferrer">
+                    {s.title}
+                  </a>
+                ) : (
+                  s.title
+                )}
+                <small className="source-meta">
+                  {s.author} · checked {s.checked}
+                </small>
+              </p>
+            );
+          })}
+        </details>
+      </Sheet>
+      <dialog
+        ref={dialog}
+        className="learning-modal"
+        aria-label="Learn this first"
+        onCancel={(e) => {
+          e.preventDefault();
+          close();
+        }}
+      >
+        {learn && (
+          <div className="flow-screen" data-course={a.course}>
+            <div className="flow-top">
+              <button className="quiet" onClick={close}>
+                <Icon name="back" size={16} />
+                Back to worksheet
+              </button>
+              <span>
+                {index + 1} of {plan.length} · {topicTitle(plan[index])}
+              </span>
+            </div>
+            <div className="flow-track">
+              <span style={{ width: `${(index / plan.length) * 100}%` }} />
+            </div>
+            <Lesson
+              key={plan[index]}
+              id={plan[index]}
+              onComplete={(good) => {
+                const needs = good ? review : [...review, plan[index]];
+                setReview(needs);
+                if (index + 1 === plan.length) {
+                  close();
+                  setMessage(
+                    needs.length
+                      ? 'Back to the worksheet. Keep an eye on ' +
+                          needs.map(topicTitle).join(', ') +
+                          '.'
+                      : 'Ready. Back to the worksheet.',
+                  );
+                } else setIndex((i) => i + 1);
+              }}
+            />
+          </div>
+        )}
+      </dialog>
+    </div>
   );
 }

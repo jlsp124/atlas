@@ -83,7 +83,11 @@ export default function Shell({
     const show = () => {
       dialog?.close();
       if (definition) {
-        if (matchMedia('(max-width: 800px)').matches) dialog?.showModal();
+        if (
+          matchMedia('(max-width: 800px)').matches ||
+          document.querySelector('dialog:modal')
+        )
+          dialog?.showModal();
         else dialog?.show();
         document.documentElement.dataset.inspector = 'open';
       } else delete document.documentElement.dataset.inspector;
@@ -463,7 +467,11 @@ export default function Shell({
               </button>
             </div>
             <h2
-              lang={/[^\u0000-\u007f]/.test(definition.term) ? 'ja' : undefined}
+              lang={
+                /[\u3040-\u30ff\u4e00-\u9fff]/.test(definition.term)
+                  ? 'ja'
+                  : undefined
+              }
             >
               {definition.term}
             </h2>

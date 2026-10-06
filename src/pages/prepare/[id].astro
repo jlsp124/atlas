@@ -1,0 +1,16 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Preparation from '../../components/Preparation';
+import { schedule } from '../../content/catalog';
+import { eventTitle } from '../../content/workspaces';
+export function getStaticPaths() {
+  return schedule
+    .filter((e) => e.course && (e.type === 'test' || e.type === 'quiz'))
+    .map((e) => ({ params: { id: e.id }, props: { event: e } }));
+}
+const { event } = Astro.props;
+---
+
+<Layout title={eventTitle(event)} course={event.course}>
+  <Preparation id={event.id} client:load />
+</Layout>

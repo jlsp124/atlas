@@ -1,0 +1,132 @@
+.session-holder {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.session-holder[hidden] {
+  display: none;
+}
+.answer-choices {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.probe-heading {
+  margin: 28px auto 0;
+  font-size: 14px;
+  color: var(--muted);
+  width: 100%;
+  max-width: 700px;
+}
+.alternate-explanation {
+  border-top: 1px solid var(--line);
+  margin-top: 24px;
+  padding-top: 16px;
+  font-size: 17px;
+  color: var(--muted);
+}
+.return-notice {
+  position: fixed;
+  bottom: 28px;
+  left: calc(var(--sidebar-width) + 30px);
+  right: 30px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 18px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  font-size: 14px;
+}
+.source-meta {
+  display: block;
+  margin-top: 6px;
+}
+.calendar-key select {
+  width: auto;
+  font-size: 12px;
+  max-width: 170px;
+}
+.calendar-toolbar button[aria-label='Next'] svg {
+  transform: rotate(180deg);
+}
+.calendar-day.is-today .calendar-day-heading strong {
+  background: #4947ce;
+  color: white;
+}
+.source-row {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.source-row summary {
+  font-size: 16px;
+  line-height: 1.5;
+}
+.help-layout {
+  max-width: 700px;
+  margin-top: 28px;
+}
+.help-layout form {
+  max-width: 600px;
+}
+.help-layout > details {
+  margin-top: 36px;
+}
+.tutor-help button[aria-pressed='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.flow-body > label {
+  margin-top: 28px;
+  font-size: 13px;
+  max-width: 380px;
+}
+.flow-secondary details[open] {
+  flex-basis: 100%;
+  order: 3;
+}
+.flow-secondary details:not([open]) {
+  margin: 0;
+}
+.flow-secondary details > summary {
+  font-size: 13px;
+}
+.flow-screen[lang='ja'] .teaching-text,
+.flow-body[lang='ja'] .teaching-text {
+  line-height: 1.85;
+}
+.flow-top span {
+  text-align: right;
+}
+.lesson-source {
+  font-size: 13px;
+  margin-top: 22px;
+}
+@media (max-width: 800px) {
+  .return-notice {
+    left: 16px;
+    right: 16px;
+    bottom: 90px;
+    font-size: 13px;
+  }
+  .calendar-key select {
+    width: 100%;
+    max-width: none;
+  }
+  .calendar-key {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .probe-heading {
+    margin-top: 24px;
+  }
+  .flow-top button {
+    font-size: 12px;
+  }
+}

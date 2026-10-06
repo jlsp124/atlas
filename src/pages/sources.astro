@@ -5,98 +5,61 @@ import ingestion from '../content/ingestion/bleecker.json';
 import videos from '../content/ingestion/videos.json';
 ---
 
-<Layout title="Sources & freshness">
-  <p class="eyebrow">CURATED, NOT MIRRORED</p>
-  <h1>
-    Where it comes from<span class="title-dot">.</span>
-  </h1>
-  <p class="lede">
-    Original explanations and practice, grounded in what is actually being
-    taught.
-  </p>
-  <p>
-    Vault snapshot {snapshot.vaultCommit.slice(0, 12)} · {snapshot.date}. No
-    private grade records, personal schedules, teacher answer keys or unlicensed
-    scans are public content.
-  </p>
-  <div class="source-list">
-    {sources.map((s) => (
-      <article>
-        <p class="eyebrow">
-          {s.type} · {s.status} · checked {s.checked}
-        </p>
-        <h2>
-          {s.url ? (
-            <a href={s.url} target="_blank" rel="noreferrer">
-              {s.title} ↗
-            </a>
-          ) : (
-            s.title
-          )}
-        </h2>
-        <p>{s.notes}</p>
-        <small>
-          {s.author} · {s.rights}
-        </small>
-      </article>
-    ))}
-  </div>
-  <section class="settings-section">
-    <h2>Bleecker ingestion index</h2>
+<Layout title="Sources">
+  <article class="prose">
+    <h1>Where it comes from</h1>
     <p>
-      {ingestion.sources.filter((s) => s.type === 'page').length} public pages
-      indexed. The calendar feed contains{' '}
-      {
-        ingestion.sources.find((s) => s.type === 'calendar')?.calendarEvents
-          .length
-      }{' '}
-      events in the current term. Full teacher text and transcripts are not
-      republished.
+      I use our class notes and the teacher’s resources to write the
+      explanations and practice here. Restricted worksheets and answer keys stay
+      with their original sources.
     </p>
-    <ul>
-      {ingestion.sources.map((s) => (
-        <li>
-          <a href={s.finalUrl}>{s.id}</a> · HTTP {s.httpStatus}
-          {s.type === 'video-playlist'
-            ? ' · saved link unavailable; no captions ingested'
-            : ''}
-        </li>
-      ))}
-    </ul>
-    <p class="small muted">
-      UTC capture timestamp: {ingestion.checked}. Event dates are interpreted in
-      America/Vancouver. Linked resources are indexed by URL; a link index does
-      not assert a file was downloaded or its contents reviewed.
-    </p>
-  </section>
-  <section class="settings-section">
-    <h2>Linked lesson videos</h2>
-    <p>
-      Six teacher-linked video IDs checked through public metadata and caption
-      endpoints. Five return video metadata; one returns HTTP 404. No caption
-      evidence was retrievable through the checked public endpoint. This does
-      not establish that the platform has no captions.
-    </p>
-    <ul>
-      {videos.videos.map((v) => (
-        <li>
-          {v.title ? (
-            <a href={v.url} target="_blank" rel="noreferrer">
-              {v.title} ↗
-            </a>
-          ) : (
-            <span>Unavailable video · {v.id}</span>
-          )}
+    <p class="meta">Last content update: {snapshot.date}</p>
+    <div class="source-list">
+      {sources.map((s) => (
+        <details class="source-row">
+          <summary>{s.title}</summary>
+          <p>{s.notes}</p>
           <small>
-            {v.author ?? 'Author unverified'} · metadata HTTP {v.metadataStatus}{' '}
-            · link-only
+            {s.author} · checked {s.checked} · {s.rights}
           </small>
-        </li>
+          {s.url && (
+            <p>
+              <a href={s.url} target="_blank" rel="noreferrer">
+                Open source ↗
+              </a>
+            </p>
+          )}
+        </details>
       ))}
-    </ul>
-    <p class="small muted">
-      Checked {videos.checked}. Video content and timestamp mappings have not
-      been reviewed. Original source rights remain with their owners.
-    </p>
-  </section>
+    </div>
+    <details class="settings-section">
+      <summary>Content index details</summary>
+      <p>
+        Class-note snapshot: {snapshot.vaultCommit}. Private grades, personal
+        schedules and restricted scans aren’t published.
+      </p>
+      <p>
+        {ingestion.sources.filter((s) => s.type === 'page').length} public pages
+        indexed. A saved link doesn’t mean its text was reproduced or reviewed.
+      </p>
+      <ul>
+        {ingestion.sources.map((s) => (
+          <li>
+            <a href={s.finalUrl}>{s.id}</a> · HTTP {s.httpStatus}
+          </li>
+        ))}
+      </ul>
+      <p>
+        Video metadata is checked separately. Captions weren’t available through
+        the checked endpoint.
+      </p>
+      <ul>
+        {videos.videos.map((v) => (
+          <li>
+            <a href={v.url}>{v.title || 'Unavailable video'}</a>
+          </li>
+        ))}
+      </ul>
+    </details>
+  </article>
 </Layout>

@@ -101,27 +101,27 @@ export const teacherUnitResources: Record<
   classification: [
     {
       title: 'Classification · class resources',
-      url: 'https://sites.google.com/view/ecl-life-sciences-11/bio-1/c18-classification',
+      url: 'https://sites.google.com/view/ecl-life-sciences-11/bio1/c18-classification',
     },
     {
       title: 'Dichotomous key assignment',
-      url: 'https://sites.google.com/view/ecl-life-sciences-11/bio-1/c18-classification/dichotomous-key-asst',
+      url: 'https://sites.google.com/view/ecl-life-sciences-11/bio1/c18-classification/dichotomous-key-asst',
     },
     {
       title: 'Cladograms',
-      url: 'https://sites.google.com/view/ecl-life-sciences-11/bio-1/c18-classification/cladograms',
+      url: 'https://sites.google.com/view/ecl-life-sciences-11/bio1/c18-classification/cladograms',
     },
   ],
   origins: [
     {
       title: 'Origins · class resources',
-      url: 'https://sites.google.com/view/ecl-life-sciences-11/bio-1/c17-origins',
+      url: 'https://sites.google.com/view/ecl-life-sciences-11/bio1/c17-origins',
     },
   ],
   microorganisms: [
     {
       title: 'Viruses & bacteria · teacher guide',
-      url: 'https://sites.google.com/view/ecl-life-sciences-11/bio-1/c19-microbes',
+      url: 'https://sites.google.com/view/ecl-life-sciences-11/bio1/c19-microbes',
     },
   ],
 };

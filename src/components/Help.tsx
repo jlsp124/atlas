@@ -30,12 +30,11 @@ export default function Help() {
   }
   return (
     <>
-      <p className="eyebrow">HELP & CORRECTIONS</p>
       <h1>
         Need something<span className="title-dot">?</span>
       </h1>
       <p className="lede">
-        A missing connection, an incorrect date, or something that could work
+        An incorrect date, missing material, or something that could work
         better.
       </p>
       <div className="help-layout">
@@ -74,7 +73,7 @@ export default function Help() {
             </select>
           </label>
           <label>
-            Tell us a little more
+            Tell me a little more
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
@@ -130,28 +129,18 @@ export default function Help() {
             </div>
           )}
         </form>
-        <aside>
-          <h2>Built in class, for class.</h2>
+        <details className="settings-section">
+          <summary>Using atlas</summary>
           <p>
-            atlas is student-made and unofficial. It is not affiliated with the
-            school, district or teachers.
-          </p>
-          <p>
-            Verify important deadlines with teacher sources. The site labels
-            where dates came from and when they were checked.
+            I'm taking these classes too. Check important dates with your
+            teacher and keep the original handouts for assigned questions.
           </p>
           <p>
-            Assignments here are original learning companions. Use your original
-            teacher materials for requirements and submissions.
+            Japanese AI help is for independent study. Follow the course rules
+            for submitted work.
           </p>
-          <p>
-            Japanese assistance stays on the learning side; the course prohibits
-            AI and translators for submitted class work.
-          </p>
-          <p className="small muted">
-            Attachments are not accepted. No unsafe upload service is enabled.
-          </p>
-        </aside>
+          <a href="../about/">About atlas</a>
+        </details>
       </div>
     </>
   );

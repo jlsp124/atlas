@@ -11,6 +11,6 @@ export function getStaticPaths() {
 const { course } = Astro.props;
 ---
 
-<Layout title={`${course.title} · Practice`} course={course.id}>
+<Layout title={`${course.title} · Practice`} course={course.id} focus>
   <Practice course={course.id} client:load />
 </Layout>
