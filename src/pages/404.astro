@@ -1,0 +1,18 @@
+---
+import Layout from '../layouts/Layout.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Layout title="Page not found">
+  <div class="prose">
+    <p class="eyebrow">404</p>
+    <h1>A connection we haven’t made.</h1>
+    <p>
+      This page is missing or may have moved. Search by concept or head back to
+      your atlas.
+    </p>
+    <a class="primary" href={`${base}/`}>
+      Back to today →
+    </a>
+  </div>
+</Layout>

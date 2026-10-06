@@ -1,0 +1,13 @@
+node_modules
+dist
+.astro
+.git
+.github
+.env
+.env.*
+data
+evidence
+test-results
+playwright-report
+tests
+docs

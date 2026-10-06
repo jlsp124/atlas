@@ -7,5 +7,6 @@ export default defineConfig({
   output: 'static',
   trailingSlash: 'always',
   integrations: [react()],
+  devToolbar: { enabled: false },
   vite: { ssr: { noExternal: ['katex'] } },
 });

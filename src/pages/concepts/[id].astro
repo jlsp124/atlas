@@ -1,0 +1,244 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Math from '../../components/Math.astro';
+import LearningFigure from '../../components/LearningFigure.astro';
+import Annotation from '../../components/Annotation';
+import ConceptTools from '../../components/ConceptTools';
+import Graph from '../../components/Graph';
+import Practice from '../../components/Practice';
+import { concepts, findCourse, sources } from '../../content/catalog';
+export function getStaticPaths() {
+  return concepts
+    .filter((c) => c.status === 'publishable')
+    .map((c) => ({ params: { id: c.id }, props: { concept: c } }));
+}
+const { concept: c } = Astro.props;
+const course = findCourse(c.course);
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const url = (p: string) => `${base}/${p}`;
+const annotations: Record<
+  string,
+  { term: string; definition: string; concept?: string }
+> = {
+  velocity: {
+    term: 'displacement',
+    definition:
+      'The signed change from initial to final position. It differs from total path length.',
+    concept: 'displacement',
+  },
+  acceleration: {
+    term: 'velocity',
+    definition:
+      'The signed rate of change of position. Comparing its sign with acceleration tells you whether speed is increasing.',
+    concept: 'velocity',
+  },
+  'periodic-trends': {
+    term: 'shielding',
+    definition:
+      'Inner electrons reduce the effective nuclear attraction felt by outer electrons.',
+  },
+  'electron-groups': {
+    term: 'lone pair',
+    definition:
+      'A pair of valence electrons assigned to one atom rather than shared in a bond.',
+    concept: 'lewis-structures',
+  },
+  'atomic-identity': {
+    term: 'isotopes',
+    definition:
+      'Atoms of the same element with different neutron counts; the proton count is unchanged.',
+  },
+  'motion-graphs': {
+    term: 'signed area',
+    definition:
+      'Area above zero contributes positive displacement; area below zero contributes negative displacement.',
+    concept: 'vector-sign',
+  },
+};
+const annotation = annotations[c.id] ?? c.annotations[0];
+const position = c.model.toLowerCase().indexOf(annotation.term.toLowerCase());
+const unlocks = concepts.filter((x) => x.prerequisites.includes(c.id));
+---
+
+<Layout title={c.title} description={c.model} course={c.course}>
+  <div class="breadcrumbs">
+    <a href={url(`courses/${c.course}/learn/`)}>{course.title} / Learn</a>
+    <span>{course.units.find((u) => u.id === c.unit)?.title}</span>
+  </div>
+  <p class="eyebrow">
+    {c.depth === 'core'
+      ? 'CORE NOW'
+      : c.depth === 'preview'
+        ? 'PREVIEW'
+        : 'DEEPER / OPTIONAL'}{' '}
+    · Original atlas explanation
+  </p>
+  <h1 class="reading-title" lang={c.course === 'japanese' ? 'ja' : undefined}>
+    {c.title}
+  </h1>
+  {c.course === 'chemistry' && c.unit === 'shape' && (
+    <p class="scope-note">
+      Taught material beyond the Oct. 5 quiz’s page-24 boundary. The Oct. 16
+      test scope remains unconfirmed.
+    </p>
+  )}
+  <div class="lesson-layout">
+    <article class="lesson-body">
+      <section>
+        <h2>The 30-second model</h2>
+        <div class="lesson-model">
+          {position < 0 ? (
+            c.model
+          ) : (
+            <>
+              {c.model.slice(0, position)}
+              <Annotation
+                client:load
+                term={c.model.slice(
+                  position,
+                  position + annotation.term.length,
+                )}
+                definition={annotation.definition}
+                concept={annotation.concept}
+              />
+              {c.model.slice(position + annotation.term.length)}
+            </>
+          )}
+        </div>
+      </section>
+      <section>
+        <h2>Why it works</h2>
+        <p>{c.why}</p>
+      </section>
+      <section>
+        <h2>The representation</h2>
+        <p
+          class="representation"
+          lang={c.course === 'japanese' ? 'ja' : undefined}
+        >
+          {c.representation}
+        </p>
+        {c.formula && <Math formula={c.formula} />}
+        <LearningFigure id={c.id} />
+      </section>
+      <section class="worked-example">
+        <p class="eyebrow">ORIGINAL WORKED EXAMPLE</p>
+        <h2>{c.example.prompt}</h2>
+        <ol>
+          {c.example.steps.map((step) => (
+            <li>{step}</li>
+          ))}
+        </ol>
+      </section>
+      <section class="common-trap">
+        <p class="eyebrow">THE COMMON TRAP</p>
+        <p>{c.trap}</p>
+      </section>
+      <section>
+        <h2>Allocate your attention</h2>
+        <dl class="study-allocation">
+          <div>
+            <dt>Retrieve</dt>
+            <dd>{c.memorize}</dd>
+          </div>
+          <div>
+            <dt>Derive / apply</dt>
+            <dd>{c.derive}</dd>
+          </div>
+          <div>
+            <dt>Reference provided?</dt>
+            <dd>{c.reference}</dd>
+          </div>
+        </dl>
+      </section>
+      <section>
+        <h2>A teaching & transfer check</h2>
+        <p class="muted">
+          Produce an answer, then change the context. Recognition is only a
+          starting point.
+        </p>
+        <Practice
+          course={c.course}
+          initialTarget={c.id}
+          compact
+          client:visible
+        />
+      </section>
+      <details class="test-summary">
+        <summary>Under test conditions</summary>
+        <ul>
+          {c.review.map((item) => (
+            <li>{item}</li>
+          ))}
+        </ul>
+      </details>
+      <details class="optional-depth">
+        <summary>Deeper / optional</summary>
+        <p>{c.deeper}</p>
+      </details>
+      <section class="connections">
+        <h2>Before & after this idea</h2>
+        <div>
+          <h3>Builds on</h3>
+          {c.prerequisites.length ? (
+            <ul>
+              {c.prerequisites.map((id) => (
+                <li>
+                  <a href={url(`concepts/${id}/`)}>
+                    {concepts.find((x) => x.id === id)?.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p class="muted">An entry idea — no formal prerequisite.</p>
+          )}
+        </div>
+        <div>
+          <h3>What this unlocks</h3>
+          {unlocks.length ? (
+            <ul>
+              {unlocks.map((x) => (
+                <li>
+                  <a href={url(`concepts/${x.id}/`)}>{x.title}</a>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p class="muted">
+              Apply it through the current practice and assignment companions.
+            </p>
+          )}
+        </div>
+      </section>
+      <Graph course={c.course} focus={c.id} client:visible />
+      <details class="provenance">
+        <summary>Source & review notes</summary>
+        <p>
+          Original atlas wording and examples. Private classroom records and
+          teacher assessment answers are excluded.
+        </p>
+        <ul>
+          {c.sources.map((id) => {
+            const s = sources.find((s) => s.id === id)!;
+            return (
+              <li>
+                {s.url ? (
+                  <a href={s.url} target="_blank" rel="noreferrer">
+                    {s.title} ↗
+                  </a>
+                ) : (
+                  s.title
+                )}
+                <small>
+                  {s.author} · checked {s.checked} · {s.rights}
+                </small>
+              </li>
+            );
+          })}
+        </ul>
+      </details>
+    </article>
+    <ConceptTools id={c.id} client:load />
+  </div>
+</Layout>

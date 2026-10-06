@@ -1,0 +1,16 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Practice from '../../../components/Practice';
+import { courses } from '../../../content/catalog';
+export function getStaticPaths() {
+  return courses.map((c) => ({
+    params: { course: c.id },
+    props: { course: c },
+  }));
+}
+const { course } = Astro.props;
+---
+
+<Layout title={`${course.title} · Practice`} course={course.id}>
+  <Practice course={course.id} client:load />
+</Layout>

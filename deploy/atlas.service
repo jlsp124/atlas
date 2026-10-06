@@ -1,0 +1,22 @@
+[Unit]
+Description=atlas optional account and sync service
+After=network.target
+
+[Service]
+Type=simple
+User=atlas
+Group=atlas
+WorkingDirectory=/opt/atlas
+EnvironmentFile=/etc/atlas/server.env
+ExecStart=/usr/bin/node --import tsx server/main.ts
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/atlas
+
+[Install]
+WantedBy=multi-user.target

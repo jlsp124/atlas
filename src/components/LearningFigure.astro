@@ -1,0 +1,141 @@
+---
+const { id } = Astro.props;
+---
+
+{id === 'motion-graphs' && (
+  <figure class="learning-figure">
+    <svg
+      viewBox="0 0 440 240"
+      role="img"
+      aria-labelledby="motion-title motion-description"
+    >
+      <title id="motion-title">Velocity stays at negative three metres per second for four seconds</title>
+      <desc id="motion-description">
+        A horizontal line below the zero axis. Its rectangular signed area is
+        negative twelve metres. A zero slope means zero acceleration, while the
+        cart continues moving.
+      </desc>
+      <rect x="64" y="98" width="304" height="76" class="figure-fill" />
+      <path d="M64 26V208 M44 98H402" class="figure-axis" />
+      <path d="M64 174H368" class="figure-line" />
+      <path d="M368 98V179" class="figure-guide" />
+      <text x="14" y="28">
+        v (m/s)
+      </text>
+      <text x="381" y="122">
+        t (s)
+      </text>
+      <text x="44" y="116">
+        0
+      </text>
+      <text x="27" y="179">
+        −3
+      </text>
+      <text x="362" y="91">
+        4
+      </text>
+      <text x="100" y="138">
+        signed area = −12 m
+      </text>
+      <text x="116" y="199">
+        slope = 0 → acceleration = 0
+      </text>
+    </svg>
+    <figcaption>
+      Original model graph. Height gives velocity, slope gives acceleration, and
+      signed area gives displacement. Negative velocity describes direction.
+    </figcaption>
+  </figure>
+)}
+{id === 'half-life' && (
+  <figure class="learning-figure">
+    <svg
+      viewBox="0 0 440 245"
+      role="img"
+      aria-labelledby="decay-title decay-description"
+    >
+      <title id="decay-title">Radioactive parent fraction halves each interval</title>
+      <desc id="decay-description">
+        Parent remaining starts at one hundred percent, falls to fifty percent
+        after one half-life, twenty-five after two, and twelve point five after
+        three. The decline is a curve, not a straight line.
+      </desc>
+      <path d="M64 25V203H395" class="figure-axis" />
+      <path
+        d={Array.from(
+          { length: 61 },
+          (_, i) =>
+            `${i ? 'L' : 'M'}${64 + i * 5} ${203 - 160 * 2 ** (-i / 20)}`,
+        ).join(' ')}
+        class="figure-line"
+      />
+      {[
+        { x: 64, y: 43, n: '100%' },
+        { x: 164, y: 123, n: '50%' },
+        { x: 264, y: 163, n: '25%' },
+        { x: 364, y: 183, n: '12.5%' },
+      ].map((p, i) => (
+        <g>
+          <circle cx={p.x} cy={p.y} r="4" class="figure-point" />
+          <text x={p.x + 5} y={p.y - 10}>
+            {p.n}
+          </text>
+          <text x={p.x - 4} y="222">
+            {i}
+          </text>
+        </g>
+      ))}
+      <text x="6" y="21">
+        parent
+      </text>
+      <text x="158" y="241">
+        elapsed half-lives
+      </text>
+    </svg>
+    <figcaption>
+      Schematic decay model. Each interval halves what remains. Suitable isotope
+      systems and sample assumptions are needed for real dating.
+    </figcaption>
+  </figure>
+)}
+{id === 'cladograms' && (
+  <figure class="learning-figure">
+    <svg
+      viewBox="0 0 440 235"
+      role="img"
+      aria-labelledby="clado-title clado-description"
+    >
+      <title id="clado-title">A and B share a more recent common ancestor than either shares with C</title>
+      <desc id="clado-description">
+        The root splits into lineage C and a branch that later splits into A and
+        B. Rotating a branch changes tip order without changing ancestry. Branch
+        lengths in this example have no time scale.
+      </desc>
+      <path
+        d="M46 190H104V64H214 M104 160H365 M214 64V34H365 M214 64V94H365"
+        class="figure-line"
+      />
+      <circle cx="104" cy="160" r="4" class="figure-point" />
+      <circle cx="214" cy="64" r="4" class="figure-point" />
+      <text x="380" y="39">
+        A
+      </text>
+      <text x="380" y="99">
+        B
+      </text>
+      <text x="380" y="165">
+        C
+      </text>
+      <text x="160" y="132">
+        recent shared ancestor
+      </text>
+      <text x="25" y="217">
+        root
+      </text>
+    </svg>
+    <figcaption>
+      Original three-lineage example. Follow shared branching points; tip
+      spacing and left-to-right order do not establish relatedness.
+    </figcaption>
+  </figure>
+)}

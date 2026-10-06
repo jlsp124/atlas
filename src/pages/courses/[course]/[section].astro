@@ -1,0 +1,24 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Course from '../../../components/Course';
+import PathLearning from '../../../components/PathLearning';
+import { courses } from '../../../content/catalog';
+export function getStaticPaths() {
+  return courses.flatMap((c) =>
+    (['work', 'learn', 'schedule'] as const).map((section) => ({
+      params: { course: c.id, section },
+      props: { course: c, section },
+    })),
+  );
+}
+const { course, section } = Astro.props;
+---
+
+<Layout
+  title={`${course.title} · ${section}`}
+  description={course.description}
+  course={course.id}
+>
+  <Course id={course.id} section={section} client:load />
+  {section === 'learn' && <PathLearning course={course.id} client:visible />}
+</Layout>

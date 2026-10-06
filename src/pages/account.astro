@@ -1,0 +1,10 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Account from '../components/Account';
+---
+
+<Layout title="Your workspace">
+  <div data-pagefind-ignore>
+    <Account client:load />
+  </div>
+</Layout>

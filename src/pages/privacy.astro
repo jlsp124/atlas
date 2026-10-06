@@ -1,0 +1,67 @@
+---
+import Layout from '../layouts/Layout.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Layout title="Privacy">
+  <article class="prose">
+    <p class="eyebrow">YOUR LEARNING, YOUR DATA</p>
+    <h1>Privacy in plain language.</h1>
+    <h2>Without an account</h2>
+    <p>
+      Your course choices, theme, attempts, confusion markers and assignment
+      checklists stay in your browser. You can export or import them in
+      settings. Clearing browser storage removes local data. GitHub Pages may
+      log visitor IP addresses for its own service security.
+    </p>
+    <h2>With an account</h2>
+    <p>
+      atlas stores a username, a securely hashed password, session records and
+      learning events on the configured atlas server. Events synchronize your
+      progress across devices. Typed answer text is not part of the synced event
+      model. This is independent learning evidence, not a school grade.
+    </p>
+    <h2>Optional aggregate analytics</h2>
+    <p>
+      Analytics are off by default. If you opt in, atlas counts feature use and
+      concept-level attempts, misses, hints and confusion. It does not include
+      typed answers, search text, passwords or private homework. Admin sees
+      aggregates rather than an individual learner dashboard. Consented accounts
+      may contribute coarse daily activity used to measure return usage. Opting
+      out stops new analytics; existing unidentifiable aggregate counts cannot
+      be separated back into individual contributions.
+    </p>
+    <h2>Requests</h2>
+    <p>
+      Help requests store the text you choose to submit, request category,
+      optional course and optional reply email. Please do not include grades,
+      private classroom data or assessed answers. Attachments are not accepted.
+      Public GitHub issues are visible to others.
+    </p>
+    <h2>Deletion and shared devices</h2>
+    <p>
+      Signed-in users can delete their account using a password confirmation in
+      settings. This removes server events, sessions, daily account activity and
+      linked requests, plus this browser’s account store. Other devices may
+      retain local copies until you clear them. Server backups may retain
+      deleted records until their retention window expires; the operator must
+      apply deletion requests when restoring a backup.
+    </p>
+    <p>
+      Guest requests without an account need a separate deletion request to the
+      server operator. Password recovery is not available yet. On shared
+      devices, sign out and clear local data as appropriate.
+    </p>
+    <h2>External resources</h2>
+    <p>
+      Teacher websites, calendar links and learning references have their own
+      policies. No third-party video embeds or remote fonts load automatically.
+      This atlas release links source material rather than mirroring copyrighted
+      worksheets, transcripts or textbooks.
+    </p>
+    <p>
+      <a href={`${base}/account/`}>Open your settings →</a> ·{' '}
+      <a href={`${base}/help/`}>Need help with your data?</a>
+    </p>
+  </article>
+</Layout>

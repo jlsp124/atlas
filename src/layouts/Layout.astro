@@ -1,0 +1,105 @@
+---
+import Shell from '../components/Shell';
+import '@fontsource-variable/inter';
+import '../styles/global.css';
+const {
+  title = 'Your school day',
+  description = 'Your courses, connected. A student-built companion with real lessons, assignments, practice and local progress.',
+  course,
+} = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const url = (path = '') => `${base}/${path}`;
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#245d45" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href={url('icon.svg')} />
+    <link rel="apple-touch-icon" href={url('icons/icon-192.png')} />
+    <link rel="manifest" href={url('manifest.webmanifest')} />
+    <meta property="og:title" content={`${title} · atlas`} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <title>{title} · atlas</title>
+    <script is:inline>
+      try {
+        const theme = localStorage.getItem('atlas:theme');
+        if (['light', 'dark', 'system'].includes(theme))
+          document.documentElement.dataset.theme = theme;
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">
+      Skip to content
+    </a>
+    <div class="app-shell">
+      <Shell client:load course={course} />
+      <main id="main" tabindex="-1" data-pagefind-body>
+        <slot />
+      </main>
+      <footer>
+        <a class="footer-wordmark" href={url()}>
+          atlas.
+        </a>
+        <span>
+          Designed & built by Jovan ·{' '}
+          <a href="https://github.com/jlsp124/atlas">Source repository</a>
+        </span>
+        <nav aria-label="Help and information">
+          <a href={url('help/')}>Need something?</a>
+          <a href={url('about/')}>About</a>
+          <a href={url('privacy/')}>Privacy</a>
+        </nav>
+      </footer>
+    </div>
+    <script>
+      if ('serviceWorker' in navigator && import.meta.env.PROD) {
+        const path = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/sw.js`;
+        window.addEventListener('load', () => {
+          void navigator.serviceWorker
+            .register(path)
+            .then((reg) => {
+              reg.addEventListener('updatefound', () => {
+                const worker = reg.installing;
+                worker?.addEventListener('statechange', () => {
+                  if (
+                    worker.state === 'installed' &&
+                    navigator.serviceWorker.controller
+                  ) {
+                    const notice = document.createElement('div');
+                    notice.className = 'update-notice';
+                    notice.setAttribute('role', 'status');
+                    notice.append('A fresh atlas is ready. ');
+                    const button = document.createElement('button');
+                    button.textContent = 'Update';
+                    button.onclick = () => {
+                      worker.postMessage({ type: 'SKIP_WAITING' });
+                    };
+                    notice.append(button);
+                    document.body.append(notice);
+                  }
+                });
+              });
+            })
+            .catch(() => {});
+        });
+        const hadController = Boolean(navigator.serviceWorker.controller);
+        let changed = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (hadController && !changed) {
+            changed = true;
+            window.location.reload();
+          }
+        });
+      }
+    </script>
+  </body>
+</html>

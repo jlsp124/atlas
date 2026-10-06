@@ -1,0 +1,13 @@
+---
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
+const { formula } = Astro.props;
+const math = katex.renderToString(formula, {
+  displayMode: true,
+  throwOnError: true,
+  trust: false,
+  output: 'htmlAndMathml',
+});
+---
+
+<div class="formula" set:html={math} />
