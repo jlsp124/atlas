@@ -1,0 +1,8 @@
+# Replace both placeholders with the authorized named tunnel's actual UUID.
+# Keep its credential JSON outside Git, with owner-only permissions.
+tunnel: REPLACE_WITH_AUTHORIZED_TUNNEL_UUID
+credentials-file: /etc/cloudflared/REPLACE_WITH_AUTHORIZED_TUNNEL_UUID.json
+ingress:
+  - hostname: api.atlas.jovanpahal.com
+    service: http://127.0.0.1:8787
+  - service: http_status:404

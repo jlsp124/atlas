@@ -1,10 +1,21 @@
 import { readFile, readdir, mkdir, writeFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import sharp from 'sharp';
 
 const root = 'dist';
 const base = (process.env.ATLAS_BASE || '/atlas').replace(/\/$/, '');
+const deploySha = execFileSync('git', ['rev-parse', 'HEAD'], {
+  encoding: 'utf8',
+}).trim();
+const dirty = Boolean(
+  execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim(),
+);
+await writeFile(
+  'dist/release.json',
+  JSON.stringify({ deploySha, dirty, base: base + '/' }),
+);
 await mkdir('dist/icons', { recursive: true });
 const svg = await readFile('public/icon.svg');
 for (const size of [192, 512])

@@ -7,11 +7,9 @@ async function open(page: import('@playwright/test').Page, path: string) {
 test('real worksheet retries one tiny idea, rates locally and returns to the next real question', async ({
   page,
 }) => {
-  await open(page, 'work/kinematics-review/');
+  await open(page, 'work/kinematics-review/?focus=1#q-1');
   const q = page.locator('.companion-question').first();
-  await q
-    .getByRole('button', { name: 'What is this asking?', exact: true })
-    .click();
+  await q.getByRole('button', { name: 'Help me start', exact: true }).click();
   await expect(q).toContainText('while its speed changes');
   await q.getByLabel('Your answer', { exact: true }).fill('4');
   await q.getByLabel('Unit', { exact: true }).fill('m');
@@ -38,7 +36,7 @@ test('real worksheet retries one tiny idea, rates locally and returns to the nex
     q.getByRole('button', { name: 'Okay', exact: true }),
   ).toHaveAttribute('aria-pressed', 'true');
   await q
-    .getByRole('link', { name: 'Next real question', exact: true })
+    .getByRole('button', { name: 'Next real question', exact: true })
     .click();
   await expect(page).toHaveURL(/#q-2$/);
 });
@@ -66,20 +64,24 @@ test('formal Chemistry hand-ins expose metadata without solution controls', asyn
 test('Japanese has authentic strokes, useful component connections and real Japanese input', async ({
   page,
 }) => {
-  await open(page, 'work/japanese-kana/');
-  await expect(page.locator('.kana-practice')).toHaveCount(5);
-  const vowel = page.locator('.kana-practice').first();
+  await open(page, 'work/japanese-kana/?focus=1#reading-0');
+  await expect(page.locator('.kana-selector button')).toHaveCount(5);
+  const vowel = page.locator('.kana-stage');
   await vowel.getByRole('button', { name: 'Start', exact: true }).click();
   await expect(vowel).toContainText('0/3');
   await vowel.getByRole('button', { name: 'Next stroke', exact: true }).click();
   await expect(vowel).toContainText('1/3');
-  await open(page, 'work/greetings-practice/');
-  await expect(page.locator('.phrase-connection').first()).toContainText(
+  await open(page, 'work/greetings-practice/?focus=1#q-4');
+  await page
+    .getByRole('button', { name: 'Help me start', exact: true })
+    .click();
+  await expect(page.locator('.phrase-construction')).toContainText(
     'ございます',
   );
-  await expect(page.locator('.phrase-connection').last()).toContainText(
-    'Useful next',
-  );
+  await page.getByRole('button', { name: 'Next step', exact: true }).click();
+  await page.getByRole('button', { name: 'Next step', exact: true }).click();
+  await expect(page.locator('.phrase-relations')).toContainText('Useful next');
+  await open(page, 'work/greetings-practice/?focus=1#q-1');
   const q = page.locator('.companion-question').first();
   await expect(
     q.getByLabel('Write in Japanese', { exact: true }),
@@ -92,7 +94,7 @@ test('Japanese has authentic strokes, useful component connections and real Japa
 test('percent error uses the accepted denominator and has a percent result', async ({
   page,
 }) => {
-  await open(page, 'work/physics-basic-skills/');
+  await open(page, 'work/physics-basic-skills/?focus=1#reading-0');
   await page
     .getByText('Check your percent-error calculation', { exact: true })
     .click();

@@ -1,5 +1,10 @@
 # atlas V2 design authority
 
+**Historical:** Jovan's October 7, 2026 Atlas V3 brief supersedes conflicting
+UX/learning-flow instructions here. Read [V3.md](V3.md) for the current
+assignment-native experience. Brand, theme and typography guidance remains
+applicable; the primary Learn/Classwork model below is superseded.
+
 **The internal system can be complicated. The student experience must be extremely simple.**
 
 This authority supersedes the old dashboard, timetable hierarchy, graph navigation and coach marks. Do not restore those surfaces because the engine supports them.

@@ -59,6 +59,122 @@ afterEach(async () => {
   await app.close();
 });
 describe('accounts and authorization', () => {
+  it('stages exact additional frontend origins with secure cookies and rejects unrelated origins', async () => {
+    for (const invalid of [
+      '*',
+      'https://*.jovanpahal.com',
+      'https://atlas.jovanpahal.com/path',
+      'https://user:password@atlas.jovanpahal.com',
+      'not-an-origin',
+    ])
+      await expect(
+        createServer({
+          db,
+          origin: 'https://jlsp124.github.io',
+          additionalOrigins: [invalid],
+        }),
+      ).rejects.toThrow('exact HTTP(S) origins');
+    const staged = await createServer({
+      db: openDatabase('', true),
+      origin: 'https://jlsp124.github.io',
+      additionalOrigins: ['https://atlas.jovanpahal.com'],
+      secure: true,
+      sameSite: 'lax',
+    });
+    try {
+      for (const allowed of [
+        'https://jlsp124.github.io',
+        'https://atlas.jovanpahal.com',
+      ]) {
+        const response = await staged.inject({
+          method: 'POST',
+          url: '/auth/register',
+          headers: { ...headers, origin: allowed },
+          payload: {
+            username: 'domain_' + randomBytes(4).toString('hex'),
+            password: password(),
+          },
+        });
+        expect(response.statusCode).toBe(201);
+        expect(response.headers['access-control-allow-origin']).toBe(allowed);
+        expect(response.headers['set-cookie']).toContain('HttpOnly');
+        expect(response.headers['set-cookie']).toContain('Secure');
+        expect(response.headers['set-cookie']).toContain('SameSite=Lax');
+      }
+      const rejected = await staged.inject({
+        method: 'POST',
+        url: '/auth/register',
+        headers: { ...headers, origin: 'https://unrelated.example' },
+        payload: { username: 'unrelated', password: password() },
+      });
+      expect(rejected.statusCode).toBe(403);
+      expect(rejected.headers['access-control-allow-origin']).toBeUndefined();
+    } finally {
+      await staged.close();
+    }
+  });
+  it('syncs V3 drafts and completion while rejecting unknown or restricted checkpoint IDs', async () => {
+    const a = await account();
+    const draft = {
+      id: randomUUID(),
+      device: randomUUID(),
+      at: new Date().toISOString(),
+      type: 'checkpoint_saved',
+      payload: {
+        assignment: 'kinematics-review',
+        checkpoint: 'q-10',
+        value: '-19.6',
+        unit: 'm/s',
+        direction: 'downward',
+        step: 6,
+        help: true,
+        complete: true,
+      },
+    };
+    const completion = {
+      id: randomUUID(),
+      device: randomUUID(),
+      at: new Date().toISOString(),
+      type: 'material_completed',
+      payload: { assignment: 'kinematics-review', done: true },
+    };
+    const write = await app.inject({
+      method: 'POST',
+      url: '/sync',
+      headers: authed(a),
+      payload: { events: [draft, completion], cursor: 0 },
+    });
+    expect(write.statusCode).toBe(200);
+    expect(write.json().events).toEqual(
+      expect.arrayContaining([draft, completion]),
+    );
+    const replay = await app.inject({
+      method: 'POST',
+      url: '/sync',
+      headers: authed(a),
+      payload: { events: [draft, completion], cursor: 0 },
+    });
+    expect(replay.json().events).toHaveLength(2);
+    for (const payload of [
+      { ...draft.payload, checkpoint: 'missing-question' },
+      {
+        ...draft.payload,
+        assignment: 'electronic-structure',
+        checkpoint: 'reading-0',
+      },
+    ]) {
+      const rejected = await app.inject({
+        method: 'POST',
+        url: '/sync',
+        headers: authed(a),
+        payload: {
+          events: [{ ...draft, id: randomUUID(), payload }],
+          cursor: 0,
+        },
+      });
+      expect(rejected.statusCode).toBe(400);
+    }
+  });
   it('health works without authentication and is not cached', async () => {
     const r = await app.inject('/health');
     expect(r.json().status).toBe('ok');

@@ -13,6 +13,7 @@ import argon2 from 'argon2';
 import { z } from 'zod';
 import { openDatabase, type AtlasDatabase, type UserRow } from './database';
 import { eventSchema } from '../src/core/schema';
+import { validCheckpoint } from '../src/core/materials';
 import {
   assignments,
   legacyAssignmentTasks,
@@ -26,6 +27,7 @@ import {
 export type ServerOptions = {
   db?: AtlasDatabase;
   origin?: string;
+  additionalOrigins?: string[];
   secure?: boolean;
   sameSite?: 'lax' | 'strict' | 'none';
   logger?: boolean;
@@ -93,13 +95,42 @@ export async function createServer(options: ServerOptions = {}) {
   const db = options.db ?? openDatabase();
   const origin =
     options.origin ?? process.env.ALLOWED_ORIGIN ?? 'http://localhost:4321';
+  const origins = [
+    ...new Set(
+      [
+        origin,
+        ...(options.additionalOrigins ??
+          process.env.ADDITIONAL_ALLOWED_ORIGINS?.split(',') ??
+          []),
+      ]
+        .map((value) => value.trim())
+        .filter(Boolean),
+    ),
+  ];
+  if (
+    !origins.length ||
+    origins.some((value) => {
+      try {
+        return (
+          value.includes('*') ||
+          !/^https?:/.test(value) ||
+          new URL(value).origin !== value
+        );
+      } catch {
+        return true;
+      }
+    })
+  )
+    throw new Error(
+      'Allowed origins must be exact HTTP(S) origins without paths',
+    );
   const secure = options.secure ?? process.env.COOKIE_SECURE !== 'false';
   const sameSite =
     options.sameSite ??
     (process.env.COOKIE_SAME_SITE === 'none' ? 'none' : 'lax');
   if (
     process.env.NODE_ENV === 'production' &&
-    (!secure || !origin.startsWith('https://'))
+    (!secure || origins.some((value) => !value.startsWith('https://')))
   )
     throw new Error(
       'Production requires secure cookies and an HTTPS allowed origin',
@@ -117,7 +148,7 @@ export async function createServer(options: ServerOptions = {}) {
   });
   await app.register(cookie);
   await app.register(cors, {
-    origin,
+    origin: origins,
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'DELETE'],
     allowedHeaders: ['content-type', 'x-csrf-token', 'x-atlas-client'],
@@ -136,7 +167,7 @@ export async function createServer(options: ServerOptions = {}) {
     reply.header('Cache-Control', 'no-store');
     if (['POST', 'PATCH', 'DELETE'].includes(req.method)) {
       if (
-        req.headers.origin !== origin ||
+        !origins.includes(req.headers.origin ?? '') ||
         req.headers['x-atlas-client'] !== 'atlas'
       )
         return reply
@@ -411,6 +442,15 @@ export async function createServer(options: ServerOptions = {}) {
       )
         return reply.code(400).send({ error: 'Invalid event clock' });
       const conceptId = 'concept' in e.payload ? e.payload.concept : undefined;
+      if (e.type === 'material_completed' || e.type === 'checkpoint_saved') {
+        const material = assignments.find((a) => a.id === e.payload.assignment);
+        if (
+          !material ||
+          (e.type === 'checkpoint_saved' &&
+            !validCheckpoint(material, e.payload.checkpoint))
+        )
+          return reply.code(400).send({ error: 'Unknown material checkpoint' });
+      }
       if (conceptId && !concepts.some((c) => c.id === conceptId))
         return reply.code(400).send({ error: 'Unknown concept' });
       if (

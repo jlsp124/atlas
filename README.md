@@ -1,10 +1,10 @@
 # atlas
 
-A student-built course companion by Jovan Pahal. Everything from class, without digging for it. Course → Unit → Learn / Classwork.
+A student-built course companion by Jovan Pahal. The assignment is the lesson. Course → Unit → Real material → Real question → Guided reasoning → Your work.
 
 [Open atlas](https://jlsp124.github.io/atlas/) · [Source](https://github.com/jlsp124/atlas) · [Linux deployment](docs/DEPLOYMENT.md)
 
-The public app is static. Guided learning, classwork, calendar, search and guest progress work without an account or a running server. An optional Node/SQLite service adds secure accounts, event sync, a request inbox and aggregate analytics.
+The public app is static. Assignment overview/focus, controlled visual explanations, notes, calendar, search and guest progress work without an account or a running server. An optional Node/SQLite service adds secure accounts, event sync, a request inbox and aggregate analytics.
 
 ## Development
 
@@ -26,13 +26,14 @@ Open `http://localhost:4321/atlas/`. `npm run check` validates formatting, lint,
 
 Shared concepts belong to a course; assignments, pacing and dates belong to a Fall 2026 edition. Original explanations and question families are curated derivatives of source evidence, never a public copy of the private vault.
 
-The current catalog contains 61 concepts, 198 optional question archetypes, 76 coverage items and 50 classwork entries with 353 checkpoints tied to actual supplied work. Course → unit → material set → real question is the primary route. Contextual help teaches the smallest missing idea and returns to the same work. See the [classwork milestone](docs/CLASSWORK_MILESTONE.md).
+The current catalog contains 61 concepts, 198 optional question archetypes, 76 coverage items and 50 materials with 353 checkpoints tied to actual supplied work. Every material uses the V3 assignment shell. Reusable teaching primitives highlight wording, extract facts, move equation tokens and progressively build diagrams, then stop for the student. Contextual help returns to the same question and draft. Assignment completion is separate from concept mastery. See the [V3 architecture](docs/V3.md) and preserved [classwork engine milestone](docs/CLASSWORK_MILESTONE.md).
 
 Accounts, synced progress, the private request inbox and administrator data use the optional API configured for the Pages build. The API's HTTPS health endpoint was verified on October 6; guest learning remains available offline. [Server operations](docs/SERVER_OPERATIONS.md) and [deployment guidance](docs/DEPLOYMENT.md) explain operation, cookie compatibility, bootstrap and backups.
 
 ## Documentation
 
-- [V2 design authority](docs/UX.md)
+- [Current V3 product and architecture](docs/V3.md)
+- [Historical V2 design](docs/UX.md)
 - [Implementation status](docs/IMPLEMENTATION_STATUS.md)
 - [Architecture and decisions](docs/ARCHITECTURE.md)
 - [Linux deployment](docs/DEPLOYMENT.md)

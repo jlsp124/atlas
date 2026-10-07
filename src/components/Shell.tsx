@@ -382,7 +382,7 @@ export default function Shell({
         <div className="search-results">
           {query.trim() ? (
             results.length ? (
-              (['Learn', 'Classwork', 'Other'] as const).map((group) => {
+              (['Materials', 'Other', 'Concepts'] as const).map((group) => {
                 const rows = results.filter((r) => r.group === group);
                 return rows.length ? (
                   <section key={group}>
@@ -435,7 +435,7 @@ export default function Shell({
           )}
         </div>
         <div className="search-footer">
-          <span>Topics · Classwork · Dates</span>
+          <span>Materials · Dates · Concepts</span>
           <span>Esc to close</span>
         </div>
       </dialog>

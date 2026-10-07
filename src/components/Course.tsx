@@ -1,17 +1,24 @@
 import { useEffect, useState } from 'react';
-import { findCourse, findEdition, schedule } from '../content/catalog';
 import {
+  assignments,
+  findCourse,
+  findEdition,
+  schedule,
+} from '../content/catalog';
+import {
+  assignmentUnits,
   eventPath,
   eventTitle,
   unitTitle,
   unitLabel,
   unitUrl,
-  unitTopics,
 } from '../content/workspaces';
+import { materialProgress } from '../core/materials';
 import { schoolDate, displayDate } from '../core/dates';
-import { url } from '../client/store';
+import { url, useLearner } from '../client/store';
 import { CourseMark, Icon } from './Icons';
 import Sheet from './Sheet';
+import MaterialRow from './MaterialRow';
 export default function Course({
   id,
   section,
@@ -20,35 +27,60 @@ export default function Course({
   section?: 'learn' | 'work' | 'schedule';
 }) {
   const c = findCourse(id),
-    edition = findEdition(id);
+    edition = findEdition(id),
+    state = useLearner();
   const [resources, setResources] = useState(false);
   useEffect(() => {
-    const query = new URLSearchParams(location.search);
-    setResources(query.has('resources'));
+    setResources(new URLSearchParams(location.search).has('resources'));
     if (section)
       location.replace(
         url(
           section === 'schedule'
             ? `calendar/?course=${id}`
-            : unitUrl(
-                id,
-                edition.currentUnit,
-                section === 'work' ? 'classwork' : 'learn',
-              ),
+            : unitUrl(id, edition.currentUnit),
         ),
       );
   }, [section, id, edition.currentUnit]);
+  const work = assignments.filter(
+    (a) => a.course === id && assignmentUnits[a.id] === edition.currentUnit,
+  );
+  const actionable = work.filter(
+    (a) =>
+      a.assistance !== 'independent-only' &&
+      !['notes', 'resource'].includes(a.kind ?? ''),
+  );
+  const recent = [...state.events]
+    .reverse()
+    .find((e) =>
+      actionable.some(
+        (a) =>
+          'assignment' in e.payload &&
+          a.id === e.payload.assignment &&
+          !materialProgress(a, state.events).done,
+      ),
+    );
+  const recentId =
+    recent && 'assignment' in recent.payload
+      ? recent.payload.assignment
+      : undefined;
+  const current =
+    actionable.find((a) => a.id === recentId) ??
+    actionable.find((a) => !materialProgress(a, state.events).done) ??
+    work[0];
   const events = schedule
     .filter(
       (e) =>
         e.course === id &&
         (!e.start || e.start >= schoolDate()) &&
-        (e.type === 'test' || e.type === 'quiz'),
+        (e.type === 'test' ||
+          e.type === 'quiz' ||
+          e.type === 'assignment' ||
+          e.type === 'project'),
     )
     .slice(0, 3);
   return (
-    <div className="course-screen" data-course={id}>
-      <div className="course-heading">
+    <div className="v3-course course-screen" data-course={id}>
+      <header className="course-heading">
         <CourseMark course={id} />
         <div>
           <p className="meta">
@@ -57,23 +89,40 @@ export default function Course({
           <h1>{c.title}</h1>
         </div>
         <div className="course-actions">
-          <a
-            className="icon-button"
-            aria-label="Course calendar"
-            href={url(`calendar/?course=${id}`)}
-          >
-            <Icon name="calendar" />
-          </a>
           <button className="secondary" onClick={() => setResources(true)}>
             Resources
             <Icon name="external" size={15} />
           </button>
         </div>
-      </div>
-      <p className="screen-intro">{c.description}</p>
-      <div className="course-layout">
+      </header>
+      <section className="current-work-band">
+        <div className="section-heading">
+          <p className="eyebrow">Current unit</p>
+          <a href={url(unitUrl(id, edition.currentUnit))}>
+            All material
+            <Icon name="arrow" size={16} />
+          </a>
+        </div>
+        <h2>
+          <a href={url(unitUrl(id, edition.currentUnit))}>
+            {unitTitle(id, edition.currentUnit)}
+          </a>
+        </h2>
+        <p className="muted">What you’re doing now</p>
+        {current && <MaterialRow material={current} featured />}
+        <div className="current-work-footer">
+          <span>{edition.teacher}</span>
+          {current && (
+            <a className="primary" href={url(`work/${current.id}/?focus=1`)}>
+              Continue
+              <Icon name="arrow" size={16} />
+            </a>
+          )}
+        </div>
+      </section>
+      <div className="v3-course-bottom">
         <section>
-          <h2>Your units</h2>
+          <h2>Units</h2>
           <div className="unit-list">
             {c.units.map((u, i) => (
               <a
@@ -87,19 +136,21 @@ export default function Course({
                 <span>
                   <strong>{unitTitle(id, u.id)}</strong>
                   <small>
-                    {unitTopics(id, u.id).length
-                      ? `${unitTopics(id, u.id).length} ideas`
-                      : 'Lessons coming soon'}
+                    {
+                      assignments.filter(
+                        (a) =>
+                          a.course === id && assignmentUnits[a.id] === u.id,
+                      ).length
+                    }{' '}
+                    materials
                   </small>
                 </span>
                 <span className="unit-status">
                   {u.id === edition.currentUnit
                     ? 'Current'
-                    : u.status === 'review'
-                      ? 'Earlier'
-                      : u.status === 'upcoming'
-                        ? 'Next'
-                        : 'In class'}
+                    : u.status === 'upcoming'
+                      ? 'Coming up'
+                      : 'Previous'}
                 </span>
                 <Icon name="arrow" size={18} />
               </a>
@@ -114,22 +165,31 @@ export default function Course({
                 {e.start ? displayDate(e.start) : 'Date to confirm'}
               </small>
               <strong>{eventTitle(e)}</strong>
+              <small>
+                {e.confidence === 'unverified'
+                  ? 'Scope to confirm'
+                  : 'Teacher scope available'}
+              </small>
               <Icon name="arrow" size={16} />
             </a>
           ))}
-          {!events.length && (
-            <p className="muted">I’ll add the next date when I get it.</p>
-          )}
+          {!events.length && <p className="muted">No new dates confirmed.</p>}
         </aside>
       </div>
+      <section className="recent-materials">
+        <h2>Current materials</h2>
+        {work
+          .filter((a) => a.id !== current?.id)
+          .slice(0, 4)
+          .map((a) => (
+            <MaterialRow key={a.id} material={a} />
+          ))}
+      </section>
       <Sheet
         open={resources}
         title={`${c.shortTitle} resources`}
         onClose={() => setResources(false)}
       >
-        <p className="muted">
-          The original class resources, when you need them.
-        </p>
         {edition.resources.map((r, i) => (
           <a
             className="resource-row"

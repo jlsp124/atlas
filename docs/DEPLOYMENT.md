@@ -16,10 +16,42 @@ Optional repository **Variables** (not frontend secrets):
 | ---------------------- | -------------------------------------------------------- |
 | `PUBLIC_API_URL`       | HTTPS API origin, with no trailing path or slash         |
 | `PUBLIC_SUPPORT_EMAIL` | Dedicated support contact; never a personal phone number |
+| `ATLAS_SITE`           | Site origin; defaults to `https://jlsp124.github.io`     |
+| `ATLAS_BASE`           | Site path; defaults to `/atlas`; custom domain uses `/`  |
 
 Changing a variable requires another Pages deployment. Never put credentials in either variable. Empty values keep a complete guest app and a public issue link for non-private support.
 
 For a custom site path, set `ATLAS_SITE` and `ATLAS_BASE` at build time. Keep the manifest, service-worker scope and Astro base consistent. Do not serve the built `/atlas/` app at `/` without rebuilding.
+
+The build writes `/release.json` (under the configured base), containing the full source `deploySha`, base and dirty-worktree flag. A production release must match the successful Verify and Deploy workflow SHA and have `dirty: false`. This receipt is also available offline; bypass the service worker and HTTP cache when verifying a new live deployment.
+
+## Coordinated domain cutover
+
+Target frontend: **https://atlas.jovanpahal.com/**. Target API: **https://api.atlas.jovanpahal.com**. The October 7 access check confirmed authenticated GitHub repository/Pages access. Cloudflare CLI credentials were expired and could not refresh, including with Wrangler 4.148.0; the browser also required sign-in. Local `cloudflared` and its account certificate were absent. The server was online in Tailscale, but SSH required a fresh identity check. No custom-domain, DNS, cookie or production-origin changes were applied.
+
+**Cloudflare login required.** On this computer, sign in at [the Cloudflare dashboard](https://dash.cloudflare.com/login), using the existing GitHub sign-in, and make the `jovanpahal.com` zone available. Do not paste credentials or tunnel tokens into chat. To restore server access, run:
+
+```powershell
+& 'C:\Program Files\Tailscale\tailscale.exe' ssh jovan@glucose-games-server.tail428a5c.ts.net
+```
+
+Complete the fresh Tailscale identity check shown by that command. It verifies the server host key against the coordination server; do not disable SSH host-key verification. Once these two logins are complete, the prepared cutover can be applied without changing the application or progress IDs.
+
+Apply in this order:
+
+1. Verify ownership in GitHub account **Settings → Pages** for `jovanpahal.com`, adding the exact TXT record GitHub supplies. Keep that verification record. GitHub recommends ownership verification before custom-domain use to prevent takeover. [Official verification instructions](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/verifying-your-custom-domain-for-github-pages).
+2. On `/opt/atlas`, add `ADDITIONAL_ALLOWED_ORIGINS=https://atlas.jovanpahal.com` to the protected `.env.server`, retaining `ALLOWED_ORIGIN=https://jlsp124.github.io`, `COOKIE_SECURE=true`, `COOKIE_SAME_SITE=none` and `TRUST_PROXY=true` during the transition. Restart through `atlasctl`, verify health, and test CORS/CSRF for both exact origins. The server refuses malformed origins, wildcards and insecure production origins.
+3. Check Cloudflare **SSL/TLS → Edge Certificates** for coverage of `api.atlas.jovanpahal.com` before publishing it. This is a second-level subdomain: Universal SSL on a full DNS zone covers only the apex and first level. A tunnel at this depth requires a suitable advanced/custom certificate; **Total TLS does not issue certificates for Tunnel hostnames**. Inspect existing plan/certificate access after sign-in and do not assume coverage or buy a paid add-on without authorization. [Universal SSL limits](https://developers.cloudflare.com/ssl/edge-certificates/universal-ssl/limitations/), [Tunnel multi-level hostname requirement](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/get-started/create-remote-tunnel-api/) and [Total TLS limitations](https://developers.cloudflare.com/ssl/edge-certificates/additional-options/total-tls/).
+   Create or reuse an authenticated Cloudflare Tunnel on the **Linux API host**. Prefer a remotely managed tunnel in the dashboard; install its official connector as a service and keep the credential protected. Publish only `api.atlas.jovanpahal.com` to **`http://127.0.0.1:8787`**. The connector and its edge certificate must be healthy before the hostname can serve requests. Preserve the unrelated Tailscale 443 service and the current Atlas 8443 fallback. [Current tunnel setup](https://developers.cloudflare.com/tunnel/) and [hostname routing](https://developers.cloudflare.com/tunnel/concepts/routing/).
+4. If using an existing locally managed tunnel instead, [`deploy/cloudflared-atlas.example.yml`](../deploy/cloudflared-atlas.example.yml) supplies the loopback ingress and 404 catch-all. On the Linux host with official `cloudflared` installed, run `cloudflared tunnel login`, select `jovanpahal.com`, then create or reuse the named tunnel and run `cloudflared tunnel route dns <TUNNEL_NAME_OR_UUID> api.atlas.jovanpahal.com`. Fill the actual UUID and credential path in protected host configuration, validate ingress, and install/run the service. Never commit the certificate, credential JSON or tunnel token. [Current local-tunnel instructions](https://developers.cloudflare.com/tunnel/features/locally-managed-tunnels/create-local-tunnel/).
+5. Verify `https://api.atlas.jovanpahal.com/health` against the exact deployed SHA, then test registration/sign-in, HttpOnly/Secure cookies and sync from the new frontend origin. Do not switch Pages if this API check fails.
+6. Set the repository build variables to `ATLAS_SITE=https://atlas.jovanpahal.com`, `ATLAS_BASE=/`, and `PUBLIC_API_URL=https://api.atlas.jovanpahal.com`. Set the Pages custom domain to `atlas.jovanpahal.com` **before** creating its DNS record. Create a Cloudflare **CNAME** named `atlas`, targeting **`jlsp124.github.io`**, initially **DNS only** so GitHub's hostname/certificate checks reach Pages directly. Do not include `/atlas` in DNS, create a wildcard, or modify the apex/other records. This Actions-based site does not use a `CNAME` file; GitHub ignores one for workflow publishing. [Official Pages subdomain requirements](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site), [Cloudflare DNS record controls](https://developers.cloudflare.com/dns/manage-dns-records/how-to/create-dns-records/) and [proxy status](https://developers.cloudflare.com/dns/proxy-status/).
+7. Re-run Deploy atlas for the exact successful Verify run (or push a reviewed change through normal verification). Wait for DNS and the Pages TLS certificate; enable **Enforce HTTPS** when available. Verify `/release.json`, root assets, manifest, service-worker scope, Pagefind, downloads, question deep links, offline operation and both account contexts on the new origin. GitHub notes that certificate/DNS availability can take up to 24 hours; report propagation separately from a successful deployment.
+8. After the new frontend/API pair works, set primary `ALLOWED_ORIGIN=https://atlas.jovanpahal.com`. Retain the old origin in `ADDITIONAL_ALLOWED_ORIGINS` only while its transitional access is needed. Same-parent HTTPS services can use `COOKIE_SAME_SITE=lax`; switch after the old cross-site frontend is no longer needed, then retest sign-in/sync. Cookies remain host-only, Secure and HttpOnly. Authentication secrets never enter localStorage.
+
+GitHub redirects the old project URL after custom-domain configuration, but guest browser storage belongs to the old origin. Offer the existing guest export/import before cutover; account events retain their IDs and sync on the new origin after sign-in. Do not claim automatic transfer of cross-origin localStorage. Existing question hash links and internal concept URLs remain valid.
+
+If the new API or login fails before cutover, keep the current Pages URL/variables and Funnel endpoint. If it fails after cutover, restore the previous Pages domain/build variables and deploy the previously verified release; keep both exact API origins accepted until recovery is confirmed. Do not remove SQLite data, weaken cookies or bind port 8787 publicly.
 
 ## Linux with Docker Compose
 
@@ -33,14 +65,7 @@ The systemd watcher runs every two minutes; it is not a self-hosted Actions runn
 
 The existing GitHub Pages workflow is preserved. The repository variable `PUBLIC_API_URL` is public build configuration; after DNS and the HTTPS API hostname exist, set it to the API origin and configure the Pages custom domain under the same parent domain. No support email is inferred.
 
-When the domain is available, use this hostname pair:
-
-```text
-Frontend: https://atlas.<your-domain>
-API:      https://api.atlas.<your-domain>
-```
-
-The current API endpoint is the Tailscale Funnel URL above. Keep the existing GitHub Pages guest/offline app available and do not change cookie security or substitute browser-stored bearer tokens. The root `jovanpahal.com` does not need a web destination; only `atlas` and `api.atlas` DNS records are needed for the planned setup.
+The current API endpoint is the Tailscale Funnel URL above. Follow the coordinated cutover above for `atlas.jovanpahal.com` and `api.atlas.jovanpahal.com`. The root `jovanpahal.com` does not need a web destination; only those subdomains and the GitHub-supplied verification TXT record are needed. Preserve cookie security and never substitute browser-stored bearer tokens.
 
 Install Docker Engine and the Compose plugin using your distribution's supported instructions. Clone this repository to a directory you control. Create `.env.server` with permissions `600`; this file is ignored by Git:
 

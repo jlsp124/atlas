@@ -1,6 +1,5 @@
 import {
   assignments,
-  concepts,
   findCourse,
   findEdition,
   schedule,
@@ -10,16 +9,42 @@ import {
   assignmentTitle,
   eventPath,
   eventTitle,
-  topicTitle,
   unitTitle,
 } from '../content/workspaces';
-import { schoolDate, dayDifference } from '../core/dates';
+import { materialProgress, resumeCheckpoint } from '../core/materials';
+import { schoolDate, displayDate } from '../core/dates';
 import { useLearner, url } from '../client/store';
 import { CourseMark, Icon } from './Icons';
 export default function Home({ chooser = false }: { chooser?: boolean }) {
   const state = useLearner(),
     today = schoolDate();
   const added = workspaceCourses.filter((c) => state.selected.includes(c.id));
+  const current = assignments.filter(
+    (a) =>
+      state.selected.includes(a.course) &&
+      a.status === 'current' &&
+      a.assistance !== 'independent-only' &&
+      a.companionQuestions?.length &&
+      !materialProgress(a, state.events).done,
+  );
+  const recent = [...state.events]
+    .reverse()
+    .find((e) =>
+      current.some(
+        (a) => 'assignment' in e.payload && a.id === e.payload.assignment,
+      ),
+    );
+  const recentId =
+    recent && 'assignment' in recent.payload
+      ? recent.payload.assignment
+      : undefined;
+  const resume = current.find((a) => a.id === recentId) ?? current[0];
+  const checkpoint = resume
+    ? resumeCheckpoint(resume, state.events)
+    : undefined;
+  const label = resume?.companionQuestions?.find(
+    (q) => q.id === checkpoint,
+  )?.number;
   const next = schedule
     .filter(
       (e) =>
@@ -29,45 +54,12 @@ export default function Home({ chooser = false }: { chooser?: boolean }) {
         e.type !== 'research',
     )
     .sort((a, b) => a.start!.localeCompare(b.start!))
-    .slice(0, 5);
-  const recent = [...state.events]
-    .reverse()
-    .find((e) =>
-      e.type === 'lesson_viewed'
-        ? state.selected.includes(
-            concepts.find((c) => c.id === e.payload.concept)?.course ?? '',
-          )
-        : e.type === 'assignment_task'
-          ? state.selected.includes(
-              assignments.find((a) => a.id === e.payload.assignment)?.course ??
-                '',
-            )
-          : false,
-    );
-  const resume =
-    recent?.type === 'lesson_viewed'
-      ? {
-          title: topicTitle(recent.payload.concept),
-          path: `learn/${recent.payload.concept}/`,
-        }
-      : recent?.type === 'assignment_task'
-        ? {
-            title: assignmentTitle(recent.payload.assignment),
-            path: `work/${recent.payload.assignment}/`,
-          }
-        : undefined;
+    .slice(0, 3);
   return (
-    <div className="home-screen">
+    <div className="home-screen v3-home">
       <div className="screen-heading">
         <div>
-          <p className="meta">
-            {new Intl.DateTimeFormat('en-CA', {
-              weekday: 'long',
-              month: 'long',
-              day: 'numeric',
-              timeZone: 'UTC',
-            }).format(new Date(today + 'T12:00Z'))}
-          </p>
+          <p className="meta">{displayDate(today)}</p>
           <h1>{chooser ? 'Your courses' : 'Your atlas'}</h1>
         </div>
         <a className="quiet" href={url('account/')}>
@@ -78,8 +70,30 @@ export default function Home({ chooser = false }: { chooser?: boolean }) {
       <div className={`home-grid ${chooser ? 'course-chooser' : ''}`}>
         {!chooser && (
           <section className="up-next">
+            {resume && (
+              <a
+                className="continue-row v3-continue"
+                data-course={resume.course}
+                href={url(
+                  `work/${resume.id}/?focus=1${checkpoint ? `#${checkpoint}` : ''}`,
+                )}
+              >
+                <span>
+                  <small>Continue{label ? ` · Question ${label}` : ''}</small>
+                  <strong>
+                    {resume.id === 'kinematics-review'
+                      ? 'Kinematics Review'
+                      : assignmentTitle(resume.id)}
+                  </strong>
+                  <small>
+                    {findCourse(resume.course).shortTitle} · {resume.teacher}
+                  </small>
+                </span>
+                <Icon name="arrow" />
+              </a>
+            )}
             <div className="section-heading">
-              <h2>Up next</h2>
+              <h2>Coming up</h2>
               <a href={url('calendar/')}>
                 Calendar
                 <Icon name="arrow" size={16} />
@@ -107,43 +121,28 @@ export default function Home({ chooser = false }: { chooser?: boolean }) {
                         : 'No classes'}
                     </small>
                   </span>
-                  {e.course && (
-                    <span className="course-dot" data-course={e.course} />
-                  )}
                   <Icon name="arrow" size={17} />
                 </a>
               ))}
-              {!next.length && (
-                <p className="empty-state">
-                  Nothing dated coming up. Your units are still here when you
-                  need them.
-                </p>
-              )}
+              {!next.length && <p className="muted">No new dates confirmed.</p>}
             </div>
-            {resume && (
-              <a className="continue-row" href={url(resume.path)}>
-                <span>
-                  <small>Continue</small>
-                  <strong>{resume.title}</strong>
-                </span>
-                <Icon name="arrow" />
-              </a>
-            )}
           </section>
         )}
         <section className="my-courses">
           <div className="section-heading">
-            <h2>{chooser ? 'Pick up where you left off' : 'My courses'}</h2>
-            <a href={url('account/')} aria-label="Change courses">
-              Edit
+            <h2>{chooser ? 'Current courses' : 'Current work'}</h2>
+            <a className="quiet" href={url('account/')}>
+              Manage
+              <Icon name="more" size={15} />
             </a>
           </div>
-          <div className="course-rows">
+          <div className="course-workspaces">
             {added.map((c) => (
               <a
                 className="course-row"
-                href={url(`courses/${c.id}/`)}
+                data-course={c.id}
                 key={c.id}
+                href={url(`courses/${c.id}/`)}
               >
                 <CourseMark course={c.id} />
                 <span>
@@ -157,12 +156,9 @@ export default function Home({ chooser = false }: { chooser?: boolean }) {
             ))}
           </div>
           {!added.length && (
-            <div className="empty-state">
-              <p>Add the classes you’re taking.</p>
-              <a className="primary" href={url('account/')}>
-                Choose courses
-              </a>
-            </div>
+            <a className="primary" href={url('account/')}>
+              Choose courses
+            </a>
           )}
           {chooser && (
             <a className="quiet" href={url()}>
@@ -171,15 +167,6 @@ export default function Home({ chooser = false }: { chooser?: boolean }) {
           )}
         </section>
       </div>
-      {!chooser && (
-        <div className="home-footnote">
-          <span>
-            {Math.max(0, dayDifference(today, '2026-12-21'))} days until winter
-            break
-          </span>
-          <span>Fall 2026</span>
-        </div>
-      )}
     </div>
   );
 }

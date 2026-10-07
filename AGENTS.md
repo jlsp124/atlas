@@ -2,12 +2,14 @@
 
 For "Put this in Atlas" or "Update atlas", read `docs/INTAKE.md` first and the
 canonical `02 Projects/Atlas Intake.md` in the private `jlsp124/obsidian-vaults`
-repository. The October 6, 2026 master brief in that note supersedes conflicting
-older concept-first, generic-practice and end-of-semester plans.
+repository. The October 7, 2026 Atlas V3 product brief supersedes conflicting
+earlier UX instructions. See `docs/V3.md` for the implementation contract.
 
 Schoolwork is the interface: course → unit → material set → actual notes,
 worksheet, lab or reference → the smallest helpful explanation → the same work.
-Preserve the V2 neutral themes, accents and sidebar. Do not introduce green.
+Preserve the neutral themes, accents and sidebar. Do not introduce green.
+Units open real material directly. There is no primary Learn/Classwork fork or
+mandatory parallel curriculum. Keep assignment and checkpoint IDs stable.
 
 Search the private registry and permitted vault before creating a source.
 Record capture order and metadata before copying or grouping. Keep raw files,
