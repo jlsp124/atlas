@@ -122,6 +122,7 @@ export default function CompanionQuestion({
                 <input
                   name={field}
                   type="radio"
+                  disabled={!state.ready}
                   checked={value === c}
                   onChange={() => setValue(c)}
                 />
@@ -141,6 +142,7 @@ export default function CompanionQuestion({
             {q.input === 'text' ? (
               <textarea
                 id={field}
+                disabled={!state.ready}
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
                 rows={3}
@@ -148,6 +150,7 @@ export default function CompanionQuestion({
             ) : (
               <input
                 id={field}
+                disabled={!state.ready}
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
                 inputMode={q.input === 'numeric' ? 'decimal' : 'text'}
@@ -159,6 +162,7 @@ export default function CompanionQuestion({
               <label>
                 Unit
                 <input
+                  disabled={!state.ready}
                   value={unit}
                   onChange={(e) => setUnit(e.target.value)}
                   autoComplete="off"
@@ -169,6 +173,7 @@ export default function CompanionQuestion({
               <label>
                 Direction in words
                 <input
+                  disabled={!state.ready}
                   value={direction}
                   onChange={(e) => setDirection(e.target.value)}
                   autoComplete="off"
