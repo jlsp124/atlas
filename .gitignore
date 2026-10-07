@@ -1,4 +1,6 @@
 node_modules/
+raw pictures/
+atlas-sources/
 dist/
 .astro/
 .env

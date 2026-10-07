@@ -9,11 +9,12 @@ import type {
   ScheduleEvent,
   Source,
 } from '../core/schema';
+import classroom from './ingestion/classroom.json' with { type: 'json' };
 
 export const snapshot = {
-  date: '2026-10-05',
+  date: '2026-10-06',
   term: 'Fall 2026',
-  vaultCommit: '01c9644647ee197de2a4e06f004a5d1c77535f28',
+  vaultCommit: 'a407ef57e46fc3180700c7fd11d9a3f10171937f',
   timezone: 'America/Vancouver',
 };
 export const courses: Course[] = [
@@ -64,6 +65,8 @@ export const courses: Course[] = [
     units: [
       { id: 'writing', title: 'Writing systems & sounds', status: 'current' },
       { id: 'greetings', title: 'Basics & greetings', status: 'current' },
+      { id: 'numbers', title: 'Numbers & money', status: 'current' },
+      { id: 'colours', title: 'Colours & shapes', status: 'current' },
     ],
   },
   {
@@ -86,6 +89,7 @@ export const courses: Course[] = [
         title: 'Lewis structures & molecular shape',
         status: 'current',
       },
+      { id: 'matter', title: 'Matter & lab preparation', status: 'current' },
     ],
   },
 ];
@@ -127,7 +131,7 @@ export const sources: Source[] = [
     type: 'vault-notes',
     reference:
       'Physics 11 / Unit 0, Unit 1, Kinematics Test Prep (updated Oct. 5)',
-    author: 'Jovan Pahal; class evidence from Mr. Wadson',
+    author: 'Private class evidence from Mr. Wadson',
     checked: snapshot.date,
     rights: 'link-only',
     status: 'snapshot',
@@ -140,7 +144,7 @@ export const sources: Source[] = [
     type: 'vault-notes',
     reference:
       'Chemistry 11 / Student Study Guide Insights; Oct. 4 notes; Resources and Calendar (Oct. 5)',
-    author: 'Jovan Pahal; class evidence from Mrs. Cote',
+    author: 'Private class evidence from Mrs. Cote',
     checked: snapshot.date,
     rights: 'link-only',
     status: 'snapshot',
@@ -153,7 +157,7 @@ export const sources: Source[] = [
     type: 'vault-notes',
     reference:
       'Life Sciences 11 / Units / Chapter 18 and Chapter 17; Oct. 4 C17 scope capture',
-    author: 'Jovan Pahal; class evidence from J. Bleecker',
+    author: 'Private class evidence from J. Bleecker',
     checked: snapshot.date,
     rights: 'link-only',
     status: 'snapshot',
@@ -166,7 +170,7 @@ export const sources: Source[] = [
     type: 'vault-notes',
     reference:
       'Introductory Japanese 11 / Sept. 23 Writing Systems; Course Outline and Policies (Oct. 2)',
-    author: 'Jovan Pahal; class evidence from McNeill-sensei',
+    author: 'Private class evidence from McNeill-sensei',
     checked: snapshot.date,
     rights: 'link-only',
     status: 'snapshot',
@@ -178,7 +182,7 @@ export const sources: Source[] = [
     title: 'Verified Semester 1 course order',
     type: 'vault-notes',
     reference: '2026-27 Verified Timetable; course fields only',
-    author: 'School schedule, curated by Jovan Pahal',
+    author: 'School schedule; private class records',
     checked: snapshot.date,
     rights: 'link-only',
     status: 'snapshot',
@@ -562,11 +566,14 @@ const lessonInputs: LessonInput[] = [
     'physics',
     'kinematics',
     'Direction before signs',
-    'A scalar has magnitude. A vector has magnitude and direction. In one dimension, a chosen positive axis represents direction with a sign.',
+    'Choose which direction is positive. Motion that way has a plus sign; motion the other way has a minus sign. Write the direction in words in your final vector answer.',
     'The coordinate choice is a convention. Reversing the positive axis reverses directional signs consistently without changing the physical event. A negative velocity means one direction, not automatically slowing down.',
     '+ east, − west (one possible convention)',
     'Choose east positive. A cart travels west at 3 m/s. Write velocity.',
-    ['West is opposite the positive axis.', 'v = −3 m/s.'],
+    [
+      'West is opposite the positive axis.',
+      'v = 3 m/s west (or −3 m/s west under this convention).',
+    ],
     'Speed is nonnegative magnitude; velocity carries direction. State your axis choice.',
     [],
   ],
@@ -637,7 +644,7 @@ const lessonInputs: LessonInput[] = [
     'kinematics',
     'Choose the equation from the unknown',
     'For constant acceleration, list knowns and the requested unknown. Choose a relationship that excludes the quantity you lack.',
-    'The standard equations are consistent ways to integrate a constant rate of velocity change. Their constant-acceleration condition matters. The formula sheet supplies the relations, while you supply signs, units and meaning.',
+    'These equations describe motion while acceleration stays constant. List what you know and what you need. Choose the equation containing those quantities, then decide signs and units.',
     'v_f = v_i + at; Δx = v_i t + ½at²; v_f² = v_i² + 2aΔx',
     'A cart starts at 2 m/s and accelerates at 3 m/s² for 4 s. Find final velocity.',
     [
@@ -858,7 +865,7 @@ const lessonInputs: LessonInput[] = [
     'origins',
     'Early Earth & chemical origins',
     'Early Earth differed from today. Chemical-origin experiments explore how nonliving chemistry can produce building blocks; they do not demonstrate the creation of life.',
-    'The Miller–Urey experiment supplied energy to a particular gas/water mixture and produced organic molecules including amino acids. The exact ancient atmosphere remains a scientific question. Proteinoid microspheres illustrate cell-like compartments without being living cells.',
+    'The Miller–Urey apparatus supplied energy to methane (CH₄), ammonia (NH₃), hydrogen (H₂) and water vapour (H₂O), producing organic molecules including amino acids. This experimental mixture is a model; the exact ancient atmosphere remains a scientific question. Proteinoid microspheres are nonliving, selectively permeable cell-like compartments.',
     'simple chemicals + energy → some organic building blocks',
     'What claim is supported when an experiment produces amino acids without organisms?',
     [
@@ -874,7 +881,7 @@ const lessonInputs: LessonInput[] = [
     'origins',
     'Endosymbiotic theory',
     'Mitochondria and chloroplasts descend from bacteria that became long-term partners inside ancestral cells.',
-    'These organelles have features consistent with bacterial ancestry, including their own DNA and division by fission. Engulfment plus a stable mutual relationship explains how distinct cells became organelles over evolutionary time.',
+    'Three clues support bacterial ancestry: their own bacterial-like DNA, bacterial-like ribosomes and reproduction by binary fission. Oxygen-using bacteria connect to mitochondria; photosynthetic bacteria connect to chloroplasts. A stable relationship inside a larger cell explains how distinct cells became organelles over evolutionary time.',
     'engulfed bacteria → persistent symbiosis → organelles',
     'Which organelle has an origin linked to photosynthetic bacteria?',
     [
@@ -2042,204 +2049,14 @@ for (const [id, concept, title, prompt, answer, explanation] of detailChecks) {
 questions.find((q) => q.id === 'detail-addition-precision')!.precision =
   'decimal-places';
 
-export const assignments: Assignment[] = [
-  {
-    id: 'kinematics-review',
-    course: 'physics',
-    edition: 'physics-fall-2026',
-    teacher: 'Mr. Wadson',
-    title: 'Kinematics review companion',
-    assigned: '2026-10-04',
-    status: 'current',
-    summary:
-      'Prepare for the Oct. 6 quiz by connecting signs, graphs and equation selection. This is an original study companion to the current review work.',
-    tasks: [
-      {
-        id: 'signs',
-        title: 'Set a direction convention',
-        instructions:
-          'Choose a positive axis. For each problem on your original sheet, write signed velocity and acceleration before inserting numbers.',
-      },
-      {
-        id: 'graphs',
-        title: 'Read each graph twice',
-        instructions:
-          'Name what the height, slope and area mean for the displayed axes. Explain a horizontal velocity segment without confusing it with rest.',
-      },
-      {
-        id: 'equations',
-        title: 'Choose, solve, audit',
-        instructions:
-          'List knowns and unknown. Select a constant-acceleration relation, rearrange, then check units, sign/direction and precision.',
-      },
-    ],
-    concepts: [
-      'vector-sign',
-      'motion-graphs',
-      'kinematic-equations',
-      'free-fall',
-    ],
-    prerequisites: ['algebra-rearrangement', 'physics-units'],
-    sources: ['vault-physics', 'atlas-original'],
-    difficulty: ['sign reasoning', 'representation', 'equation selection'],
-    rights: 'original-companion',
-    originalUrl: 'https://cwadson.wixsite.com/mrwadson/physics-11-1',
-    originalAvailability:
-      'Use your class handouts; the teacher site is a resource library. No due date is confirmed.',
-    notes:
-      'The page-66 question-range instruction remains unverified and is not restated as a confirmed task.',
-  },
-  {
-    id: 'electronic-structure',
-    course: 'chemistry',
-    edition: 'chemistry-fall-2026',
-    teacher: 'Mrs. Cote',
-    title: 'Hand In #13 · Electronic structure companion',
-    assigned: '2026-10-04',
-    status: 'current',
-    summary:
-      'Build the ideas and notation needed for the electronic-structure assignment. Complete the teacher’s original questions on your own sheet.',
-    tasks: [
-      {
-        id: 'model',
-        title: 'Connect shells, subshells and orbitals',
-        instructions:
-          'Explain the difference between a shell, subshell and orbital in your own words. Check s/p/d/f capacities without copying answers into assessed work.',
-      },
-      {
-        id: 'notation',
-        title: 'Practise fresh notation',
-        instructions:
-          'Use independent atlas examples to write full and core configurations. Add superscripts to check electron count.',
-      },
-      {
-        id: 'submit',
-        title: 'Complete and check the original',
-        instructions:
-          'Return to the original teacher assignment, work independently, and check all required sections. Confirm the due date in class.',
-      },
-    ],
-    concepts: [
-      'atomic-identity',
-      'electron-configuration',
-      'valence-electrons',
-    ],
-    prerequisites: ['atomic-identity'],
-    sources: ['vault-chemistry', 'atlas-original'],
-    difficulty: ['notation', 'electron counting'],
-    rights: 'original-companion',
-    originalUrl: 'https://mrstcote.wordpress.com/',
-    originalAvailability:
-      'Original paper handout; redistribution permission is not established. Teacher homepage is not a direct copy of the assignment.',
-    notes:
-      'Due-date field is unknown. No original question text or answer key is reproduced.',
-  },
-  {
-    id: 'c17-research',
-    course: 'life-sciences',
-    edition: 'life-sciences-fall-2026',
-    teacher: 'J. Bleecker',
-    title: 'C17 · Origins research companion',
-    assigned: '2026-09-22',
-    status: 'current',
-    summary:
-      'Use the current Chapter 17 research block to explain fossil evidence, dating and the origin of cell complexity before the Oct. 7 test.',
-    tasks: [
-      {
-        id: 'fossils',
-        title: 'Reconstruct the fossil story',
-        instructions:
-          'Explain burial and preservation; compare sedimentary, igneous and metamorphic rock. Use superposition and index fossils to order events.',
-      },
-      {
-        id: 'dating',
-        title: 'Read the half-life model',
-        instructions:
-          'Work a new numerical example. State the closed-system assumptions, then distinguish a relative order from a numeric age.',
-      },
-      {
-        id: 'origins',
-        title: 'Separate evidence from claims',
-        instructions:
-          'Explain what Miller–Urey demonstrated, why microspheres are not living cells, and the evidence for bacterial origins of organelles.',
-      },
-      {
-        id: 'evolution',
-        title: 'Retrieve the expanded test scope',
-        instructions:
-          'Distinguish extinction, radiation, convergence, coevolution and patterns of pace. Review Hox genes as developmental patterning genes, using teacher notes.',
-      },
-    ],
-    concepts: [
-      'fossilization',
-      'relative-dating',
-      'half-life',
-      'early-earth',
-      'endosymbiosis',
-      'evolution-patterns',
-    ],
-    prerequisites: ['phylogeny'],
-    sources: ['vault-life', 'bleecker-calendar', 'atlas-original'],
-    difficulty: [
-      'mechanism explanation',
-      'graph interpretation',
-      'terminology',
-    ],
-    rights: 'original-companion',
-    originalUrl: editions[1].resources[0],
-    originalAvailability:
-      'Follow the teacher site and your class notes. The research block runs through Oct. 6 (calendar end exclusive Oct. 7); this is not an inferred submission deadline.',
-    notes:
-      'Test Oct. 7 is confirmed by the live teacher calendar. Checklist completion records your self-report, not teacher submission.',
-  },
-  {
-    id: 'greetings-practice',
-    course: 'japanese',
-    edition: 'japanese-fall-2026',
-    teacher: 'McNeill-sensei',
-    title: 'Basics & greetings · independent practice',
-    assigned: '2026-09-23',
-    status: 'current',
-    summary:
-      'Retrieve the current 18 expressions from a situation, then produce their written forms. This is independent practice rather than a new teacher-assigned deadline.',
-    tasks: [
-      {
-        id: 'read',
-        title: 'Read before translating',
-        instructions:
-          'Recognize the kana in a phrase, then recall the meaning without relying on rōmaji.',
-      },
-      {
-        id: 'produce',
-        title: 'Produce from a situation',
-        instructions:
-          'Choose morning/evening greetings, an introduction, a polite request and a thanks. Type them from memory, then practise handwriting using the teacher’s model.',
-      },
-      {
-        id: 'contrast',
-        title: 'Test one useful contrast',
-        instructions:
-          'After learning the phrases separately, compare polite attention-getting with apologizing. Explain when すみません is more appropriate than ごめんなさい.',
-      },
-    ],
-    concepts: [
-      'hiragana',
-      'jp-ohayou',
-      'jp-konnichiwa',
-      'jp-sumimasen',
-      'jp-arigatou',
-    ],
-    prerequisites: ['hiragana', 'mora'],
-    sources: ['vault-japanese', 'atlas-original'],
-    difficulty: ['recall', 'situation fit', 'script production'],
-    rights: 'original-companion',
-    originalUrl: 'https://marugoto.jpf.go.jp/en/e-learning/index.html',
-    originalAvailability:
-      'Use the teacher’s vocabulary/kana handouts for class expectations. No new quiz date has been inferred.',
-    notes:
-      'AI/translator assistance must remain on the learning side. Do not use it to produce submitted class work.',
-  },
-];
+// Preserve the historical task keys without publishing obsolete companion bodies.
+export const legacyAssignmentTasks: Record<string, string[]> = {
+  'kinematics-review': ['signs', 'graphs', 'equations'],
+  'electronic-structure': ['model', 'notation', 'submit'],
+  'c17-research': ['fossils', 'dating', 'origins', 'evolution'],
+  'greetings-practice': ['read', 'produce', 'contrast'],
+};
+export const assignments: Assignment[] = classroom.assignments as Assignment[];
 
 const event = (
   id: string,

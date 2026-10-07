@@ -36,18 +36,17 @@ export default function Unit({
     c = findCourse(course),
     edition = findEdition(course),
     topics = unitTopics(course, unit);
-  const [view, setView] = useState('learn'),
+  const defaultView =
+    course === 'japanese' && topics.length ? 'learn' : 'classwork';
+  const [view, setView] = useState(defaultView),
     [resources, setResources] = useState(false);
   useEffect(() => {
-    setView(
-      new URLSearchParams(location.search).get('view') === 'classwork'
-        ? 'classwork'
-        : 'learn',
-    );
+    setView(new URLSearchParams(location.search).get('view') ?? defaultView);
   }, []);
   const work = assignments.filter(
     (a) => a.course === course && assignmentUnits[a.id] === unit,
   );
+  const sets = [...new Set(work.map((a) => a.materialSet ?? a.id))];
   const dated = schedule.find(
     (e) =>
       e.course === course &&
@@ -168,30 +167,43 @@ export default function Unit({
         )
       ) : (
         <div className="classwork-layout">
-          {work.map((a) => (
-            <section className="material-set" key={a.id}>
-              <h2>{assignmentTitle(a.id)}</h2>
-              <a className="material-row" href={url(`work/${a.id}/`)}>
-                <Icon name="book" />
-                <span>
-                  <strong>Notes & practice</strong>
-                  <small>
-                    Original atlas companion · {a.tasks.length} sections
-                  </small>
-                </span>
-                <Icon name="arrow" />
-              </a>
-              {a.originalUrl && (
-                <a
-                  className="resource-row"
-                  href={a.originalUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Original class resource
-                  <Icon name="external" size={16} />
-                </a>
-              )}
+          {sets.map((set) => (
+            <section className="material-set" key={set}>
+              <h2>
+                {set.replaceAll('-', ' ').replace(/^./, (s) => s.toUpperCase())}
+              </h2>
+              {work
+                .filter((a) => (a.materialSet ?? a.id) === set)
+                .map((a) => (
+                  <div key={a.id}>
+                    <a className="material-row" href={url(`work/${a.id}/`)}>
+                      <Icon name="book" />
+                      <span>
+                        <strong>{assignmentTitle(a.id)}</strong>
+                        <small>
+                          {a.kind ?? 'Companion'}
+                          {a.assistance === 'independent-only'
+                            ? ' · details only'
+                            : a.companionQuestions?.length
+                              ? ` · ${a.companionQuestions.length} checkpoints`
+                              : ''}
+                        </small>
+                      </span>
+                      <Icon name="arrow" />
+                    </a>
+                    {a.originalUrl && (
+                      <a
+                        className="resource-row"
+                        href={a.originalUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Original class resource
+                        <Icon name="external" size={16} />
+                      </a>
+                    )}
+                  </div>
+                ))}
             </section>
           ))}
           {(teacherUnitResources[unit] ?? []).length > 0 && (

@@ -63,6 +63,17 @@ describe('accounts and authorization', () => {
     const r = await app.inject('/health');
     expect(r.json().status).toBe('ok');
     expect(r.headers['cache-control']).toBe('no-store');
+    const previous = process.env.ATLAS_DEPLOY_SHA;
+    try {
+      const sha = 'a'.repeat(40);
+      process.env.ATLAS_DEPLOY_SHA = sha;
+      expect((await app.inject('/health')).json().deploySha).toBe(sha);
+      process.env.ATLAS_DEPLOY_SHA = 'unknown';
+      expect((await app.inject('/health')).json().deploySha).toBeNull();
+    } finally {
+      if (previous === undefined) delete process.env.ATLAS_DEPLOY_SHA;
+      else process.env.ATLAS_DEPLOY_SHA = previous;
+    }
   });
   it('stores Argon2id hashes and HttpOnly sessions without returning secrets', async () => {
     const a = await account();
@@ -217,6 +228,86 @@ describe('accounts and authorization', () => {
   });
 });
 describe('offline event reconciliation', () => {
+  it('syncs classwork attempts and ratings between sessions and isolates accounts', async () => {
+    const a = await account(),
+      b = await account();
+    const rating = {
+      id: randomUUID(),
+      device: randomUUID(),
+      at: new Date().toISOString(),
+      type: 'difficulty_rated',
+      payload: {
+        assignment: 'kinematics-review',
+        checkpoint: 'q-1',
+        concept: 'kinematic-equations',
+        rating: 'hard',
+      },
+    };
+    const attempt = {
+      ...rating,
+      id: randomUUID(),
+      type: 'companion_attempt',
+      payload: {
+        assignment: 'kinematics-review',
+        question: 'q-1',
+        concept: 'kinematic-equations',
+        correct: false,
+        hints: 1,
+        revealed: false,
+      },
+    };
+    const write = await app.inject({
+      method: 'POST',
+      url: '/sync',
+      headers: authed(a),
+      payload: { events: [rating, attempt], cursor: 0 },
+    });
+    expect(write.statusCode).toBe(200);
+    const login = await app.inject({
+      method: 'POST',
+      url: '/auth/login',
+      headers,
+      payload: { username: a.username, password: a.password },
+    });
+    expect(login.statusCode).toBe(200);
+    const second = {
+      cookie: login.headers['set-cookie']!.toString().split(';')[0],
+      csrf: login.json().csrf,
+    };
+    const read = await app.inject({
+      method: 'POST',
+      url: '/sync',
+      headers: authed(second),
+      payload: { events: [], cursor: 0 },
+    });
+    expect(read.json().events.map((e: { type: string }) => e.type)).toEqual([
+      'difficulty_rated',
+      'companion_attempt',
+    ]);
+    const other = await app.inject({
+      method: 'POST',
+      url: '/sync',
+      headers: authed(b),
+      payload: { events: [], cursor: 0 },
+    });
+    expect(other.json().events).toEqual([]);
+    const invalid = await app.inject({
+      method: 'POST',
+      url: '/sync',
+      headers: authed(a),
+      payload: {
+        events: [
+          {
+            ...rating,
+            id: randomUUID(),
+            payload: { ...rating.payload, assignment: 'electronic-structure' },
+          },
+        ],
+        cursor: 0,
+      },
+    });
+    expect(invalid.statusCode).toBe(400);
+  });
   it('deduplicates a retry and downloads only this account’s events', async () => {
     const a = await account();
     const b = await account();

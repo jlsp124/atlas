@@ -26,9 +26,9 @@ Open `http://localhost:4321/atlas/`. `npm run check` validates formatting, lint,
 
 Shared concepts belong to a course; assignments, pacing and dates belong to a Fall 2026 edition. Original explanations and question families are curated derivatives of source evidence, never a public copy of the private vault.
 
-The initial bank contains 61 concepts, 198 question archetypes, 76 coverage items and four assignment companions. It covers current classroom scope rather than the full syllabus. Practice follows recognition → construction → transfer, repairs one missing prerequisite at a time, and tracks coverage separately from correct answers.
+The current catalog contains 61 concepts, 198 optional question archetypes, 76 coverage items and 50 classwork entries with 353 checkpoints tied to actual supplied work. Course → unit → material set → real question is the primary route. Contextual help teaches the smallest missing idea and returns to the same work. See the [classwork milestone](docs/CLASSWORK_MILESTONE.md).
 
-Accounts, synced progress, the private request inbox and administrator data require the optional API. The published Pages build initially supports guest learning; no home server or support email has been connected. [Deployment guidance](docs/DEPLOYMENT.md) explains HTTPS, cookie compatibility, bootstrap and backups.
+Accounts, synced progress, the private request inbox and administrator data use the optional API configured for the Pages build. The API's HTTPS health endpoint was verified on October 6; guest learning remains available offline. [Server operations](docs/SERVER_OPERATIONS.md) and [deployment guidance](docs/DEPLOYMENT.md) explain operation, cookie compatibility, bootstrap and backups.
 
 ## Documentation
 
@@ -37,6 +37,7 @@ Accounts, synced progress, the private request inbox and administrator data requ
 - [Architecture and decisions](docs/ARCHITECTURE.md)
 - [Linux deployment](docs/DEPLOYMENT.md)
 - [Content and source updates](docs/CONTENT.md)
+- [Put this in Atlas / Update atlas](docs/INTAKE.md)
 - [Privacy and security](docs/SECURITY.md)
 - [Verification evidence](docs/QA.md)
 - [Release report](docs/RELEASE_REPORT.md)

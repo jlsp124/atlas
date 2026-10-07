@@ -1,5 +1,17 @@
 # Content, authority and updates
 
+**Current authority: October 6, 2026.** Read [INTAKE.md](INTAKE.md) and
+[CLASSWORK_MILESTONE.md](CLASSWORK_MILESTONE.md). The private vault's
+`02 Projects/Atlas Intake.md` contains the superseding master brief. Sources
+were refreshed from `e28a6f2575cc26679c4ac0201cb2827e3155a47d` and the supplied
+306-file capture manifest. The current derivative has 50 classwork entries and
+353 real-work checkpoints. New intake is manifest-first, deduplicated and
+private; the current executable update contract is in INTAKE.md.
+
+The October 5 design and initial ingestion record below is historical. Its
+four-companion counts, eight-page crawl, passive update command and publication
+baseline are superseded. Do not rerun that old workflow.
+
 atlas is a curated publishable derivative of `jlsp124/obsidian-vaults@01c9644647ee197de2a4e06f004a5d1c77535f28`, read from `main` on October 5, 2026. The source checkout is read-only. The implementation brief overrides older science-only/end-of-semester plans.
 
 ## Model

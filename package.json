@@ -21,6 +21,7 @@
     "test:e2e": "playwright test",
     "content:check": "tsx scripts/validate-content.ts",
     "atlas:update": "tsx scripts/update-sources.ts",
+    "atlas:intake": "tsx scripts/intake.ts",
     "ingest:bleecker": "tsx scripts/ingest-bleecker.ts",
     "ingest:videos": "tsx scripts/ingest-videos.ts",
     "check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run test:e2e"

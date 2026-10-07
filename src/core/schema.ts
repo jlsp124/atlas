@@ -152,6 +152,40 @@ export const coverageSchema = z.object({
   ]),
   sources: z.array(id).min(1),
 });
+export const companionQuestionSchema = z.object({
+  id,
+  number: z.string(),
+  section: z.string(),
+  prompt: z.string(),
+  asking: z.string(),
+  concepts: z.array(id).min(1),
+  input: z.enum(['choice', 'numeric', 'text', 'japanese']),
+  choices: z.array(z.string()).optional(),
+  clues: z.array(z.object({ word: z.string(), explanation: z.string() })),
+  steps: z.array(z.object({ title: z.string(), text: z.string() })),
+  hints: z.array(z.string()).min(1),
+  example: z.string(),
+  repair: z.object({
+    prompt: z.string(),
+    choices: z.array(z.string()),
+    answer: z.string(),
+    explanation: z.string(),
+  }),
+  answer: z
+    .object({
+      value: z.union([z.string(), z.number()]),
+      accepted: z.array(z.string()).optional(),
+      unit: z.string().optional(),
+      directions: z.array(z.string()).optional(),
+      tolerance: z.number().optional(),
+      origin: z.enum(['teacher', 'atlas', 'student']),
+      reasoning: z.string(),
+      commonMistake: z.string(),
+    })
+    .optional(),
+  checklist: z.array(z.string()).optional(),
+});
+export type CompanionQuestion = z.infer<typeof companionQuestionSchema>;
 export const assignmentSchema = z.object({
   id,
   course: id,
@@ -173,6 +207,33 @@ export const assignmentSchema = z.object({
   originalUrl: z.url().optional(),
   originalAvailability: z.string(),
   notes: z.string(),
+  unit: id.optional(),
+  materialSet: id.optional(),
+  kind: z
+    .enum([
+      'notes',
+      'worksheet',
+      'textbook',
+      'lab',
+      'review',
+      'resource',
+      'independent-study',
+      'formal-assignment',
+    ])
+    .optional(),
+  assistance: z.enum(['allowed', 'independent-only']).optional(),
+  questionReferences: z.array(z.string()).optional(),
+  companionQuestions: z.array(companionQuestionSchema).optional(),
+  reading: z
+    .array(
+      z.object({
+        heading: z.string(),
+        text: z.string(),
+        concepts: z.array(id),
+      }),
+    )
+    .optional(),
+  download: z.string().optional(),
 });
 export const scheduleSchema = z.object({
   id,
@@ -245,6 +306,56 @@ export const eventSchema = z.discriminatedUnion('type', [
       type: z.literal('assignment_task'),
       payload: z
         .object({ assignment: id, task: id, done: z.boolean() })
+        .strict(),
+    })
+    .strict(),
+  z
+    .object({
+      ...base,
+      type: z.literal('difficulty_rated'),
+      payload: z
+        .object({
+          assignment: id,
+          checkpoint: id,
+          concept: id,
+          rating: z.enum(['easy', 'okay', 'hard']),
+        })
+        .strict(),
+    })
+    .strict(),
+  z
+    .object({
+      ...base,
+      type: z.literal('companion_attempt'),
+      payload: z
+        .object({
+          assignment: id,
+          question: id,
+          concept: id,
+          correct: z.boolean(),
+          hints: z.number().int().min(0).max(10),
+          revealed: z.boolean(),
+        })
+        .strict(),
+    })
+    .strict(),
+  z
+    .object({
+      ...base,
+      type: z.literal('companion_help'),
+      payload: z
+        .object({
+          assignment: id,
+          question: id,
+          concept: id,
+          action: z.enum([
+            'asking',
+            'hint',
+            'example',
+            'explanation',
+            'reveal',
+          ]),
+        })
         .strict(),
     })
     .strict(),

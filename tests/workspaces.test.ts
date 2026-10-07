@@ -67,12 +67,15 @@ describe('V2 presentation over preserved content', () => {
   });
   it('search joins half-life learning, companion and assessment using stable IDs', () => {
     const found = searchAtlas('half life');
-    expect(found.map((x) => x.group)).toEqual(['Learn', 'Classwork', 'Other']);
-    expect(found.map((x) => x.path)).toEqual([
-      'learn/half-life/',
-      'work/c17-research/',
-      'prepare/c17-test-oct7/',
-    ]);
+    expect(found.map((x) => x.path)).toEqual(
+      expect.arrayContaining([
+        'learn/half-life/',
+        'work/bio-c17-sections/',
+        'work/bio-c17-notes/',
+        'prepare/c17-test-oct7/',
+      ]),
+    );
+    expect(found.some((x) => x.path === 'work/c17-research/')).toBe(false);
     expect(
       searchAtlas('こんにちは').some((r) => r.path === 'learn/jp-konnichiwa/'),
     ).toBe(true);

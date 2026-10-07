@@ -48,6 +48,12 @@ export const unitDescriptions: Record<string, string> = {
     'Viruses, bacteria and disease. I haven’t added these lessons yet.',
   writing: 'Match the written form to the sound, one small piece at a time.',
   greetings: 'Useful words and phrases for everyday situations.',
+  numbers:
+    'Build and recall the numbers used in class, including irregular readings.',
+  colours:
+    'Connect the colour and shape words, then recall them independently.',
+  matter:
+    'Use the matter notes and supplied lab preparation beside the original instructions.',
 };
 const titles: Record<string, string> = {
   'vector-sign': 'Direction',
@@ -75,13 +81,9 @@ export const assignmentUnits: Record<string, string> = {
   'electronic-structure': 'atomic',
   'c17-research': 'origins',
   'greetings-practice': 'greetings',
+  ...Object.fromEntries(assignments.map((a) => [a.id, a.unit ?? ''])),
 };
-export const assignmentTitles: Record<string, string> = {
-  'kinematics-review': 'Kinematics review',
-  'electronic-structure': 'Electronic structure',
-  'c17-research': 'C17 research',
-  'greetings-practice': 'Greetings practice',
-};
+export const assignmentTitles: Record<string, string> = {};
 export const assignmentTitle = (id: string) =>
   assignmentTitles[id] ?? assignments.find((a) => a.id === id)?.title ?? id;
 export function learningPlan(a: Assignment) {

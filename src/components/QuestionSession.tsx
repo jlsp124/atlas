@@ -3,7 +3,6 @@ import { concepts, coverageItems, questions } from '../content/catalog';
 import {
   coverage,
   evaluate,
-  nearestGap,
   selectQuestions,
   variant,
   type PracticeMode,
@@ -23,7 +22,6 @@ export default function QuestionSession({
   mode = 'Quick check',
   count = 3,
   onFinish,
-  onRepair,
   skipSummary = false,
 }: {
   course: string;
@@ -53,6 +51,9 @@ export default function QuestionSession({
     [hint, setHint] = useState(false),
     [result, setResult] = useState<boolean | null>(null),
     [results, setResults] = useState<SessionResult[]>([]);
+  const [attempts, setAttempts] = useState(0),
+    [tiny, setTiny] = useState(false),
+    [tinyAnswer, setTinyAnswer] = useState('');
   const [started, setStarted] = useState(() => Date.now());
   const current = queue[index]
     ? variant(queue[index], seed + index)
@@ -62,15 +63,23 @@ export default function QuestionSession({
     setUnit('');
     setHint(false);
     setResult(null);
+    setAttempts(0);
+    setTiny(false);
+    setTinyAnswer('');
     setStarted(Date.now());
   }
   function check() {
     if (!current || !answer.trim() || result !== null) return;
     const correct = evaluate(current, answer, unit);
+    setAttempts((n) => n + 1);
     setResult(correct);
     setResults((r) => [
       ...r,
-      { concept: current.concepts[0], correct, independent: !hint },
+      {
+        concept: current.concepts[0],
+        correct,
+        independent: !hint && attempts === 0,
+      },
     ]);
     emit('question_answered', {
       question: current.id,
@@ -80,6 +89,22 @@ export default function QuestionSession({
       seed: seed + index,
       durationMs: Math.min(3600000, Math.max(0, Date.now() - started)),
     });
+  }
+  const repairQuestion = current
+    ? questions.find(
+        (q) =>
+          q.id !== current.id &&
+          q.concepts.includes(current.diagnosis) &&
+          q.level === 'recognition' &&
+          q.format === 'choice',
+      )
+    : undefined;
+  function retryOriginal() {
+    setResult(null);
+    setTiny(false);
+    setTinyAnswer('');
+    setHint(true);
+    setResults((r) => r.slice(0, -1));
   }
   function next() {
     if (skipSummary && index + 1 === queue.length) {
@@ -264,31 +289,61 @@ export default function QuestionSession({
               )}
             </h2>
             <p>
-              <Glossary text={current.explanation} />
+              <Glossary text={result ? current.explanation : current.hint} />
             </p>
-            {!result && onRepair && (
+            {!result && (
               <>
-                <p>This is probably the part getting in your way.</p>
+                <p>Use that clue, then try the original again.</p>
+                <button className="secondary" onClick={retryOriginal}>
+                  Try again
+                </button>
                 <button
                   className="secondary"
                   onClick={() => {
-                    const gap =
-                      nearestGap(
-                        current.concepts[0],
-                        concepts,
-                        getState().events,
-                        questions,
-                      ) ?? current.diagnosis;
-                    onRepair(gap, () => {
-                      setResults((r) => r.slice(0, -1));
-                      reset();
-                    });
+                    setTiny(true);
                   }}
                 >
                   Fix this first
                   <Icon name="arrow" size={16} />
                 </button>
               </>
+            )}
+            {tiny && (
+              <div className="tiny-repair">
+                <h3>One small thing first</h3>
+                <p>{concepts.find((c) => c.id === current.diagnosis)?.model}</p>
+                {repairQuestion ? (
+                  <fieldset className="answer-choices">
+                    <legend>{repairQuestion.prompt}</legend>
+                    {repairQuestion.choices?.map((choice) => (
+                      <label className="answer-choice" key={choice}>
+                        <input
+                          type="radio"
+                          name="tiny-repair"
+                          checked={tinyAnswer === choice}
+                          onChange={() => setTinyAnswer(choice)}
+                        />
+                        {choice}
+                      </label>
+                    ))}
+                    {tinyAnswer &&
+                      tinyAnswer !== String(repairQuestion.answer) && (
+                        <p>{repairQuestion.hint}</p>
+                      )}
+                    <button
+                      className="secondary"
+                      disabled={tinyAnswer !== String(repairQuestion.answer)}
+                      onClick={retryOriginal}
+                    >
+                      Back to the original question
+                    </button>
+                  </fieldset>
+                ) : (
+                  <button className="secondary" onClick={retryOriginal}>
+                    Back to the original question
+                  </button>
+                )}
+              </div>
             )}
           </div>
         )}

@@ -12,6 +12,7 @@ import {
 } from '../src/content/catalog';
 import * as schema from '../src/core/schema';
 import { prerequisitePath, evaluate, variant } from '../src/core/learning';
+import { checkCompanionAnswer } from '../src/core/companion';
 
 export const publicCatalog = {
   courses,
@@ -153,6 +154,40 @@ export function validateContent(data = publicCatalog) {
       errors.push(`Coverage item has no practice: ${item.id}`);
   }
   for (const a of assignments) {
+    if (
+      a.unit &&
+      !courses
+        .find((c) => c.id === a.course)
+        ?.units.some((u) => u.id === a.unit)
+    )
+      errors.push(`Unknown assignment unit: ${a.id}`);
+    if (
+      a.assistance === 'independent-only' &&
+      (a.companionQuestions?.length || a.reading?.length || a.download)
+    )
+      errors.push(`Restricted assignment exposes assistance: ${a.id}`);
+    const ids = a.companionQuestions?.map((q) => q.id) ?? [];
+    if (ids.length !== new Set(ids).size)
+      errors.push(`Duplicate companion checkpoint: ${a.id}`);
+    for (const q of a.companionQuestions ?? []) {
+      if (q.input === 'choice' && !q.choices?.includes(String(q.answer?.value)))
+        errors.push(`Invalid companion choices: ${a.id}/${q.id}`);
+      for (const c of q.concepts)
+        if (!has(concepts, c))
+          errors.push(`Missing companion concept: ${a.id}/${q.id}/${c}`);
+      if (
+        q.answer &&
+        !checkCompanionAnswer(
+          q,
+          String(q.answer.value),
+          q.answer.unit,
+          q.answer.directions?.[0],
+        ).correct
+      )
+        errors.push(`Companion rejects own answer: ${a.id}/${q.id}`);
+      if (!q.answer && !q.checklist?.length)
+        errors.push(`Written answer has no checklist: ${a.id}/${q.id}`);
+    }
     if (
       !has(editions, a.edition) ||
       editions.find((e) => e.id === a.edition)?.course !== a.course

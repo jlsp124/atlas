@@ -1,4 +1,35 @@
 export default function LearningVisual({ id }: { id: string }) {
+  if (['lewis-structures', 'electron-groups', 'vsepr'].includes(id))
+    return (
+      <figure className="learning-figure">
+        <svg
+          viewBox="0 0 440 220"
+          role="img"
+          aria-label="Water Lewis structure: two oxygen hydrogen bonds and two lone pairs on oxygen. Four electron groups give a bent molecular shape."
+        >
+          <path d="M210 102L130 164 M230 102L310 164" className="figure-line" />
+          <text x="208" y="98">
+            O
+          </text>
+          <text x="110" y="184">
+            H
+          </text>
+          <text x="320" y="184">
+            H
+          </text>
+          {[190, 204, 236, 250].map((x) => (
+            <circle key={x} cx={x} cy="63" r="3" className="figure-point" />
+          ))}
+          <text x="120" y="30">
+            2 bond groups + 2 lone pairs
+          </text>
+        </svg>
+        <figcaption>
+          H₂O: 8 valence electrons. Four electron groups; the molecular shape is
+          bent.
+        </figcaption>
+      </figure>
+    );
   if (!['motion-graphs', 'half-life', 'cladograms'].includes(id)) return null;
   return (
     <figure className="learning-figure">

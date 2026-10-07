@@ -1,83 +1,146 @@
-import { readFile, readdir, writeFile, mkdir } from 'node:fs/promises';
-import { resolve, relative } from 'node:path';
-import { createHash } from 'node:crypto';
+import { readdir } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import { validateContent } from './validate-content';
+import { refreshBleecker } from './bleecker';
 import {
-  concepts,
-  questions,
-  schedule,
-  sources,
-  snapshot,
-} from '../src/content/catalog';
-import { dayDifference, schoolDate } from '../src/core/dates';
+  defaultArchive,
+  permittedVaultHashes,
+  planUpdate,
+  readJson,
+  writeChanged,
+  type Projection,
+} from './intake-workflow';
+import type { RegisteredSource, SourceRegistry } from '../src/core/intake';
 
-const root = process.env.ATLAS_VAULT_PATH;
-const today = schoolDate();
-const errors = validateContent();
-console.log(
-  `Content errors: ${errors.length}. Concepts without transfer checks: ${concepts.filter((c) => !questions.some((q) => q.level === 'transfer' && q.concepts.includes(c.id))).length}. Unconfirmed dated items: ${schedule.filter((e) => e.confidence === 'unverified').length}.`,
+const apply =
+  process.argv.includes('--apply') || process.argv.includes('--accept-hashes');
+const archive = defaultArchive();
+const config = await readJson<{ vaultPath?: string }>(
+  resolve(archive, 'config.json'),
+  {},
 );
-if (errors.length) {
-  console.error(errors.join('\n'));
-  process.exitCode = 1;
-}
-const stale = sources.filter((s) => dayDifference(s.checked, today) > 14);
-console.log(
-  `Snapshot: ${snapshot.date}. Sources checked over 14 days ago: ${stale.length}. Unavailable indexed sources: ${sources.filter((s) => s.status === 'unavailable').length}.`,
+const previous = await readJson<SourceRegistry>(
+  resolve(archive, 'registry.json'),
+  { schema_version: 1, sources: [], relationships: [] },
 );
-for (const source of stale)
-  console.log(`Review freshness: ${source.id} (checked ${source.checked})`);
-if (!root)
-  console.log(
-    'Set ATLAS_VAULT_PATH to a read-only fresh source checkout to compare evidence. No raw notes are imported or published.',
+const incoming: RegisteredSource[] = [];
+for (const file of (await readdir(resolve(archive, 'inbox')).catch(() => []))
+  .filter((file) => file.endsWith('.json'))
+  .sort()) {
+  const batch = await readJson<{ sources: RegisteredSource[] }>(
+    resolve(archive, 'inbox', file),
   );
-else {
-  const paths = [
-    '02 Projects',
-    '03 Areas/School/Chemistry 11',
-    '03 Areas/School/Physics 11',
-    '03 Areas/School/Courses/Life Sciences 11',
-    '03 Areas/School/Introductory Japanese 11',
-  ];
-  const previous = JSON.parse(
-    await readFile('src/content/ingestion/vault-hashes.json', 'utf8').catch(
-      () => '{}',
+  if (!Array.isArray(batch.sources))
+    throw new Error('Inbox file needs reviewed source records: ' + file);
+  incoming.push(...batch.sources);
+}
+const published = await readJson<Projection>(
+  'src/content/ingestion/classroom.json',
+);
+const reviewed = await readJson<Projection>(
+  resolve(archive, 'approved-companions.json'),
+  published,
+);
+const currentVault = await permittedVaultHashes(
+  process.env.ATLAS_VAULT_PATH || config.vaultPath,
+);
+const oldVault = await readJson<Record<string, string>>(
+  resolve(archive, 'vault-hashes.json'),
+  {},
+);
+const vaultChanges = [
+  ...new Set([...Object.keys(currentVault), ...Object.keys(oldVault)]),
+]
+  .filter((path) => currentVault[path] !== oldVault[path])
+  .sort();
+const plan = planUpdate(previous, incoming, published, reviewed, vaultChanges);
+const teacher = process.argv.includes('--skip-teacher')
+  ? { changed: [], failures: [] }
+  : await refreshBleecker({ apply: false, archive });
+const teacherAffected = plan.registry.sources
+  .filter((source) =>
+    teacher.changed.some(
+      (id) =>
+        (id.startsWith('bleecker-drive-') &&
+          source.original_url?.includes(id.slice('bleecker-drive-'.length))) ||
+        (id === 'bleecker-c17' &&
+          source.course === 'life-sciences' &&
+          source.unit === 'origins') ||
+        (id === 'bleecker-c18' &&
+          source.course === 'life-sciences' &&
+          source.unit === 'classification'),
     ),
-  ) as Record<string, string>;
-  const current: Record<string, string> = {};
-  async function walk(dir: string) {
-    for (const entry of await readdir(dir, { withFileTypes: true })) {
-      const p = resolve(dir, entry.name);
-      if (entry.isDirectory()) await walk(p);
-      else if (
-        entry.name.endsWith('.md') &&
-        !/grade|learning profile|postmortem|missed work audit/i.test(
-          entry.name,
-        ) &&
-        (!relative(root!, p).startsWith('02 Projects') ||
-          /Science Course Pages Site/.test(entry.name))
-      )
-        current[relative(root!, p).replace(/\\/g, '/')] = createHash('sha256')
-          .update(await readFile(p))
-          .digest('hex');
-    }
-  }
-  for (const p of paths) await walk(resolve(root, p));
-  const changed = Object.keys(current).filter(
-    (k) => current[k] !== previous[k],
+  )
+  .flatMap((source) => source.atlas_content_ids);
+plan.affected = [...new Set([...plan.affected, ...teacherAffected])].sort();
+const errors = [...validateContent(), ...plan.errors];
+const pendingPath = resolve(archive, 'review-pending.json');
+const pending = await readJson<
+  Record<string, { hash: string; affected: string[] }>
+>(pendingPath, {});
+for (const path of vaultChanges.filter((path) =>
+  path.startsWith('03 Areas/School/'),
+)) {
+  const linked = plan.registry.sources.filter((source) =>
+    source.vault_links?.some((link) => link.path === path),
   );
-  console.log(
-    `Source files changed/new: ${changed.length}. Removed: ${Object.keys(previous).filter((k) => !current[k]).length}.`,
-  );
-  console.log(changed.join('\n'));
-  if (process.argv.includes('--accept-hashes')) {
-    await mkdir('src/content/ingestion', { recursive: true });
-    await writeFile(
-      'src/content/ingestion/vault-hashes.json',
-      JSON.stringify(current, null, 2) + '\n',
-    );
-    console.log(
-      'Hash baseline accepted. Content still requires manual publication review.',
-    );
-  }
+  pending[path] = {
+    hash: currentVault[path] ?? 'removed',
+    affected: [
+      ...new Set(linked.flatMap((source) => source.atlas_content_ids)),
+    ].sort(),
+  };
 }
+if ('manifest' in teacher)
+  for (const source of teacher.manifest.sources.filter((source) =>
+    source.inspection?.includes('review required'),
+  ))
+    pending[source.id] = {
+      hash: source.contentHash,
+      affected: teacherAffected,
+    };
+// Only a human/agent source review may approve a derivative; a fetch alone cannot clear this queue.
+if (process.argv.includes('--reviewed-evidence'))
+  for (const path of vaultChanges) delete pending[path];
+console.log(
+  JSON.stringify(
+    {
+      mode: apply ? 'apply' : 'inspect',
+      newOrChangedSources: plan.changedSources,
+      duplicateOrRevisionRelationships: plan.relationships,
+      affectedAssignments: plan.affected,
+      changedCompanions: plan.changedAssignments,
+      vaultChanges,
+      teacherChanges: teacher.changed,
+      teacherFailures: teacher.failures,
+      errors,
+    },
+    null,
+    2,
+  ),
+);
+if (errors.length || teacher.failures.length) {
+  process.exitCode = 1;
+} else if (apply) {
+  let writes = 0;
+  if (plan.changedSources.length || plan.relationships.length)
+    writes += Number(
+      await writeChanged(resolve(archive, 'registry.json'), plan.registry),
+    );
+  if (plan.publicChanged)
+    writes += Number(
+      await writeChanged('src/content/ingestion/classroom.json', reviewed),
+    );
+  if (vaultChanges.length)
+    writes += Number(
+      await writeChanged(resolve(archive, 'vault-hashes.json'), currentVault),
+    );
+  writes += Number(await writeChanged(pendingPath, pending));
+  if (teacher.changed.length) await refreshBleecker({ apply: true, archive });
+  console.log(
+    `Applied ${writes} changed documents. ${Object.keys(pending).length} evidence changes await content review. Unchanged documents retain their bytes. New or revised evidence without an approved derivative remains private.`,
+  );
+} else
+  console.log(
+    'Inspection complete. Run with --apply to accept reviewed changes; raw/OCR files are never publication inputs.',
+  );

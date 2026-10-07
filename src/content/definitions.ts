@@ -12,13 +12,13 @@ export const definitions: Definition[] = [
     aliases: ['index fossils'],
     concept: 'relative-dating',
     definition:
-      'A fossil from a species that lived for a relatively short time but was widespread. It helps match and relatively date rock layers.',
+      'A fossil from a species that lived for a short time but was found in lots of places: it was widespread. It helps compare the ages of rock layers.',
   },
   {
     term: 'displacement',
     concept: 'displacement',
     definition:
-      'The signed change from your starting position to your ending position. It is different from the total distance travelled.',
+      'How far your finish is from your start, and in which direction. Walking out and back can give zero displacement even though you travelled.',
   },
   {
     term: 'velocity',
@@ -36,7 +36,7 @@ export const definitions: Definition[] = [
     aliases: ['half life'],
     concept: 'half-life',
     definition:
-      'The time it takes for half of the radioactive parent atoms in a sample to decay. Each interval halves what remains.',
+      'The time for half the radioactive parent atoms to change into daughter atoms. Each new half-life halves the parent atoms still left.',
   },
   {
     term: 'shielding',

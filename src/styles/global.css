@@ -2582,3 +2582,105 @@ pre {
     scroll-behavior: auto !important;
   }
 }
+.companion-question {
+  padding: 28px 0;
+  border-bottom: 1px solid var(--line);
+  scroll-margin-top: 90px;
+}
+.companion-question h3 {
+  display: flex;
+  gap: 14px;
+  font-weight: 500;
+  line-height: 1.55;
+}
+.question-number {
+  color: var(--muted);
+  flex: 0 0 36px;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  padding-top: 4px;
+}
+.question-prompt {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.context-actions,
+.difficulty-rating {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  align-items: center;
+  margin: 12px 0;
+}
+.question-context,
+.tiny-repair {
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin: 16px 0;
+}
+.companion-reading,
+.companion-section,
+.phrase-connection {
+  margin-top: 32px;
+}
+.more-help {
+  margin: 16px 0;
+}
+.difficulty-rating {
+  font-size: 13px;
+  color: var(--muted);
+}
+.difficulty-rating button[aria-pressed='true'] {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.companion-question .answer-inputs {
+  display: flex;
+  flex-wrap: wrap;
+  margin-block: 16px;
+  gap: 12px;
+}
+.companion-question .answer-inputs > label:first-child {
+  width: 100%;
+}
+.companion-question textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 90px;
+  padding: 12px;
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.task-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+}
+.tiny-lesson {
+  margin: 24px 0;
+}
+.kana-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 24px;
+}
+.four-square {
+  width: 150px;
+  height: 150px;
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+.kana-practice p {
+  font-size: 14px;
+}
+.progress-checklist {
+  margin-top: 32px;
+}

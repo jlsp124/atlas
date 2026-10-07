@@ -1,5 +1,7 @@
 import { useRef, useState } from 'react';
-import { findCourse, schedule } from '../content/catalog';
+import { assignments, findCourse, schedule } from '../content/catalog';
+import ingestion from '../content/ingestion/bleecker.json';
+import { classworkReview } from '../core/learning';
 import {
   eventNote,
   eventTitle,
@@ -22,6 +24,32 @@ export default function Preparation({ id }: { id: string }) {
     retry = useRef<() => void>(() => {});
   const course = e.course!,
     unit = eventUnit(e)!;
+  const review = classworkReview(assignments, state.events, e.concepts).slice(
+    0,
+    8,
+  );
+  const related = assignments.filter(
+    (a) =>
+      a.course === course &&
+      a.assistance !== 'independent-only' &&
+      a.concepts.some((c) => e.concepts.includes(c)),
+  );
+  const scope =
+    course === 'life-sciences'
+      ? ingestion.sources
+          .flatMap((s) => s.calendarEvents)
+          .find((event) =>
+            event.title
+              .toLowerCase()
+              .includes(
+                id.startsWith('c17')
+                  ? 'c17 test'
+                  : id.startsWith('c18')
+                    ? 'c18 test'
+                    : 'c19 quiz',
+              ),
+          )?.assessmentScope
+      : undefined;
   if (started)
     return (
       <div className="flow-screen" data-course={course}>
@@ -70,6 +98,44 @@ export default function Preparation({ id }: { id: string }) {
       </p>
       <h1>{eventTitle(e)}</h1>
       <p className="screen-intro">{eventNote(e)}</p>
+      {scope && (
+        <details className="teacher-scope">
+          <summary>Teacher’s full assessment scope</summary>
+          <p style={{ whiteSpace: 'pre-line' }}>{scope}</p>
+        </details>
+      )}
+      {review.length > 0 && (
+        <section>
+          <h2>From your classwork</h2>
+          <p>Start with the parts you marked difficult or used help on.</p>
+          {review.map((item) => (
+            <a
+              className="material-row"
+              key={item.assignment.id + item.question.id}
+              href={url(`work/${item.assignment.id}/#${item.question.id}`)}
+            >
+              <span>
+                <strong>
+                  {item.assignment.title} · {item.question.number}
+                </strong>
+                <small>{item.reason}</small>
+              </span>
+              <Icon name="arrow" />
+            </a>
+          ))}
+        </section>
+      )}
+      {related.length > 0 && (
+        <details>
+          <summary>Your notes & classwork for this assessment</summary>
+          {related.map((a) => (
+            <a className="resource-row" key={a.id} href={url(`work/${a.id}/`)}>
+              {a.title}
+              <Icon name="arrow" />
+            </a>
+          ))}
+        </details>
+      )}
       {e.concepts.length ? (
         <>
           <h2>

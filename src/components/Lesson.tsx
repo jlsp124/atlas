@@ -62,15 +62,23 @@ export function Lesson({
   }
   if (phase === 'repair')
     return (
-      <Lesson
-        key={gap}
-        id={gap}
-        allowRepair={false}
-        onComplete={() => {
-          setPhase('check');
-          setGap('');
-        }}
-      />
+      <>
+        <div className="probe-heading">
+          <strong>One small thing first</strong>
+          <p>{findConcept(gap).model}</p>
+        </div>
+        <QuestionSession
+          key={gap}
+          course={c.course}
+          ids={[gap]}
+          count={1}
+          skipSummary
+          onFinish={() => {
+            setPhase('check');
+            setGap('');
+          }}
+        />
+      </>
     );
   if (phase === 'probe')
     return (

@@ -27,6 +27,10 @@ export function evidence(
     (e) => 'concept' in e.payload && e.payload.concept === concept,
   );
   const attempts = relevant.filter((e) => e.type === 'question_answered');
+  const classwork = relevant.filter((e) => e.type === 'companion_attempt');
+  const difficulty = relevant
+    .filter((e) => e.type === 'difficulty_rated')
+    .at(-1);
   const latest = attempts.slice(-8);
   const report = relevant
     .filter(
@@ -82,12 +86,17 @@ export function evidence(
       attempts: attempts.length,
     };
   }
-  if (attempts.length)
+  if (
+    attempts.length ||
+    classwork.length ||
+    (difficulty?.type === 'difficulty_rated' &&
+      difficulty.payload.rating === 'hard')
+  )
     return {
       state: 'developing',
       reason:
         'Some evidence exists. Stability needs varied unhinted construction and transfer checks.',
-      attempts: attempts.length,
+      attempts: attempts.length + classwork.length,
     };
   if (relevant.length)
     return {
@@ -100,6 +109,77 @@ export function evidence(
     reason: 'No learning evidence on this device yet.',
     attempts: 0,
   };
+}
+
+export function classworkReview(
+  assignments: Assignment[],
+  events: LearnerEvent[],
+  concepts: string[],
+) {
+  return assignments
+    .filter((a) => a.assistance !== 'independent-only')
+    .flatMap((a) =>
+      (a.companionQuestions ?? [])
+        .filter((q) => q.concepts.some((c) => concepts.includes(c)))
+        .map((q) => {
+          const matching = events.filter(
+            (e) =>
+              (e.type === 'difficulty_rated' ||
+                e.type === 'companion_attempt' ||
+                e.type === 'companion_help') &&
+              e.payload.assignment === a.id &&
+              (e.type === 'difficulty_rated'
+                ? e.payload.checkpoint
+                : e.payload.question) === q.id,
+          );
+          const rating = matching
+            .filter((e) => e.type === 'difficulty_rated')
+            .at(-1);
+          const attempt = matching
+            .filter((e) => e.type === 'companion_attempt')
+            .at(-1);
+          const helped = matching
+            .filter((e) => e.type === 'companion_help')
+            .at(-1);
+          const score =
+            (rating?.type === 'difficulty_rated'
+              ? rating.payload.rating === 'hard'
+                ? 3
+                : rating.payload.rating === 'okay'
+                  ? 1
+                  : 0
+              : 0) +
+            (attempt?.type === 'companion_attempt'
+              ? !attempt.payload.correct
+                ? 2
+                : attempt.payload.hints || attempt.payload.revealed
+                  ? 1
+                  : 0
+              : helped
+                ? 1
+                : 0);
+          return {
+            assignment: a,
+            question: q,
+            score,
+            reason:
+              rating?.type === 'difficulty_rated' &&
+              rating.payload.rating === 'hard'
+                ? 'You marked this hard'
+                : attempt?.type === 'companion_attempt' &&
+                    !attempt.payload.correct
+                  ? 'Your last answer needs another look'
+                  : 'Worth revisiting without help',
+          };
+        }),
+    )
+    .filter((item) => item.score > 0)
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        a.assignment.id.localeCompare(b.assignment.id) ||
+        a.question.id.localeCompare(b.question.id),
+    );
 }
 
 /** Dependency order with explicit cycle/missing-target rejection. Preview dependencies never block core learning. */

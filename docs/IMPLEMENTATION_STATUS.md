@@ -1,5 +1,13 @@
 # Implementation status
 
+**October 6, 2026:** the classwork fidelity milestone supersedes conflicting
+parts of the V2 resumption contract below. Read [CLASSWORK_MILESTONE.md](CLASSWORK_MILESTONE.md)
+and [INTAKE.md](INTAKE.md). V2 visuals remain; schoolwork is the primary
+interface. The current catalog has 50 classwork entries and 353 checkpoints.
+The production API is configured and its HTTPS health endpoint was verified;
+older statements that no operator API has been connected are historical.
+The exact final validation and deployment receipt accompanies this release.
+
 Updated October 5, 2026. This is the V2 resumption contract. Read [UX.md](UX.md) before changing the student interface.
 
 ## V2 frontend

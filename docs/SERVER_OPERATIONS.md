@@ -36,6 +36,11 @@ In the console, **Ctrl+B then D** detaches; Atlas keeps running.
 
 ## Deploy and recovery
 
+The public `/health` response includes `deploySha` when the deployment environment
+contains a valid 40-character commit SHA. Match it to the successful verification
+and Pages runs to confirm the API release; a content snapshot date alone does not
+prove the deployed revision. Development or unknown deployment values return null.
+
 The watcher fetches `origin/main` and deploys only the exact SHA after its `Verify atlas` workflow completed successfully for a push to `main`. It takes a SQLite backup, builds an image tagged with that commit, restarts the service, and checks local health. A failed health check restores the previous application image and code; the database is retained. Review migrations before manually rolling back code across a schema change.
 
 To pause automatic deployment: `sudo systemctl stop atlas-deploy.timer`. Re-enable: `sudo systemctl start atlas-deploy.timer`. These commands do not stop Atlas.

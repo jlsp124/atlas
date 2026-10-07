@@ -1,4 +1,39 @@
-# V2 verification evidence
+# October 6 classwork verification
+
+The classroom milestone contains 50 material entries and 353 contextual
+checkpoints. Written responses, diagrams and configuration notation use honest
+self-check criteria; the checkpoint count is not a claim that every photographed
+question is automatically graded. The three restricted Chemistry hand-ins contain
+metadata only.
+
+`npm run check` passed locally: formatting, ESLint, Astro/TypeScript (82 files,
+zero errors/warnings/hints), 96 unit/backend tests in six files, the production
+build, and all 54 browser tests across desktop and phone. The browser checks include
+account/guest isolation, two-context difficulty-rating sync, offline reconnect,
+exact-question repair and return, Japanese input and stroke controls, restricted
+hand-ins, percent error, and Help/About in a tiled desktop. Existing light/dark
+accessibility and reflow checks pass. `npm audit --audit-level=high` reports zero
+vulnerabilities.
+
+The production build has 222 routes, 223 HTML files, 220 indexed pages and 554
+offline assets (about 7.4 MiB). All six pages of the fillable lab template and the
+one-page vowel practice sheet were rendered and inspected. The lab fields are
+blank and contain no student work.
+
+The live update workflow refreshes the bounded teacher sources and compares the
+private registry and permitted vault hashes. After accepting the reviewed vault
+authority changes, repeated unchanged applies must report zero source, companion,
+teacher and vault changes, zero errors and zero writes. The CLI regression test
+also verifies unchanged bytes and modification times across two identical intakes.
+
+Ubuntu CI and deployment are verified against the final pushed SHA separately;
+Windows checks alone do not establish Linux runtime behavior. The existing
+production API is configured and reachable. Real hardware, third-party cookie
+policies, missing classroom sources and unconfirmed dates remain distinct from
+the local browser tests. The release receipt records final CI, Pages and live API
+results.
+
+## Historical V2 verification evidence
 
 Checked October 5, 2026, in America/Vancouver. The redesign started from fetched main bd9d057d2bc51ffffcc269b540ccf1dc44de05e8, after inspecting the V1 live site, routes, models, content and tests. The baseline complete suite passed: 71 unit/backend and 32 browser tests.
 

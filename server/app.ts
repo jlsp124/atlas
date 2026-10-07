@@ -15,6 +15,7 @@ import { openDatabase, type AtlasDatabase, type UserRow } from './database';
 import { eventSchema } from '../src/core/schema';
 import {
   assignments,
+  legacyAssignmentTasks,
   concepts,
   courses,
   questions,
@@ -252,6 +253,9 @@ export async function createServer(options: ServerOptions = {}) {
     status: 'ok',
     version: '0.1.0',
     contentSnapshot: snapshot.date,
+    deploySha: /^[a-f0-9]{40}$/i.test(process.env.ATLAS_DEPLOY_SHA ?? '')
+      ? process.env.ATLAS_DEPLOY_SHA
+      : null,
   }));
   app.get('/session', async (req) => {
     const s = session(req);
@@ -423,10 +427,29 @@ export async function createServer(options: ServerOptions = {}) {
         !assignments.some(
           (x) =>
             x.id === e.payload.assignment &&
-            x.tasks.some((t) => t.id === e.payload.task),
+            (x.tasks.some((t) => t.id === e.payload.task) ||
+              legacyAssignmentTasks[x.id]?.includes(e.payload.task)),
         )
       )
         return reply.code(400).send({ error: 'Unknown task' });
+      if (
+        e.type === 'difficulty_rated' ||
+        e.type === 'companion_attempt' ||
+        e.type === 'companion_help'
+      ) {
+        const a = assignments.find((a) => a.id === e.payload.assignment);
+        const checkpoint =
+          e.type === 'difficulty_rated'
+            ? e.payload.checkpoint
+            : e.payload.question;
+        const q = a?.companionQuestions?.find((q) => q.id === checkpoint);
+        if (
+          !a ||
+          a.assistance === 'independent-only' ||
+          !q?.concepts.includes(e.payload.concept)
+        )
+          return reply.code(400).send({ error: 'Unknown companion mapping' });
+      }
       if (
         e.type === 'courses_selected' &&
         !e.payload.courses.every((id) => courses.some((c) => c.id === id))
