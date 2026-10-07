@@ -21,7 +21,10 @@ test('real worksheet retries one tiny idea, rates locally and returns to the nex
   await expect(q.locator('.tiny-repair')).toBeVisible();
   await q
     .locator('.tiny-repair')
-    .getByRole('radio', { name: '0 m/s', exact: true })
+    .getByRole('radio', {
+      name: '(initial velocity + final velocity) / 2',
+      exact: true,
+    })
     .check();
   await q.getByRole('button', { name: 'Check this idea', exact: true }).click();
   await expect(q.locator('.tiny-repair')).toHaveCount(0);

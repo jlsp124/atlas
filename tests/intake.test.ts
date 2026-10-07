@@ -318,6 +318,7 @@ describe('teacher fidelity and publication', () => {
     const q = assignments.find((a) => a.id === 'kinematics-review')!
       .companionQuestions![0];
     expect(checkCompanionAnswer(q, '63', 'm').correct).toBe(true);
+    expect(checkCompanionAnswer(q, '64', 'm').correct).toBe(false);
     expect(checkCompanionAnswer(q, '63', 's').correct).toBe(false);
     expect(checkCompanionAnswer(q, '', 'm').correct).toBe(false);
     const count = assignments
