@@ -41,6 +41,12 @@ const scenes = [
     help: true,
     next: 7,
   },
+  {
+    id: 'student-turn',
+    path: 'work/kinematics-review/?focus=1#q-11',
+    help: true,
+    next: 8,
+  },
   { id: 'bio-c17', path: 'courses/life-sciences/units/origins/' },
   {
     id: 'bio-written',

@@ -72,6 +72,12 @@ export default function FocusQuestion({
     );
   }
   useEffect(() => {
+    // The chooser contracts at the handoff. Keep the original question in view
+    // rather than letting scroll anchoring follow the previously focused arrow.
+    if (ready && draft.help && guide.steps[position].action === 'student')
+      focusStage(true);
+  }, [ready, draft.help, position, guide]);
+  useEffect(() => {
     const key = (e: KeyboardEvent) => {
       if (
         !ready ||

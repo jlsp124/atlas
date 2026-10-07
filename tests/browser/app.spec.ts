@@ -65,9 +65,12 @@ test('dedicated onboarding chooses independent courses, saves locally and replay
   ).toBeVisible();
   await page.getByRole('button', { name: 'Keep it on this device' }).click();
   await expect(page.locator('.onboarding')).not.toBeVisible();
-  expect(
-    await page.locator('.course-row strong').allTextContents(),
-  ).not.toContain('Chemistry 11');
+  // The courses route initially serves its static list before learner hydration.
+  await expect(page.locator('.course-row strong')).toHaveText([
+    'Physics 11',
+    'Life Sciences 11',
+    'Introductory Japanese 11',
+  ]);
   await page.reload();
   await expect(page.locator('.onboarding')).not.toBeVisible();
   await open(page, 'account/');

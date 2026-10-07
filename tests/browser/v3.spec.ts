@@ -171,6 +171,62 @@ test('algebra moves a stable denominator token into the numerator and back', asy
       .evaluate((el) => (el as HTMLElement).style.top),
   ).toBe(before.top);
 });
+
+test('the student turn keeps the setup and brings the answer into a short laptop or phone viewport', async ({
+  browser,
+}) => {
+  for (const viewport of [
+    { width: 1366, height: 768 },
+    { width: 390, height: 844 },
+    { width: 360, height: 800 },
+  ]) {
+    const context = await browser.newContext({
+      baseURL: 'http://localhost:4321',
+      viewport,
+      isMobile: viewport.width < 400,
+      hasTouch: viewport.width < 400,
+    });
+    const page = await context.newPage();
+    await open(page, 'work/kinematics-review/?focus=1#q-11');
+    await page
+      .getByRole('button', { name: 'Help me start', exact: true })
+      .click();
+    await next(page, 8);
+    await expect(page.locator('.story-stage')).toHaveAttribute(
+      'data-guide-action',
+      'student',
+    );
+    await page.locator('.story-stage').evaluate(async (el) => {
+      await Promise.all(
+        el
+          .getAnimations({ subtree: true })
+          .map((a) => a.finished.catch(() => {})),
+      );
+    });
+    await expect(page.locator('.persistent-question')).toBeVisible();
+    await expect(page.locator('.equation-stage')).toHaveAttribute(
+      'data-formula-frame',
+      '2',
+    );
+    await expect(page.locator('.formula-options')).not.toBeVisible();
+    await expect(async () => {
+      const question = await page.locator('.persistent-question').boundingBox();
+      const answer = await page
+        .getByLabel('Your answer', { exact: true })
+        .boundingBox();
+      const navigation = await page.locator('.focus-navigation').boundingBox();
+      expect(question!.y).toBeGreaterThan(0);
+      const bottomInset = viewport.width < 400 ? 64 : 16;
+      expect(answer!.y + answer!.height).toBeLessThan(
+        viewport.height - bottomInset,
+      );
+      expect(navigation!.y).toBeGreaterThan(answer!.y + answer!.height);
+    }).toPass();
+    await page.getByRole('button', { name: 'Back step', exact: true }).click();
+    await expect(page.locator('.formula-options')).toBeVisible();
+    await context.close();
+  }
+});
 test('C17 notes correlate fossil layers and a real written question builds endosymbiosis evidence', async ({
   page,
 }) => {

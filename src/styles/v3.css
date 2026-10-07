@@ -341,6 +341,7 @@
 .focused-material {
   max-width: 820px;
   margin: auto;
+  overflow-anchor: none;
 }
 .note-connections {
   margin: 24px 0;
@@ -551,6 +552,31 @@
 .equation-variable {
   color: var(--course-accent);
 }
+/* The final setup becomes a compact reference beside the student's work.
+   Keep the question, knowns and equation tokens mounted; Back restores the chooser. */
+.story-stage[data-guide-action='student'][data-guide-kind='physics']
+  .formula-options {
+  display: none;
+}
+.story-stage[data-guide-action='student'][data-guide-kind='physics']
+  .equation-stage {
+  height: 104px;
+  margin-top: 0;
+}
+.story-stage[data-guide-action='student'][data-guide-kind='physics']
+  .known-unknown-board {
+  margin-top: 14px;
+  padding-top: 12px;
+}
+.story-stage[data-guide-action='student'][data-guide-kind='physics']
+  .guide-caption
+  > p:last-child {
+  margin-bottom: 10px;
+}
+.focus-question:has([data-guide-action='student'][data-guide-kind='physics'])
+  .focus-answer {
+  margin-top: 12px;
+}
 .guide-navigation {
   display: flex;
   align-items: center;
@@ -655,8 +681,7 @@
   height: 16px;
 }
 .focus-navigation {
-  position: sticky;
-  bottom: 12px;
+  position: static;
   display: flex;
   align-items: center;
   justify-content: space-between;
