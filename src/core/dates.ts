@@ -23,6 +23,18 @@ export function dayDifference(a: string, b: string) {
     (Date.parse(`${b}T12:00Z`) - Date.parse(`${a}T12:00Z`)) / 86400000,
   );
 }
+export function nearbyWeekday(day: string, today = schoolDate()) {
+  const distance = dayDifference(today, day);
+  if (distance < 0 || distance > 14) return;
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'UTC',
+    weekday: 'short',
+  }).format(new Date(`${day}T12:00Z`));
+}
+export function displayUpcomingDate(day: string, today = schoolDate()) {
+  const weekday = nearbyWeekday(day, today);
+  return `${weekday ? `${weekday}, ` : ''}${displayDate(day)}`;
+}
 export function isSchoolDay(day: string) {
   const weekday = new Date(`${day}T12:00Z`).getUTCDay();
   return (

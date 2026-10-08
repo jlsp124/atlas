@@ -13,9 +13,10 @@ import {
   topicTitle,
   unitTitle,
 } from '../content/workspaces';
-import { schoolDate, dayDifference } from '../core/dates';
+import { schoolDate, dayDifference, nearbyWeekday } from '../core/dates';
 import { useLearner, url } from '../client/store';
 import { CourseMark, Icon } from './Icons';
+import { assignmentProgress } from '../core/assignment-progress';
 export default function Home({ chooser = false }: { chooser?: boolean }) {
   const state = useLearner(),
     today = schoolDate();
@@ -37,10 +38,12 @@ export default function Home({ chooser = false }: { chooser?: boolean }) {
         ? state.selected.includes(
             concepts.find((c) => c.id === e.payload.concept)?.course ?? '',
           )
-        : e.type === 'assignment_task'
-          ? state.selected.includes(
-              assignments.find((a) => a.id === e.payload.assignment)?.course ??
-                '',
+        : e.type === 'assignment_task' || e.type === 'assignment_progress'
+          ? assignments.some(
+              (a) =>
+                a.id === e.payload.assignment &&
+                state.selected.includes(a.course) &&
+                assignmentProgress(a, state.events).status !== 'complete',
             )
           : false,
     );
@@ -50,12 +53,21 @@ export default function Home({ chooser = false }: { chooser?: boolean }) {
           title: topicTitle(recent.payload.concept),
           path: `learn/${recent.payload.concept}/`,
         }
-      : recent?.type === 'assignment_task'
+      : recent?.type === 'assignment_progress'
         ? {
             title: assignmentTitle(recent.payload.assignment),
-            path: `work/${recent.payload.assignment}/`,
+            path:
+              `work/${recent.payload.assignment}/` +
+              (recent.payload.question
+                ? `?step=${recent.payload.step ?? 0}#${recent.payload.question}`
+                : ''),
           }
-        : undefined;
+        : recent?.type === 'assignment_task'
+          ? {
+              title: assignmentTitle(recent.payload.assignment),
+              path: `work/${recent.payload.assignment}/`,
+            }
+          : undefined;
   return (
     <div className="home-screen">
       <div className="screen-heading">
@@ -87,29 +99,38 @@ export default function Home({ chooser = false }: { chooser?: boolean }) {
             </div>
             <div className="event-list">
               {next.map((e) => (
-                <a className="event-row" key={e.id} href={url(eventPath(e))}>
-                  <span className="event-date">
+                <a
+                  className="event-row"
+                  data-course={e.course}
+                  key={e.id}
+                  href={url(eventPath(e))}
+                >
+                  <time className="event-date" dateTime={e.start}>
                     <strong>
                       {new Date(e.start! + 'T12:00Z').getUTCDate()}
                     </strong>
                     <small>
-                      {new Intl.DateTimeFormat('en', {
-                        month: 'short',
-                        timeZone: 'UTC',
-                      }).format(new Date(e.start! + 'T12:00Z'))}
+                      {[
+                        nearbyWeekday(e.start!, today),
+                        new Intl.DateTimeFormat('en', {
+                          month: 'short',
+                          timeZone: 'UTC',
+                        }).format(new Date(e.start! + 'T12:00Z')),
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')}
                     </small>
-                  </span>
+                  </time>
                   <span className="event-copy">
-                    <strong>{eventTitle(e)}</strong>
-                    <small>
+                    <small className="event-class">
                       {e.course
                         ? findCourse(e.course).shortTitle
-                        : 'No classes'}
+                        : 'School · No classes'}
                     </small>
+                    <strong>
+                      {eventTitle(e).replace(/^C(\d+)\b/, 'Chapter $1')}
+                    </strong>
                   </span>
-                  {e.course && (
-                    <span className="course-dot" data-course={e.course} />
-                  )}
                   <Icon name="arrow" size={17} />
                 </a>
               ))}

@@ -64,10 +64,13 @@ test('dedicated onboarding chooses independent courses, saves locally and replay
     page.getByRole('heading', { name: 'Save your setup' }),
   ).toBeVisible();
   await page.getByRole('button', { name: 'Keep it on this device' }).click();
+  await expect(page).toHaveURL(/\/atlas\/courses\/$/);
+  await expect(page.locator('.topbar')).toHaveAttribute('data-ready', 'true');
   await expect(page.locator('.onboarding')).not.toBeVisible();
-  expect(
-    await page.locator('.course-row strong').allTextContents(),
-  ).not.toContain('Chemistry 11');
+  await expect(page.locator('.course-row strong')).toHaveCount(3);
+  await expect(
+    page.getByRole('link', { name: /Chemistry 11/, exact: false }),
+  ).toHaveCount(0);
   await page.reload();
   await expect(page.locator('.onboarding')).not.toBeVisible();
   await open(page, 'account/');
@@ -172,7 +175,7 @@ test('V1 saved courses, theme, worksheet tasks and question evidence survive V2'
     device,
   );
 });
-test('home and course fit desktop and units have just two primary choices', async ({
+test('home and course fit desktop and units open real materials', async ({
   page,
 }, info) => {
   await skip(page);
@@ -191,11 +194,10 @@ test('home and course fit desktop and units have just two primary choices', asyn
     ).toBeLessThanOrEqual(900);
   await open(page, 'courses/physics/');
   await expect(page.getByRole('link', { name: /Basic Skills/ })).toBeVisible();
-  await page.getByRole('link', { name: /Kinematics 7 ideas/ }).click();
+  await page.getByRole('link', { name: /Kinematics.*materials/ }).click();
   await expect(
-    page.getByRole('button', { name: 'Learn', exact: true }),
+    page.getByRole('button', { name: 'All materials', exact: true }),
   ).toBeVisible();
-  await page.getByRole('button', { name: 'Classwork', exact: true }).click();
   await expect(
     page.getByRole('link', { name: /Kinematics problem set/ }),
   ).toBeVisible();
@@ -217,7 +219,7 @@ test('home and course fit desktop and units have just two primary choices', asyn
     }
   }
 });
-test('assignment checking, unchecking and individual answers survive refresh', async ({
+test('assignment tasks, paper status and walkthrough history survive refresh', async ({
   page,
 }) => {
   await open(page, 'work/kinematics-review/');
@@ -233,24 +235,29 @@ test('assignment checking, unchecking and individual answers survive refresh', a
   await page.reload();
   await page.getByText('Mark a section finished', { exact: true }).click();
   await expect(task).not.toBeChecked();
-  await expect(page.locator('.solution')).toHaveCount(0);
-  const first = page.locator('.companion-question').first();
-  await expect(
-    first.getByRole('button', { name: 'Check answer', exact: true }),
-  ).toBeDisabled();
-  await first.getByLabel('Your answer', { exact: true }).fill('63');
-  await first.getByLabel('Unit', { exact: true }).fill('m');
-  await first
-    .getByRole('button', { name: 'Check answer', exact: true })
-    .click();
-  await expect(first.getByRole('status')).toContainText('That matches');
-  await first.getByRole('button', { name: 'Hard', exact: true }).click();
+  await expect(page.locator('.assignment-document textarea')).toHaveCount(0);
+  await page
+    .getByRole('combobox', { name: 'Assignment status', exact: true })
+    .selectOption('complete');
   await page.reload();
   await expect(
-    first.getByRole('button', { name: 'Hard', exact: true }),
-  ).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.locator('.solution')).toHaveCount(0);
+    page.getByRole('combobox', { name: 'Assignment status', exact: true }),
+  ).toHaveValue('complete');
+  await page
+    .getByRole('link', { name: 'Walk through question 2', exact: true })
+    .click();
+  await page
+    .locator('.walkthrough')
+    .getByRole('button', { name: 'Next', exact: true })
+    .click();
+  await page.reload();
+  await expect(page.locator('.walkthrough')).toHaveAttribute(
+    'data-question',
+    'q-2',
+  );
+  await expect(page.locator('.walkthrough')).toHaveAttribute('data-step', '1');
 });
+
 test('definitions give useful context and backlinks without a graph', async ({
   page,
 }) => {
@@ -425,42 +432,50 @@ test('hinted answers remain worth reviewing rather than declaring independent su
     ),
   ).toBe(true);
 });
-test('Learn this first opens only the needed ideas and restores the exact worksheet position', async ({
+test('contextual help preserves the current Japanese input and paper position', async ({
   page,
 }) => {
   await open(page, 'work/greetings-practice/');
   await page.getByText('Mark a section finished', { exact: true }).click();
   await page.getByRole('checkbox').first().check();
-  const question = page.locator('.companion-question').nth(4);
+  await page
+    .getByRole('link', { name: 'Review question 5', exact: true })
+    .click();
+  const question = page.locator('.companion-question');
   await question
     .getByLabel('Write in Japanese', { exact: true })
     .fill('こんにちは');
-  await question
-    .getByRole('button', { name: 'What do I need to know?', exact: true })
-    .scrollIntoViewIfNeeded();
+  const help = question.getByRole('button', {
+    name: 'What do I need to know?',
+    exact: true,
+  });
+  await help.scrollIntoViewIfNeeded();
   const position = await page.evaluate(() => scrollY);
-  await question
-    .getByRole('button', { name: 'What do I need to know?', exact: true })
-    .click();
+  await help.click();
   const modal = page.getByRole('dialog', {
-    name: 'Learn this first',
+    name: 'Explain this idea',
     exact: true,
   });
   await expect(modal).toBeVisible();
   expect(await modal.locator('.tiny-lesson').count()).toBeLessThanOrEqual(3);
   await expect(modal.locator('.question-session')).toHaveCount(0);
   await modal
-    .getByRole('button', { name: 'Back to worksheet', exact: true })
+    .getByRole('button', { name: 'Back to assignment', exact: true })
     .click();
   await expect(modal).not.toBeVisible();
   await expect(
     question.getByLabel('Write in Japanese', { exact: true }),
   ).toHaveValue('こんにちは');
-  await expect(page.getByRole('checkbox').first()).toBeChecked();
   expect(
     Math.abs((await page.evaluate(() => scrollY)) - position),
   ).toBeLessThanOrEqual(2);
+  await page
+    .getByRole('button', { name: 'Whole assignment', exact: true })
+    .click();
+  await page.getByText('Mark a section finished', { exact: true }).click();
+  await expect(page.getByRole('checkbox').first()).toBeChecked();
 });
+
 test('typed Japanese stays focused and assessed-work safeguards remain in AI context', async ({
   page,
   context,
@@ -682,13 +697,25 @@ test('accounts sync across devices, isolate guest data, queue offline and reconn
   await open(page, 'work/kinematics-review/');
   await page.getByText('Mark a section finished', { exact: true }).click();
   await page
-    .locator('.companion-question')
-    .first()
-    .getByRole('button', { name: 'Hard', exact: true })
-    .click();
-  await page
     .getByRole('checkbox', { name: /Set a direction convention/ })
     .check();
+  await page
+    .getByRole('link', { name: 'Walk through question 1', exact: true })
+    .click();
+  while (
+    await page
+      .locator('.walkthrough')
+      .getByRole('button', { name: 'Next', exact: true })
+      .count()
+  )
+    await page
+      .locator('.walkthrough')
+      .getByRole('button', { name: 'Next', exact: true })
+      .click();
+  await page
+    .getByText('Keep this question for review', { exact: true })
+    .click();
+  await page.getByRole('button', { name: 'Hard', exact: true }).click();
   await open(page, 'account/');
   await page
     .getByRole('button', { name: 'Create account', exact: true })
@@ -717,12 +744,20 @@ test('accounts sync across devices, isolate guest data, queue offline and reconn
   ).toBeVisible();
   await peer.goto('http://localhost:4321/atlas/work/kinematics-review/');
   await peer.getByText('Mark a section finished', { exact: true }).click();
+  await peer
+    .getByRole('button', { name: 'Continue question 1', exact: true })
+    .click();
+  await expect(peer.locator('.walkthrough')).toHaveAttribute('data-step', '10');
+  await peer
+    .getByText('Keep this question for review', { exact: true })
+    .click();
   await expect(
-    peer
-      .locator('.companion-question')
-      .first()
-      .getByRole('button', { name: 'Hard', exact: true }),
+    peer.getByRole('button', { name: 'Hard', exact: true }),
   ).toHaveAttribute('aria-pressed', 'true');
+  await peer
+    .getByRole('button', { name: 'Whole assignment', exact: true })
+    .click();
+  await peer.getByText('Mark a section finished', { exact: true }).click();
   await expect(
     peer.getByRole('checkbox', { name: /Set a direction convention/ }),
   ).toBeChecked();

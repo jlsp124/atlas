@@ -15,6 +15,14 @@ import {
   useLearner,
 } from '../client/store';
 import { Coordinates, CourseMark, Icon } from './Icons';
+import {
+  feedbackContext,
+  openFeedback,
+  type FeedbackContext,
+  type FeedbackKind,
+} from '../client/feedback';
+import Feedback from './Feedback';
+import Sheet from './Sheet';
 export default function Shell({
   course,
   focus = false,
@@ -29,6 +37,11 @@ export default function Shell({
     [search, setSearch] = useState(false),
     [query, setQuery] = useState('');
   const [definition, setDefinition] = useState<Definition | null>(null);
+  const [feedback, setFeedback] = useState<{
+    context: FeedbackContext;
+    kind?: FeedbackKind;
+  } | null>(null);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const onboardingRef = useRef<HTMLDialogElement>(null),
     searchRef = useRef<HTMLDialogElement>(null),
     inspectorRef = useRef<HTMLDialogElement>(null);
@@ -49,9 +62,24 @@ export default function Shell({
     };
     window.addEventListener('atlas:onboarding', replay);
     window.addEventListener('atlas:definition', define);
+    const requestedSearch = () => {
+      setQuery('');
+      setSearch(true);
+    };
+    window.addEventListener('atlas:search', requestedSearch);
+    const requestedFeedback = (event: Event) => {
+      setFeedback({
+        context: feedbackContext(),
+        kind: (event as CustomEvent<{ kind?: FeedbackKind }>).detail?.kind,
+      });
+      setFeedbackOpen(true);
+    };
+    window.addEventListener('atlas:feedback', requestedFeedback);
     return () => {
       window.removeEventListener('atlas:onboarding', replay);
       window.removeEventListener('atlas:definition', define);
+      window.removeEventListener('atlas:search', requestedSearch);
+      window.removeEventListener('atlas:feedback', requestedFeedback);
     };
   }, []);
   useEffect(() => {
@@ -117,7 +145,6 @@ export default function Shell({
   function finish(account = false) {
     emit('courses_selected', { courses: picked });
     finishOnboarding();
-    setOnboarding(false);
     window.location.href = url(account ? 'account/?create=1' : 'courses/');
   }
   function openSearch(el: HTMLElement) {
@@ -148,9 +175,12 @@ export default function Shell({
         className={`topbar ${focus ? 'focus-shell' : ''}`}
         data-ready={state.ready ? 'true' : 'false'}
       >
-        <a className="wordmark" href={url()} aria-label="atlas home">
-          atlas<span>.</span>
-        </a>
+        <div className="atlas-identity">
+          <a className="wordmark" href={url()} aria-label="atlas home">
+            atlas<span>.</span>
+          </a>
+          <span className="beta-label">BETA</span>
+        </div>
         <nav className="sidebar" aria-label="Main navigation">
           <a className={course ? 'nav-item' : 'nav-item home-nav'} href={url()}>
             <Icon name="home" />
@@ -210,6 +240,28 @@ export default function Shell({
           </div>
         </nav>
       </header>
+      <button
+        className="feedback-launcher"
+        aria-label="Help and feedback"
+        title="Help and feedback"
+        disabled={!state.ready}
+        onClick={() => openFeedback()}
+      >
+        <Icon name="help" size={19} />
+      </button>
+      <Sheet
+        open={feedbackOpen}
+        title="Help / Feedback"
+        onClose={() => setFeedbackOpen(false)}
+      >
+        {feedback && (
+          <Feedback
+            key={`${state.user?.id ?? 'guest'}:${feedback.context.page}:${feedback.kind ?? 'bug'}`}
+            context={feedback.context}
+            initialKind={feedback.kind}
+          />
+        )}
+      </Sheet>
       {!focus && (
         <nav className="mobile-nav" aria-label="Mobile navigation">
           <a href={url('courses/')}>

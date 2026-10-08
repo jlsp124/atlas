@@ -3,6 +3,7 @@ import Shell from '../components/Shell';
 import '../styles/fonts.css';
 import '../styles/global.css';
 import '../styles/flows.css';
+import '../styles/workspace.css';
 const {
   title = 'Your atlas',
   description = 'Everything from class, without digging for it.',
@@ -31,6 +32,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
     <meta property="og:type" content="website" />
     <title>{title} · atlas</title>
     <script is:inline>
+      if (/\/work\//.test(location.pathname) && location.hash.startsWith('#q-'))
+        document.documentElement.dataset.pendingQuestion = 'true';
       try {
         const theme = localStorage.getItem('atlas:theme');
         if (['light', 'dark', 'system'].includes(theme))
@@ -48,7 +51,48 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
         <slot />
       </main>
     </div>
+    <div
+      class="route-loader"
+      role="status"
+      aria-live="polite"
+      aria-hidden="true"
+    >
+      <span class="wordmark">
+        atlas<span>.</span>
+      </span>
+      <small>Opening your workspace…</small>
+    </div>
     <script>
+      const loader = document.querySelector<HTMLElement>('.route-loader');
+      loader?.addEventListener('animationstart', () =>
+        loader.setAttribute('aria-hidden', 'false'),
+      );
+      document.addEventListener('click', (event) => {
+        const link = (event.target as Element)?.closest('a');
+        if (
+          !link ||
+          event.defaultPrevented ||
+          event.button ||
+          event.metaKey ||
+          event.ctrlKey ||
+          event.shiftKey ||
+          event.altKey ||
+          link.target ||
+          link.hasAttribute('download')
+        )
+          return;
+        const destination = new URL(link.href, location.href);
+        if (
+          destination.origin === location.origin &&
+          destination.pathname !== location.pathname
+        ) {
+          loader?.classList.add('loading');
+        }
+      });
+      window.addEventListener('pageshow', () => {
+        loader?.classList.remove('loading');
+        loader?.setAttribute('aria-hidden', 'true');
+      });
       if ('serviceWorker' in navigator && import.meta.env.PROD) {
         const path = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/sw.js`;
         window.addEventListener('load', () => {

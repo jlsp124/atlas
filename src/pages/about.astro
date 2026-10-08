@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { Coordinates } from '../components/Icons';
+import { supportEmail } from '../content/product';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
@@ -8,6 +9,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   <article class="prose about">
     <Coordinates />
     <h1>About atlas.</h1>
+    <p class="meta">Atlas Beta</p>
     <p>
       I built atlas because we’re all getting the same pile of notes, worksheets
       and random dates anyway. I’m taking these classes too, so I’ll keep it
@@ -16,19 +18,20 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     <p>
       If something’s wrong or missing, <a href={base + '/help/'}>tell me</a>.
     </p>
-    <details>
-      <summary>A few details</summary>
-      <p>
-        atlas is student-made and isn’t affiliated with the school, district or
-        teachers. Check important dates with your teacher. Your progress stays
-        on this device unless you choose an account.{' '}
-        <a href={base + '/privacy/'}>Privacy</a> ·{' '}
-        <a href={base + '/sources/'}>Sources</a>
-      </p>
-    </details>
+    <p>
+      <a href={`mailto:${supportEmail}`}>{supportEmail}</a>
+    </p>
     <div class="about-footer">
       Designed & built by Jovan ·{' '}
       <a href="https://github.com/jlsp124/atlas">Open source</a>
+      <p>
+        <a href={base + '/privacy/'}>Privacy</a> ·{' '}
+        <a href={base + '/sources/'}>Sources</a>
+      </p>
+      <p class="small muted">
+        atlas is student-made and isn’t affiliated with the school, district or
+        teachers. Confirm important dates with your teacher.
+      </p>
     </div>
   </article>
 </Layout>

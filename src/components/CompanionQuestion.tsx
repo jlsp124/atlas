@@ -8,6 +8,7 @@ import {
 import { emit, useLearner } from '../client/store';
 import Glossary from './Glossary';
 import LearningVisual from './LearningVisual';
+import ReadableText from './ReadableText';
 
 export default function CompanionQuestion({
   question: q,
@@ -89,10 +90,15 @@ export default function CompanionQuestion({
       </div>
       {panel === 'asking' && (
         <div className="question-context">
-          <p>{q.asking}</p>
+          <p>
+            <ReadableText text={q.asking} />
+          </p>
           {q.clues.map((c) => (
             <p key={c.word}>
-              <strong>{c.word}</strong> → {c.explanation}
+              <strong>
+                <ReadableText text={c.word} />
+              </strong>{' '}
+              → <ReadableText text={c.explanation} />
             </p>
           ))}
           <details>
@@ -101,7 +107,9 @@ export default function CompanionQuestion({
               {q.steps.map((step) => (
                 <li key={step.title}>
                   <strong>{step.title}</strong>
-                  <p>{step.text}</p>
+                  <p>
+                    <ReadableText text={step.text} />
+                  </p>
                 </li>
               ))}
             </ol>
@@ -126,7 +134,7 @@ export default function CompanionQuestion({
                   checked={value === c}
                   onChange={() => setValue(c)}
                 />
-                {c}
+                <ReadableText text={c} />
               </label>
             ))}
           </fieldset>
@@ -197,7 +205,9 @@ export default function CompanionQuestion({
       </form>
       {panel === 'hint' && (
         <p className="question-hint">
-          {q.hints[Math.min(Math.max(0, hints - 1), q.hints.length - 1)]}
+          <ReadableText
+            text={q.hints[Math.min(Math.max(0, hints - 1), q.hints.length - 1)]}
+          />
         </p>
       )}
       {feedback && (
@@ -208,7 +218,9 @@ export default function CompanionQuestion({
       {repair && (
         <fieldset className="tiny-repair">
           <legend>One small thing first</legend>
-          <p>{q.repair.prompt}</p>
+          <p>
+            <ReadableText text={q.repair.prompt} />
+          </p>
           {q.repair.choices.map((c) => (
             <label className="answer-choice" key={c}>
               <input
@@ -217,7 +229,7 @@ export default function CompanionQuestion({
                 checked={repairAnswer === c}
                 onChange={() => setRepairAnswer(c)}
               />
-              {c}
+              <ReadableText text={c} />
             </label>
           ))}
           <button
@@ -237,7 +249,9 @@ export default function CompanionQuestion({
             Check this idea
           </button>
           {repairAnswer && repairAnswer !== q.repair.answer && (
-            <p>{q.repair.explanation}</p>
+            <p>
+              <ReadableText text={q.repair.explanation} />
+            </p>
           )}
         </fieldset>
       )}
@@ -263,10 +277,16 @@ export default function CompanionQuestion({
             </button>
           )}
         </div>
-        {panel === 'example' && <p>{q.example}</p>}
+        {panel === 'example' && (
+          <p>
+            <ReadableText text={q.example} />
+          </p>
+        )}
         {panel === 'explanation' && (
           <>
-            <p>{q.hints[0]}</p>
+            <p>
+              <ReadableText text={q.hints[0]} />
+            </p>
             <LearningVisual id={q.concepts[0]} />
           </>
         )}
@@ -274,7 +294,7 @@ export default function CompanionQuestion({
           <div className="solution">
             <p>
               <strong>
-                {String(q.answer.value)} {q.answer.unit}{' '}
+                <ReadableText text={String(q.answer.value)} /> {q.answer.unit}{' '}
                 {q.answer.directions?.[0]}
               </strong>
             </p>
@@ -285,8 +305,12 @@ export default function CompanionQuestion({
                   ? 'User-supplied answer'
                   : 'Atlas-derived solution · round to the question’s precision'}
             </small>
-            <p>{q.answer.reasoning}</p>
-            <p>Watch for: {q.answer.commonMistake}</p>
+            <p>
+              <ReadableText text={q.answer.reasoning} />
+            </p>
+            <p>
+              Watch for: <ReadableText text={q.answer.commonMistake} />
+            </p>
           </div>
         )}
       </details>

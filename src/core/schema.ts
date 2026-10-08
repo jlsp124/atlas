@@ -276,6 +276,21 @@ export const eventSchema = z.discriminatedUnion('type', [
   z
     .object({
       ...base,
+      type: z.literal('assignment_progress'),
+      payload: z
+        .object({
+          assignment: id,
+          status: z.enum(['not-started', 'in-progress', 'complete']),
+          question: id.optional(),
+          step: z.number().int().min(0).max(100).optional(),
+          done: z.boolean().optional(),
+        })
+        .strict(),
+    })
+    .strict(),
+  z
+    .object({
+      ...base,
       type: z.literal('question_answered'),
       payload: z
         .object({

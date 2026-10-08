@@ -1,14 +1,19 @@
 import { useEffect, useState } from 'react';
-import { findCourse, findEdition, schedule } from '../content/catalog';
+import {
+  assignments,
+  findCourse,
+  findEdition,
+  schedule,
+} from '../content/catalog';
 import {
   eventPath,
   eventTitle,
   unitTitle,
   unitLabel,
   unitUrl,
-  unitTopics,
+  assignmentUnits,
 } from '../content/workspaces';
-import { schoolDate, displayDate } from '../core/dates';
+import { schoolDate, displayUpcomingDate } from '../core/dates';
 import { url } from '../client/store';
 import { CourseMark, Icon } from './Icons';
 import Sheet from './Sheet';
@@ -87,9 +92,11 @@ export default function Course({
                 <span>
                   <strong>{unitTitle(id, u.id)}</strong>
                   <small>
-                    {unitTopics(id, u.id).length
-                      ? `${unitTopics(id, u.id).length} ideas`
-                      : 'Lessons coming soon'}
+                    {assignments.filter(
+                      (a) => a.course === id && assignmentUnits[a.id] === u.id,
+                    ).length
+                      ? `${assignments.filter((a) => a.course === id && assignmentUnits[a.id] === u.id).length} materials`
+                      : 'Class resources'}
                   </small>
                 </span>
                 <span className="unit-status">
@@ -111,7 +118,7 @@ export default function Course({
           {events.map((e) => (
             <a className="upcoming-link" href={url(eventPath(e))} key={e.id}>
               <small>
-                {e.start ? displayDate(e.start) : 'Date to confirm'}
+                {e.start ? displayUpcomingDate(e.start) : 'Date to confirm'}
               </small>
               <strong>{eventTitle(e)}</strong>
               <Icon name="arrow" size={16} />

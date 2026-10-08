@@ -12,12 +12,13 @@ This repository started private. GitHub returned HTTP 422 stating that the accou
 
 Optional repository **Variables** (not frontend secrets):
 
-| Variable               | Purpose                                                  |
-| ---------------------- | -------------------------------------------------------- |
-| `PUBLIC_API_URL`       | HTTPS API origin, with no trailing path or slash         |
-| `PUBLIC_SUPPORT_EMAIL` | Dedicated support contact; never a personal phone number |
+| Variable         | Purpose                                          |
+| ---------------- | ------------------------------------------------ |
+| `PUBLIC_API_URL` | HTTPS API origin, with no trailing path or slash |
 
-Changing a variable requires another Pages deployment. Never put credentials in either variable. Empty values keep a complete guest app and a public issue link for non-private support.
+Changing a variable requires another Pages deployment. Never put credentials in frontend variables. An empty API value keeps a complete guest app and an explicit email fallback for feedback. Product contact is `atlas@jovanpahal.com`, centralized in `src/content/product.ts`; see [Support](SUPPORT.md) for mailbox setup.
+
+The assignment redesign adds `assignment_progress` events. Before an authorized frontend publication, deploy the matching `server/app.ts` validator so the server accepts these events. No database migration or new environment variables are needed. Confirm the server and Pages revisions separately; an old server will reject a sync batch containing the new event.
 
 For a custom site path, set `ATLAS_SITE` and `ATLAS_BASE` at build time. Keep the manifest, service-worker scope and Astro base consistent. Do not serve the built `/atlas/` app at `/` without rebuilding.
 

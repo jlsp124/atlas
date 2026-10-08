@@ -1,14 +1,14 @@
-# atlas V2 design authority
+# atlas assignment-first design authority
 
 **The internal system can be complicated. The student experience must be extremely simple.**
 
-This authority supersedes the old dashboard, timetable hierarchy, graph navigation and coach marks. Do not restore those surfaces because the engine supports them.
+The October 7 assignment redesign supersedes the old required Learn/Classwork split. Keep the V2 shell, identity and existing engine. The student writes on their own worksheet or notebook; Atlas guides the reasoning beside it.
 
 ## Information architecture
 
-**Course → Unit → Learn / Classwork.** Physics 11, Chemistry 11, Life Sciences 11 and Introductory Japanese 11 are independent teacher/edition workspaces. Never display personal periods, course order claims or “verified” in student navigation. Past units stay accessible. Calendar owns dates.
+**Course → Unit → Material set → Whole assignment → Question → Guided walkthrough.** Physics 11, Chemistry 11, Life Sciences 11 and Introductory Japanese 11 are independent teacher/edition workspaces. Never display personal periods, course order claims or “verified” in student navigation. Past units stay accessible. Calendar owns dates.
 
-Home answers what's coming up, what to resume and which courses you've added. Course overview is a compact unit list. A unit has two primary choices: Learn and Classwork. Resources and dates are secondary actions.
+Home answers what's coming up, what to resume and which courses you've added. Course overview is a compact unit list. Units list real notes, worksheets, textbook work, labs and reviews by material set, with compact filters, statuses and search. Reference explanations remain available through secondary disclosure. Resources and known dates remain accessible.
 
 Routes: Home, Courses, Course, Unit, Learn topic, Assignment, Practice, assessment Prepare, Calendar, Account, About and Help. Search is a dialog. Preserve legacy concept/course links. Explore is omitted; semantic relationships remain through backlinks and the engine.
 
@@ -43,7 +43,11 @@ Geist Sans variable, locally served with system fallback. Japanese uses native H
 
 Three dedicated onboarding screens: promise → choose courses → save setup. Encourage accounts; local use remains available. Existing setup stays intact. No automatic walkthrough.
 
-Learn is an ordered path. One idea, representation, worked example or check at a time. Why/detail/AI are secondary. All required concepts and small facts remain reachable through the path and “Still to check”; simpler UI must not shrink the blueprint.
+Science assignments have no default answer boxes. One current question, one short explanation, one persistent representation and compact Next/Back controls guide work on paper. Numbers originate in the prompt or explicitly identified related parts. Formula steps explain the operation on both sides, substitutions retain their sources, and units and direction stay visible. Missing figures or unspecified textbook species require the original material; labelled examples do not claim to reproduce it.
+
+Chemistry uses electron budgets, filling order, factors and unit cancellation. Biology uses evidence, processes and concise response criteria. Japanese remains a recall flow with meanings, situations, writing guidance and Easy/Okay/Hard due review. Ratings adjust review timing; they never award mastery.
+
+Optional reference learning still presents one idea, representation, worked example or check at a time. Why/detail/AI are secondary. All required concepts and small facts remain reachable through the path and “Still to check”; simpler UI must not shrink the blueprint.
 
 Invisible prerequisite repair: “Before this, let's check one thing.” Wrong: “This is probably the part getting in your way.” → “Fix this first” → teach/check → automatic return to original target. “I know this” means a quick check, never mastery. Confusion records evidence and offers a useful next step.
 
@@ -51,9 +55,9 @@ Practice exposes Quick check and Review unit; assessment context exposes Prepare
 
 ## Classwork, definitions and sources
 
-Group by unit/material set, preserving actual source relationships. Never invent teacher worksheets or due dates. Typeset authorized material with numbering, sections, formulas and diagrams. Restricted handouts stay linked; original Atlas companions are clearly identified. Reveal legitimate answers per question via Check answer.
+Group by unit/material set, preserving actual source relationships. Never invent teacher worksheets or due dates. Typeset authorized derivatives with numbering and sections on a white paper surface in either theme. The entire assignment stays reachable through “Whole assignment”; its reading position and active question link are restored. Restricted Chemistry hand-ins remain metadata only with no question tutoring.
 
-“Learn this first” selects the assignment's required ideas, preserves checked tasks and reading position, teaches/checks them and returns to the worksheet. Strong students may check quickly. Self-report cannot skip proof.
+“Explain the idea” selects relevant existing concepts in a focused sheet and restores the same question, step and reading position. Assignment status and questions done on paper record completion separately from demonstrated learning. Existing checklist IDs and histories remain valid.
 
 Important words are real keyboard-accessible buttons with subtle underlines. Definition first, one Learn this action, optional Related/Used in links. Desktop contextual inspector is dismissible; mobile modal sheet manages focus. Source details use explicit secondary controls, not blocks below every document.
 
@@ -63,14 +67,18 @@ Calendar defaults to Week; Month is secondary. Selected-course events use accent
 
 Search: Cmd/Ctrl+K dialog; Learn / Classwork / Other. Include aliases, formulas, kana, romaji, resources, units and related assessments. Accounts, secure sync, offline, export/import, privacy and admin remain functional; settings owns sync detail. Admin may remain dense.
 
+Atlas Beta uses a small BETA label beside the wordmark and one persistent compact help control. Feedback captures only public course/unit/material/question/step context and the submitted message. Suggestions can open directly from a walkthrough. A short form, optional reply email, real inbox confirmation, preserved failed draft and context-filled email fallback keep feedback quick. Privacy, Sources and quiet non-affiliation language belong in Help/About. Official product support is `atlas@jovanpahal.com`; mailbox setup is separate from UI implementation.
+
 Voice: short, normal, useful. First person for maintenance (“I haven't added Chapter 19 yet.”), second person for guidance (“Start here.”). No third-person Jovan, engine jargon, evidence states or provenance prose in ordinary UI. About explains why I built it. Policy/source details stay in Help/About or an explicit source action. Japanese assessed-work safeguards remain in tutoring prompts. AI is secondary: Need more help? → Ask an AI → intent.
 
 ## Accessibility, motion and acceptance
 
-Semantic landmarks/headings, real links/buttons/labels, visible focus, Escape/focus restoration, live feedback, no color-only states. Reflow at zoom. Math/long URLs may scroll locally without document overflow. Respect reduced motion. Short pane/step/sheet transitions; no bouncing or perpetual motion.
+Semantic landmarks/headings, real links/buttons/labels, visible focus, Escape/focus restoration, live feedback, no color-only states. Reflow at zoom. Math/long URLs may scroll locally without document overflow. Respect reduced motion. Short pane/step/sheet transitions; no bouncing or decorative perpetual motion.
+
+Use the same objects across steps. Values travel from visible prompt cues to their known-value positions and into the equation; electrons move from their budget to bonds and pairs. Motion takes about 200–380 ms with restrained easing and no input delay. Rapid navigation cancels earlier token motion. Reserve space for working and counters. Page navigation has a short native fade where supported. A small delayed atlas. loading mark appears only if navigation actually waits; no artificial launch delay. Real asynchronous requests show pending labels and a compact spinner. Static documents do not need fake skeletons. Empty materials and the custom 404 give a concrete next action.
 
 Inspect screenshots at 1920×1080, 1440×900, 1366×768 and realistic phones, light/dark: onboarding, Home, course, unit, Learn, assignment, definition, practice, Calendar, Search, account. Multiple visual passes: first priority, choices, unnecessary scroll, card clutter, generic appearance. Inspect deployed Pages after release.
 
 ## Preservation contract
 
-Keep IDs, prerequisites/backlinks, question bank, coverage items, learner evidence, task IDs, offline, account separation/sync, source records, ingestion and backend tests. V2 is a presentation layer over the catalog and engine. The existing atlas:v1:* event storage remains valid; no reset or schema migration is needed. Do not rewrite server, auth, database, sync or deployment for this UX.
+Keep IDs, prerequisites/backlinks, question bank, coverage items, learner evidence, task IDs, offline, account separation/sync, source records, ingestion and backend tests. The existing atlas:v1:* event storage remains valid; no reset or database migration is needed. One additive `assignment_progress` event records status, question cursor, step and questions done on paper. Server validation rejects foreign/restricted checkpoints. Deploy the matching server validator before publishing clients that sync the new event. Do not rearchitect auth, database or source intake for this UX.

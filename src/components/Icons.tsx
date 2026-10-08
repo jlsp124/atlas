@@ -1,6 +1,12 @@
 import type { CSSProperties } from 'react';
 export function Icon({ name, size = 20 }: { name: string; size?: number }) {
   const paths: Record<string, string> = {
+    pencil: 'm15 4 5 5M4 20l4-1L21 6l-4-4L4 15z',
+    flag: 'M5 21V3h12l-2 4 2 4H5',
+    document: 'M14 3H5v18h14V8zM14 3v5h5M8 12h8M8 16h6',
+    lab: 'M9 3h6M10 3v7L4 20h16l-6-10V3M7 15h10',
+    layers: 'm3 7 9-4 9 4-9 4zM3 12l9 4 9-4M3 17l9 4 9-4',
+    review: 'M4 9a8 8 0 1 1 1 9M4 4v5h5M12 7v5l3 2',
     home: 'M3 10 12 3l9 7M5 9v12h14V9M9 21v-8h6v8',
     calendar: 'M5 5h14v16H5zM8 3v4m8-4v4M5 10h14m-11 4h2m4 0h2m-8 4h2',
     search: 'M16 16l5 5M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0',

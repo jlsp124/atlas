@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import { sources, snapshot } from '../content/catalog';
 import ingestion from '../content/ingestion/bleecker.json';
 import videos from '../content/ingestion/videos.json';
+import { supportEmail } from '../content/product';
 ---
 
 <Layout title="Sources">
@@ -14,6 +15,13 @@ import videos from '../content/ingestion/videos.json';
       with their original sources.
     </p>
     <p class="meta">Last content update: {snapshot.date}</p>
+    <p class="small">
+      Something missing or incorrect?{' '}
+      <a href={`mailto:${supportEmail}?subject=Atlas%20sources`}>
+        Contact Atlas
+      </a>
+      .
+    </p>
     <div class="source-list">
       {sources.map((s) => (
         <details class="source-row">

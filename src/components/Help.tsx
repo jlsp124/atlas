@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { courses } from '../content/catalog';
 import { API, request, track, useLearner } from '../client/store';
+import { supportEmail } from '../content/product';
 export default function Help() {
   const state = useLearner();
   const [kind, setKind] = useState('wrong-information');
@@ -9,7 +10,7 @@ export default function Help() {
   const [contact, setContact] = useState('');
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
-  const support = import.meta.env.PUBLIC_SUPPORT_EMAIL || '';
+  const support = supportEmail;
   async function submit() {
     setBusy(true);
     try {
@@ -81,7 +82,7 @@ export default function Help() {
               minLength={10}
               maxLength={3000}
               required
-              placeholder="Include the page and what needs correcting. Please leave out grades, private contact information and assessed answers."
+              placeholder="What could be better? On a learning page, the ? control includes your location automatically."
             />
           </label>
           <label>
@@ -103,6 +104,12 @@ export default function Help() {
           </button>
           <p role="status" aria-live="polite">
             {message}
+            {message.startsWith('Request received') && (
+              <>
+                {' '}
+                For anything else, <a href={`mailto:${support}`}>{support}</a>.
+              </>
+            )}
           </p>
           {(!API || state.connection === 'offline') && (
             <div className="service-note">
@@ -110,22 +117,11 @@ export default function Help() {
                 The request inbox is currently unavailable. Your draft stays in
                 this tab.
               </p>
-              {support && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(support) ? (
-                <a href={`mailto:${support}?subject=atlas%20help`}>
-                  Email atlas support ↗
-                </a>
-              ) : (
-                <a
-                  href="https://github.com/jlsp124/atlas/issues/new"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Report a non-private issue on GitHub ↗
-                </a>
-              )}
-              <p className="small muted">
-                Use the public issue link only for non-private information.
-              </p>
+              <a
+                href={`mailto:${support}?subject=atlas%20help&body=${encodeURIComponent(text)}`}
+              >
+                Email atlas support ↗
+              </a>
             </div>
           )}
         </form>
@@ -140,6 +136,13 @@ export default function Help() {
             for submitted work.
           </p>
           <a href="../about/">About atlas</a>
+          <p>
+            <a href={`mailto:${support}`}>{support}</a>
+          </p>
+          <p className="small">
+            <a href="../privacy/">Privacy</a> ·{' '}
+            <a href="../sources/">Sources</a>
+          </p>
         </details>
       </div>
     </>

@@ -3,6 +3,7 @@ import classroom from '../content/ingestion/classroom.json';
 import strokes from '../content/ingestion/kana-strokes.json';
 import { topicTitle } from '../content/workspaces';
 import { url } from '../client/store';
+import ReadableText from './ReadableText';
 
 function Kana({
   vowel,
@@ -14,7 +15,7 @@ function Kana({
   return (
     <section className="kana-practice">
       <h3 lang="ja">
-        {vowel.character} <small>{vowel.reading}</small>
+        <ReadableText text={vowel.character} />
       </h3>
       <svg
         className="four-square"
@@ -50,7 +51,7 @@ function Kana({
         </span>
       </div>
       <p>
-        {vowel.sound}. <span lang="ja">{vowel.example}</span>
+        {vowel.sound}. <ReadableText text={vowel.example} />
       </p>
     </section>
   );
@@ -96,13 +97,19 @@ export default function JapaneseConnections({
       {connections.map((c) => (
         <section className="phrase-connection" key={c.component}>
           <p className="meta">{c.scope}</p>
-          <h2 lang="ja">{c.component}</h2>
-          <p>{c.meaning}</p>
-          <p lang="ja">{c.examples.join(' · ')}</p>
+          <h2 lang="ja">
+            <ReadableText text={c.component} />
+          </h2>
+          <p>
+            <ReadableText text={c.meaning} />
+          </p>
+          <p lang="ja">
+            <ReadableText text={c.examples.join(' · ')} />
+          </p>
           <div className="context-actions">
             {c.concepts.map((id) => (
               <a key={id} href={url(`learn/${id}/`)}>
-                {topicTitle(id)}
+                <ReadableText text={topicTitle(id)} />
               </a>
             ))}
           </div>

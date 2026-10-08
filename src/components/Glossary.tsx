@@ -1,4 +1,5 @@
 import { definitions, type Definition } from '../content/definitions';
+import ReadableText from './ReadableText';
 const terms = definitions
   .flatMap((d) => [d.term, ...(d.aliases ?? [])].map((term) => ({ term, d })))
   .sort((a, b) => b.term.length - a.term.length);
@@ -34,7 +35,7 @@ export default function Glossary({ text }: { text: string }) {
     <>
       {pieces.map((p, i) =>
         typeof p === 'string' ? (
-          p
+          <ReadableText text={p} key={i} />
         ) : (
           <button
             type="button"
@@ -43,7 +44,7 @@ export default function Glossary({ text }: { text: string }) {
             onClick={(e) => openDefinition(p.d, e.currentTarget)}
             aria-label={`Define ${p.text}`}
           >
-            {p.text}
+            <ReadableText text={p.text} />
           </button>
         ),
       )}

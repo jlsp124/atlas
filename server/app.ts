@@ -432,6 +432,27 @@ export async function createServer(options: ServerOptions = {}) {
         )
       )
         return reply.code(400).send({ error: 'Unknown task' });
+      if (e.type === 'assignment_progress') {
+        const work = assignments.find((x) => x.id === e.payload.assignment);
+        if (
+          !work ||
+          (e.payload.question &&
+            (work.assistance === 'independent-only' ||
+              !work.companionQuestions?.some(
+                (q) => q.id === e.payload.question,
+              )))
+        )
+          return reply
+            .code(400)
+            .send({ error: 'Unknown assignment progress mapping' });
+        if (
+          (e.payload.step !== undefined || e.payload.done !== undefined) &&
+          !e.payload.question
+        )
+          return reply
+            .code(400)
+            .send({ error: 'Question progress requires a question' });
+      }
       if (
         e.type === 'difficulty_rated' ||
         e.type === 'companion_attempt' ||

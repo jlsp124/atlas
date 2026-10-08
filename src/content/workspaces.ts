@@ -26,7 +26,7 @@ export const unitLabel = (course: string, unit: string) => {
       ?.title ?? '';
   return title.includes(' · ') ? title.split(' · ')[0] : '';
 };
-export const unitUrl = (course: string, unit: string, view = 'learn') =>
+export const unitUrl = (course: string, unit: string, view = 'materials') =>
   `courses/${course}/units/${unit}/${view === 'classwork' ? '?view=classwork' : ''}`;
 export const unitTopics = (course: string, unit: string) =>
   concepts.filter(
@@ -45,7 +45,7 @@ export const unitDescriptions: Record<string, string> = {
   classification: 'Read the relationships between living things.',
   origins: 'Use fossils and other evidence to understand the history of life.',
   microorganisms:
-    'Viruses, bacteria and disease. I haven’t added these lessons yet.',
+    'Viruses, bacteria and disease. Open the class resources as this unit begins.',
   writing: 'Match the written form to the sound, one small piece at a time.',
   greetings: 'Useful words and phrases for everyday situations.',
   numbers:

@@ -19,6 +19,7 @@ import { Icon } from './Icons';
 import LearningVisual from './LearningVisual';
 import QuestionSession from './QuestionSession';
 import TutorHelp from './TutorHelp';
+import ReadableText from './ReadableText';
 export function Lesson({
   id,
   onComplete,
@@ -192,7 +193,9 @@ export function Lesson({
               ? 'See it'
               : 'Try the reasoning'}
         </p>
-        <h1>{topicTitle(id)}</h1>
+        <h1>
+          <ReadableText text={topicTitle(id)} />
+        </h1>
         {step === 0 ? (
           <>
             <div className="teaching-text">
@@ -234,7 +237,9 @@ export function Lesson({
           </>
         ) : (
           <>
-            <h2>{c.example.prompt}</h2>
+            <h2>
+              <ReadableText text={c.example.prompt} />
+            </h2>
             <ol className="worked-steps">
               {(exampleSteps[id] ?? c.example.steps).map((s, i) => (
                 <li key={i}>

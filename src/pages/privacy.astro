@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { supportEmail } from '../content/product';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
@@ -10,9 +11,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     <h2>Without an account</h2>
     <p>
       Your course choices, theme, attempts, confusion markers and assignment
-      checklists stay in your browser. You can export or import them in
-      settings. Clearing browser storage removes local data. GitHub Pages may
-      log visitor IP addresses for its own service security.
+      checklists, walkthrough position and review ratings stay in your browser.
+      You can export or import them in settings. Clearing browser storage
+      removes local data. GitHub Pages may log visitor IP addresses for its own
+      service security.
     </p>
     <h2>With an account</h2>
     <p>
@@ -34,9 +36,13 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     <h2>Requests</h2>
     <p>
       Help requests store the text you choose to submit, request category,
-      optional course and optional reply email. Please do not include grades,
-      private classroom data or assessed answers. Attachments are not accepted.
-      Public GitHub issues are visible to others.
+      optional course and optional reply email. The compact feedback control
+      also includes the public course, unit, assignment, question, walkthrough
+      step and page you were viewing; it does not capture typed answers or other
+      browser activity. Unsent feedback drafts stay in this tab’s session
+      storage and are cleared from the form after sending. Please do not include
+      grades, private classroom data or assessed answers. Attachments are not
+      accepted. Public GitHub issues are visible to others.
     </p>
     <h2>Deletion and shared devices</h2>
     <p>
@@ -48,9 +54,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       apply deletion requests when restoring a backup.
     </p>
     <p>
-      Guest requests without an account need a separate deletion request to the
-      server operator. Password recovery is not available yet. On shared
-      devices, sign out and clear local data as appropriate.
+      Guest requests without an account need a separate deletion request to{' '}
+      <a href={`mailto:${supportEmail}`}>{supportEmail}</a>. Password recovery
+      is not available yet. On shared devices, sign out and clear local data as
+      appropriate.
     </p>
     <h2>External resources</h2>
     <p>

@@ -1,5 +1,19 @@
 # Implementation status
 
+**October 7, 2026:** the assignment-first Atlas Beta redesign is implemented and
+verified locally. The primary experience is Course → Unit → Material set → Whole
+assignment → Focused question → Guided work on paper. The former required
+Learn/Classwork split is superseded; optional reference learning and the original
+engine remain. The V2 neutral identity, accents, sidebar, source catalog,
+restricted Chemistry and account/offline behavior are preserved. A small BETA
+treatment and contextual Help/Feedback are included. See
+[ASSIGNMENT_REDESIGN.md](ASSIGNMENT_REDESIGN.md), [QA.md](QA.md) and
+[SUPPORT.md](SUPPORT.md). This implementation has not been published; its additive
+paper-progress event requires the matching server validator before frontend
+publication. No database migration or new environment variable is needed.
+
+## Historical classwork and V2 receipts
+
 **October 6, 2026:** the classwork fidelity milestone supersedes conflicting
 parts of the V2 resumption contract below. Read [CLASSWORK_MILESTONE.md](CLASSWORK_MILESTONE.md)
 and [INTAKE.md](INTAKE.md). V2 visuals remain; schoolwork is the primary

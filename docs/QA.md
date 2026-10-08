@@ -1,4 +1,50 @@
-# October 6 classwork verification
+# October 7 Atlas Beta assignment redesign
+
+The final `npm run check` passed locally on Windows: formatting, ESLint,
+Astro/TypeScript (97 files, zero errors/warnings/hints), 105 unit/backend tests
+in seven files, content validation, the production build and all 78 browser
+tests across desktop and phone. No browser tests were skipped. A separate
+`npm audit --audit-level=high` reports zero vulnerabilities.
+
+The new coverage verifies the complete science document catalog without default
+answer forms; persistent Physics terms, rearrangement, units and saved question
+position; the provenance of all eight Lewis electrons; configuration totals and
+core notation; conversion cancellation; Biology evidence; completion and unit
+filters; quick feedback receipt, context, failed drafts and focus; custom 404
+search; reduced motion; and working, Back and Japanese navigation on small phones.
+Existing account isolation, two-context sync, offline queue/reconnect, guest
+progress, restricted Chemistry, source intake and Japanese checks also pass.
+
+The built-app visual pass captured 80 states at 1920×1080, 1440×900, 1366×768,
+390×844 and 360×800, in both themes, with no JavaScript page errors or horizontal
+overflow. The inspected states include unit rows, full assignments, focused
+Physics/Chemistry/Biology/Japanese, feedback sheets and the 404. Inspection led to
+compact focused headers, visible restored/new working, a persistent phone header,
+Back revealing the prompt and a single-row Japanese rating control. This supports
+the automated accessibility checks; it is not a complete manual WCAG certification.
+
+The catalog remains 50 materials and 353 contextual checkpoints. The 285 science
+questions use 60 numeric Physics guides, 30 configuration guides, 11 conversion
+guides, one labelled Lewis example and 183 paced written/setup guides. The other
+68 checkpoints use Japanese recall. Missing original figures and molecule/species
+lists still require the class material. Presentation coverage is not a claim of
+automatic grading or complete reconstruction of classroom diagrams.
+
+The production build has 222 routes, 223 HTML files, 220 indexed pages and 557
+offline assets (about 7.8 MiB). Vite reports its shared-chunk size warning above
+500 kB; the build succeeds. No dependency, database migration or new environment
+variable was added. Catalog/ingestion data, source intake, event-store persistence,
+the original learning engine and offline generation have no diff. The additive
+paper-progress event and matching server validation are covered by the tests.
+
+This redesign is local and has not been published. Linux CI/container validation,
+an exact deployed revision and live validation of the new API event are NOT RUN
+for these changes. Deploy the matching server validator before the frontend. The
+Hostinger connector could not provision an Atlas mailbox; mailbox setup and email
+delivery remain unverified. See [Support](SUPPORT.md) for the exact hPanel step and
+[Assignment redesign](ASSIGNMENT_REDESIGN.md) for the implementation scope.
+
+## Historical October 6 classwork verification
 
 The classroom milestone contains 50 material entries and 353 contextual
 checkpoints. Written responses, diagrams and configuration notation use honest

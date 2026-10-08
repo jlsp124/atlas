@@ -228,6 +228,54 @@ describe('accounts and authorization', () => {
   });
 });
 describe('offline event reconciliation', () => {
+  it('syncs paper status, step and completion and rejects invalid or restricted question mappings', async () => {
+    const owner = await account(),
+      other = await account();
+    const event = {
+      id: randomUUID(),
+      device: randomUUID(),
+      at: new Date().toISOString(),
+      type: 'assignment_progress',
+      payload: {
+        assignment: 'kinematics-review',
+        status: 'in-progress',
+        question: 'q-1',
+        step: 5,
+        done: true,
+      },
+    };
+    const write = await app.inject({
+      method: 'POST',
+      url: '/sync',
+      headers: authed(owner),
+      payload: { events: [event], cursor: 0 },
+    });
+    expect(write.statusCode).toBe(200);
+    expect(write.json().events).toContainEqual(event);
+    const isolated = await app.inject({
+      method: 'POST',
+      url: '/sync',
+      headers: authed(other),
+      payload: { events: [], cursor: 0 },
+    });
+    expect(isolated.json().events).toEqual([]);
+    for (const payload of [
+      { ...event.payload, question: 'missing' },
+      { ...event.payload, assignment: 'electronic-structure' },
+      { assignment: 'kinematics-review', status: 'in-progress', step: 5 },
+    ]) {
+      const invalid = await app.inject({
+        method: 'POST',
+        url: '/sync',
+        headers: authed(owner),
+        payload: {
+          events: [{ ...event, id: randomUUID(), payload }],
+          cursor: 0,
+        },
+      });
+      expect(invalid.statusCode).toBe(400);
+    }
+  });
   it('syncs classwork attempts and ratings between sessions and isolates accounts', async () => {
     const a = await account(),
       b = await account();

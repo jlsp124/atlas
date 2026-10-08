@@ -4,43 +4,45 @@ async function open(page: import('@playwright/test').Page, path: string) {
   await expect(page.locator('.topbar')).toHaveAttribute('data-ready', 'true');
 }
 
-test('real worksheet retries one tiny idea, rates locally and returns to the next real question', async ({
+test('real worksheet guides the paper working, saves the step and returns to the document', async ({
   page,
 }) => {
   await open(page, 'work/kinematics-review/');
-  const q = page.locator('.companion-question').first();
-  await q
-    .getByRole('button', { name: 'What is this asking?', exact: true })
+  await expect(
+    page.locator(
+      '.assignment-document input:not([type=checkbox]), .assignment-document textarea',
+    ),
+  ).toHaveCount(0);
+  await page
+    .getByRole('link', { name: 'Walk through question 1', exact: true })
     .click();
-  await expect(q).toContainText('while its speed changes');
-  await q.getByLabel('Your answer', { exact: true }).fill('4');
-  await q.getByLabel('Unit', { exact: true }).fill('m');
-  await q.getByRole('button', { name: 'Check answer', exact: true }).click();
-  await expect(q.locator('.tiny-repair')).toHaveCount(0);
-  await q.getByRole('button', { name: 'Check answer', exact: true }).click();
-  await expect(q.locator('.tiny-repair')).toBeVisible();
-  await q
-    .locator('.tiny-repair')
-    .getByRole('radio', {
-      name: '(initial velocity + final velocity) / 2',
-      exact: true,
-    })
-    .check();
-  await q.getByRole('button', { name: 'Check this idea', exact: true }).click();
-  await expect(q.locator('.tiny-repair')).toHaveCount(0);
-  await expect(q).toHaveAttribute('data-question', 'q-1');
-  await q.getByLabel('Your answer', { exact: true }).fill('63');
-  await q.getByRole('button', { name: 'Check answer', exact: true }).click();
-  await expect(q.getByRole('status')).toContainText('That matches');
-  await q.getByRole('button', { name: 'Okay', exact: true }).click();
+  const guide = page.locator('.walkthrough');
+  await expect(guide).toHaveAttribute('data-question', 'q-1');
+  await guide.getByRole('button', { name: 'Next', exact: true }).click();
+  await expect(guide.locator('mark[data-active=true]')).toContainText(
+    'uniformly',
+  );
+  await guide.getByRole('button', { name: 'Next', exact: true }).click();
+  const at = await guide.getAttribute('data-step');
+  await page.reload();
+  await expect(guide).toHaveAttribute('data-step', at!);
+  await guide.getByRole('button', { name: 'Back', exact: true }).click();
+  await expect(guide).toHaveAttribute('data-step', String(Number(at) - 1));
+  while (await guide.getByRole('button', { name: 'Next', exact: true }).count())
+    await guide.getByRole('button', { name: 'Next', exact: true }).click();
+  await expect(guide.locator('.calculated-result')).toContainText('63 m');
+  await guide
+    .getByRole('button', { name: 'Done on paper', exact: true })
+    .click();
+  await page
+    .getByRole('button', { name: 'Whole assignment', exact: true })
+    .click();
+  await expect(page.locator('.document-question')).toHaveCount(37);
+  await expect(page.locator('.assignment-resume')).toContainText('1 of 37');
   await page.reload();
   await expect(
-    q.getByRole('button', { name: 'Okay', exact: true }),
-  ).toHaveAttribute('aria-pressed', 'true');
-  await q
-    .getByRole('link', { name: 'Next real question', exact: true })
-    .click();
-  await expect(page).toHaveURL(/#q-2$/);
+    page.getByRole('button', { name: 'Continue question 1', exact: true }),
+  ).toBeVisible();
 });
 
 test('formal Chemistry hand-ins expose metadata without solution controls', async ({
@@ -69,6 +71,7 @@ test('Japanese has authentic strokes, useful component connections and real Japa
   await open(page, 'work/japanese-kana/');
   await expect(page.locator('.kana-practice')).toHaveCount(5);
   const vowel = page.locator('.kana-practice').first();
+  await expect(vowel.locator('ruby rt')).toContainText('a');
   await vowel.getByRole('button', { name: 'Start', exact: true }).click();
   await expect(vowel).toContainText('0/3');
   await vowel.getByRole('button', { name: 'Next stroke', exact: true }).click();
@@ -80,6 +83,18 @@ test('Japanese has authentic strokes, useful component connections and real Japa
   await expect(page.locator('.phrase-connection').last()).toContainText(
     'Useful next',
   );
+  await expect(
+    page
+      .locator('.kana-reading rt')
+      .filter({ hasText: /^ohayou gozaimasu$/ })
+      .first(),
+  ).toBeVisible();
+  await expect(
+    page.locator('.kana-reading rt').filter({ hasText: /^konnichiwa$/ }),
+  ).toBeVisible();
+  await page
+    .getByRole('link', { name: 'Review question 1', exact: true })
+    .click();
   const q = page.locator('.companion-question').first();
   await expect(
     q.getByLabel('Write in Japanese', { exact: true }),
@@ -87,6 +102,23 @@ test('Japanese has authentic strokes, useful component connections and real Japa
   await q.getByLabel('Write in Japanese', { exact: true }).fill('にほん');
   await q.getByRole('button', { name: 'Check answer', exact: true }).click();
   await expect(q.getByRole('status')).toContainText('That matches');
+  await open(page, 'courses/japanese/units/greetings/');
+  await expect(
+    page.locator('.material-row[href$="/work/japanese-colours-shapes/"]'),
+  ).toHaveCount(0);
+  await open(page, 'courses/japanese/units/colours/');
+  await page
+    .locator('.material-row[href$="/work/japanese-colours-shapes/"]')
+    .click();
+  await expect(page.locator('.assignment-document')).toContainText(
+    'Colours and Shapes',
+  );
+  await expect(
+    page.locator('.kana-reading rt').filter({ hasText: /^sankakkei$/ }),
+  ).toBeVisible();
+  await expect(
+    page.locator('.kana-reading rt').filter({ hasText: /^haato$/ }),
+  ).toBeVisible();
 });
 
 test('percent error uses the accepted denominator and has a percent result', async ({
