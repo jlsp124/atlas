@@ -286,13 +286,13 @@ export default function Account() {
                   disabled={!state.ready}
                   autoComplete={register ? 'new-password' : 'current-password'}
                   required
-                  minLength={12}
+                  minLength={register ? 12 : 1}
                   maxLength={128}
                 />
               </label>
               <p className="small muted">
-                At least 12 characters. Keep it somewhere safe; password
-                recovery isn’t available yet.
+                {register ? 'At least 12 characters. ' : ''}Keep it somewhere
+                safe; password recovery isn’t available yet.
               </p>
               {!state.user && (
                 <label className="check-line">

@@ -1,4 +1,6 @@
 import type { GuideStep } from '../core/walkthrough';
+import { physicsWrittenGuides } from './physics-support';
+import { packetGuides } from './physics-packets';
 const step = (title: string, text: string, write: string): GuideStep => ({
   title,
   text,
@@ -39,7 +41,7 @@ export const writtenGuides: Record<string, Record<string, GuideStep[]>> = {
       step(
         'Use the two-second upward part',
         'The height is the upward displacement. Include both the starting velocity and gravity.',
-        'Δx = vᵢΔt + ½aΔt² = (19.6)(2.0) + ½(−9.8)(2.0)²',
+        'Δd = vᵢΔt + ½aΔt² = (19.6)(2.0) + ½(−9.8)(2.0)²',
       ),
       step(
         'Subtract the effect of gravity',
@@ -50,13 +52,13 @@ export const writtenGuides: Record<string, Record<string, GuideStep[]>> = {
     'q-17': [
       step(
         'Use one direction for both balls',
-        'Take down as positive. The downward ball starts at +16 m/s. The upward ball starts at −16 m/s. Both have acceleration +9.8 m/s².',
-        'Δx = 42 m; a = +9.8 m/s²; vᵢ = +16 or −16 m/s',
+        'Take up as positive. The downward ball starts at −16 m/s and the upward ball at +16 m/s. Both have acceleration −9.8 m/s².',
+        'Δd = −42 m; a = −9.8 m/s²; vᵢ = −16 or +16 m/s',
       ),
       step(
         'Write a separate equation for each',
         'They cover the same displacement but start with different velocities. Time is squared, so solve each equation for its positive time.',
-        '42 = 16t + 4.9t²; 42 = −16t + 4.9t²',
+        '−42 = −16t − 4.9t²; −42 = +16t − 4.9t²',
       ),
       step(
         'Choose the positive root',
@@ -80,7 +82,7 @@ export const writtenGuides: Record<string, Record<string, GuideStep[]>> = {
       step(
         'Work out the second displacement',
         'Only the next 10.0 s uses the acceleration of 2.0 m/s².',
-        'Δx(second) = (12.5)(10.0) + ½(2.0)(10.0)² = 225 m',
+        'Δd(second) = (12.5)(10.0) + ½(2.0)(10.0)² = 225 m',
       ),
       step(
         'Add both parts of the trip',
@@ -97,7 +99,7 @@ export const writtenGuides: Record<string, Record<string, GuideStep[]>> = {
       step(
         'Work out the braking distance',
         'Take forward as positive. Braking acceleration is −6.0 m/s² and the final velocity is zero.',
-        '0² = 22.0² + 2(−6.0)Δx → Δx = 484 / 12 = 40.333… m',
+        '0² = 22.0² + 2(−6.0)Δd → Δd = 484 / 12 = 40.333… m',
       ),
       step(
         'Add the distances before rounding',
@@ -114,12 +116,12 @@ export const writtenGuides: Record<string, Record<string, GuideStep[]>> = {
       step(
         'Use the average velocity',
         'It slows uniformly to zero. Its average velocity is half its starting velocity.',
-        'Δx = ((vᵢ + 0) / 2)Δt',
+        'Δd = ((vᵢ + 0) / 2)Δt',
       ),
       step(
         'Put the starting velocity on its own',
         'Multiply both sides by 2, then divide by elapsed time.',
-        'vᵢ = 2Δx / Δt = 2(185.0) / 10.2 = 36.2745… m/s',
+        'vᵢ = 2Δd / Δt = 2(185.0) / 10.2 = 36.2745… m/s',
       ),
       step(
         'Convert to the requested unit',
@@ -218,3 +220,58 @@ export const writtenGuides: Record<string, Record<string, GuideStep[]>> = {
     ],
   },
 };
+
+for (const [assignment, guides] of Object.entries(physicsWrittenGuides)) {
+  writtenGuides[assignment] = { ...writtenGuides[assignment], ...guides };
+}
+
+for (const [assignment, guides] of Object.entries(packetGuides))
+  writtenGuides[assignment] = { ...writtenGuides[assignment], ...guides };
+const finalLines: [string, string, string, string][] = [
+  [
+    'kinematics-review',
+    'q-15',
+    'Use the sheet’s two significant figures for g = 9.8. Keep 19.6 m in the working, then round the final height to two significant figures.',
+    'Maximum height = 2.0 × 10¹ m above release.',
+  ],
+  [
+    'kinematics-review',
+    'q-17',
+    'The two 16 m/s launch speeds and g = 9.8 limit the time difference to two significant figures.',
+    'Landing-time difference = 3.3 s.',
+  ],
+  [
+    'physics-motion-review',
+    'q-c13',
+    'The first distance is written 250 m without a decimal point. By the reminder-sheet spacing-zero rule it has two significant figures (tens precision). The second distance is also limited to tens by a = 2.0. Add the unrounded distances, then round to tens.',
+    'Total distance = 4.8 × 10² m (unrounded: 475 m).',
+  ],
+  [
+    'physics-motion-review',
+    'q-d17',
+    'The reaction and braking calculations are limited by 0.80 s and 6.0 m/s². Keep both distances unrounded when adding, then give the total to the nearest metre. It exceeds the deer’s 40.0 m position.',
+    'Stopping distance ≈ 58 m; the car cannot stop before the deer.',
+  ],
+  [
+    'physics-motion-review',
+    'q-d18',
+    'The distance has four significant figures and time has three. The m/s-to-km/h factor 3.6 is exact, so the final speed keeps three significant figures.',
+    'Starting speed ≈ 131 km/h.',
+  ],
+  [
+    'physics-textbook-accelerated-motion',
+    'q-44b',
+    'The supplied g = 9.8 has two significant figures; keep the unrounded upward time when doubling. The factor 2 comes from symmetry and is exact.',
+    'Total flight time ≈ 4.6 s.',
+  ],
+  [
+    'physics-textbook-accelerated-motion',
+    'q-45c',
+    'Height 0.25 m and g = 9.8 each have two significant figures. Use the unrounded launch speed, then round the last time value.',
+    'Total flight time ≈ 0.45 s.',
+  ],
+];
+for (const [assignment, question, text, write] of finalLines)
+  writtenGuides[assignment][question].push(
+    step('Round the final line', text, write),
+  );

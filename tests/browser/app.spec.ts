@@ -6,6 +6,7 @@ import { variant } from '../../src/core/learning';
 async function open(page: Page, path = '') {
   await page.goto('/atlas/' + path);
   await expect(page.locator('.topbar')).toHaveAttribute('data-ready', 'true');
+  await expect(page.locator('main astro-island[ssr]')).toHaveCount(0);
 }
 async function skip(page: Page) {
   await open(page);
@@ -162,10 +163,9 @@ test('V1 saved courses, theme, worksheet tasks and question evidence survive V2'
     'Life Sciences 11',
   ]);
   await open(page, 'work/kinematics-review/');
-  await page.getByText('Mark a section finished', { exact: true }).click();
   await expect(
-    page.getByRole('checkbox', { name: 'Set a direction convention' }),
-  ).toBeChecked();
+    page.getByText('Mark a section finished', { exact: true }),
+  ).toHaveCount(0);
   await page.reload();
   const saved = await page.evaluate(() =>
     JSON.parse(localStorage.getItem('atlas:v1:guest')!),
@@ -196,10 +196,10 @@ test('home and course fit desktop and units open real materials', async ({
   await expect(page.getByRole('link', { name: /Basic Skills/ })).toBeVisible();
   await page.getByRole('link', { name: /Kinematics.*materials/ }).click();
   await expect(
-    page.getByRole('button', { name: 'All materials', exact: true }),
+    page.getByRole('heading', { name: 'Assignments', exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByRole('link', { name: /Kinematics Review/ }),
+    page.getByRole('link', { name: /Kinematics review/i }),
   ).toBeVisible();
   await expect(page.locator('main')).not.toContainText(
     /P1|Verified|coverage|Graph relationship/i,
@@ -219,30 +219,26 @@ test('home and course fit desktop and units open real materials', async ({
     }
   }
 });
-test('assignment tasks, paper status and walkthrough history survive refresh', async ({
+test('Physics completion belongs on the list and walkthrough history survives refresh', async ({
   page,
 }) => {
-  await open(page, 'work/kinematics-review/');
-  await page.getByText('Mark a section finished', { exact: true }).click();
-  const task = page.getByRole('checkbox', {
-    name: /Set a direction convention/,
-  });
-  await task.check();
+  await open(page, 'courses/physics/units/kinematics/');
+  const check = page
+    .locator('[data-material=kinematics-review]')
+    .getByRole('button');
+  await check.click();
   await page.reload();
-  await page.getByText('Mark a section finished', { exact: true }).click();
-  await expect(task).toBeChecked();
-  await task.uncheck();
-  await page.reload();
-  await page.getByText('Mark a section finished', { exact: true }).click();
-  await expect(task).not.toBeChecked();
-  await expect(page.locator('.assignment-document textarea')).toHaveCount(0);
+  await expect(check).toHaveAttribute('aria-pressed', 'true');
   await page
-    .getByRole('combobox', { name: 'Assignment status', exact: true })
-    .selectOption('complete');
-  await page.reload();
+    .locator('[data-material=kinematics-review]')
+    .getByRole('link')
+    .click();
   await expect(
-    page.getByRole('combobox', { name: 'Assignment status', exact: true }),
-  ).toHaveValue('complete');
+    page.getByText('Mark a section finished', { exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole('combobox', { name: 'Assignment status' }),
+  ).toHaveCount(0);
   await page
     .getByRole('link', { name: 'Walk through question 2', exact: true })
     .click();
@@ -257,7 +253,6 @@ test('assignment tasks, paper status and walkthrough history survive refresh', a
   );
   await expect(page.locator('.walkthrough')).toHaveAttribute('data-step', '1');
 });
-
 test('definitions give useful context and backlinks without a graph', async ({
   page,
 }) => {
@@ -683,7 +678,7 @@ test('guests and ordinary accounts cannot authorize admin', async ({
     page.getByRole('heading', { name: 'Authorized access.' }),
   ).toBeVisible();
   const response = await page.request.get(
-    'http://localhost:8787/admin/overview',
+    'http://localhost:8790/admin/overview',
   );
   expect(response.status()).toBe(401);
 });
@@ -694,11 +689,12 @@ test('accounts sync across devices, isolate guest data, queue offline and reconn
 }) => {
   const name = 'browser_' + randomBytes(4).toString('hex');
   const password = randomBytes(20).toString('base64url');
-  await open(page, 'work/kinematics-review/');
-  await page.getByText('Mark a section finished', { exact: true }).click();
+  await open(page, 'courses/physics/units/kinematics/');
   await page
-    .getByRole('checkbox', { name: /Set a direction convention/ })
-    .check();
+    .locator('[data-material=kinematics-review]')
+    .getByRole('button', { name: /^Mark complete:/ })
+    .click();
+  await open(page, 'work/kinematics-review/');
   await page
     .getByRole('link', { name: 'Walk through question 1', exact: true })
     .click();
@@ -712,6 +708,9 @@ test('accounts sync across devices, isolate guest data, queue offline and reconn
       .locator('.walkthrough')
       .getByRole('button', { name: 'Next', exact: true })
       .click();
+  const finalStep = await page
+    .locator('.walkthrough')
+    .getAttribute('data-step');
   await page
     .getByText('Keep this question for review', { exact: true })
     .click();
@@ -743,11 +742,13 @@ test('accounts sync across devices, isolate guest data, queue offline and reconn
     peer.getByRole('heading', { name: `Hi, ${name}.` }),
   ).toBeVisible();
   await peer.goto('http://localhost:4321/atlas/work/kinematics-review/');
-  await peer.getByText('Mark a section finished', { exact: true }).click();
   await peer
     .getByRole('button', { name: 'Continue question 1', exact: true })
     .click();
-  await expect(peer.locator('.walkthrough')).toHaveAttribute('data-step', '10');
+  await expect(peer.locator('.walkthrough')).toHaveAttribute(
+    'data-step',
+    finalStep!,
+  );
   await peer
     .getByText('Keep this question for review', { exact: true })
     .click();
@@ -757,11 +758,13 @@ test('accounts sync across devices, isolate guest data, queue offline and reconn
   await peer
     .getByRole('button', { name: 'Whole assignment', exact: true })
     .click();
-  await peer.getByText('Mark a section finished', { exact: true }).click();
+  await peer.goto(
+    'http://localhost:4321/atlas/courses/physics/units/kinematics/',
+  );
   await expect(
-    peer.getByRole('checkbox', { name: /Set a direction convention/ }),
-  ).toBeChecked();
-  await page.route('http://localhost:8787/**', (route) => route.abort());
+    peer.locator('[data-material=kinematics-review] button'),
+  ).toHaveAttribute('aria-pressed', 'true');
+  await page.route('http://localhost:8790/**', (route) => route.abort());
   await open(page, 'concepts/vector-sign/');
   await page
     .getByRole('button', { name: 'I don’t understand this', exact: true })
@@ -779,15 +782,15 @@ test('accounts sync across devices, isolate guest data, queue offline and reconn
       ),
     ),
   ).toBe(true);
-  await page.unroute('http://localhost:8787/**');
+  await page.unroute('http://localhost:8790/**');
   await page.evaluate(() => window.dispatchEvent(new Event('online')));
   await expect(page.locator('.sync-status')).toContainText('Progress synced');
   const session = await (
-    await page.request.get('http://localhost:8787/session')
+    await page.request.get('http://localhost:8790/session')
   ).json();
   await expect
     .poll(async () => {
-      const response = await page.request.post('http://localhost:8787/sync', {
+      const response = await page.request.post('http://localhost:8790/sync', {
         headers: {
           origin: 'http://localhost:4321',
           'x-atlas-client': 'atlas',
@@ -870,6 +873,12 @@ test('production Pages base path, search index, deep links and cached offline ro
   page,
 }) => {
   await page.goto('http://localhost:4322/atlas/concepts/half-life/');
+  await page.waitForFunction(() =>
+    JSON.parse(localStorage.getItem('atlas:v1:guest') || '{}').events?.some(
+      (e: { type: string; payload: { concept?: string } }) =>
+        e.type === 'lesson_viewed' && e.payload.concept === 'half-life',
+    ),
+  );
   await page.getByRole('button', { name: 'Next', exact: true }).click();
   await expect(page.locator('.learning-figure')).toBeVisible();
   await page.reload();
@@ -898,6 +907,12 @@ test('production Pages base path, search index, deep links and cached offline ro
   await page.keyboard.press('Escape');
   await page.context().setOffline(true);
   await page.goto('http://localhost:4322/atlas/concepts/cladograms/');
+  await page.waitForFunction(() =>
+    JSON.parse(localStorage.getItem('atlas:v1:guest') || '{}').events?.some(
+      (e: { type: string; payload: { concept?: string } }) =>
+        e.type === 'lesson_viewed' && e.payload.concept === 'cladograms',
+    ),
+  );
   await expect(page.locator('#main h1')).toContainText(
     'Read the common ancestor',
   );

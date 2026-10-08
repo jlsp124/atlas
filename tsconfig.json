@@ -11,6 +11,7 @@
   "include": [".astro/types.d.ts", "**/*"],
   "exclude": [
     "dist",
+    ".atlas-test-dist",
     "node_modules",
     "data",
     "evidence",

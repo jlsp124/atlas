@@ -14,6 +14,10 @@ import { z } from 'zod';
 import { openDatabase, type AtlasDatabase, type UserRow } from './database';
 import { eventSchema } from '../src/core/schema';
 import { validCheckpoint } from '../src/core/materials';
+import { atlasVersion } from '../src/content/product';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { privatePhysicsSourceSchema } from '../src/core/physics-source';
 import {
   assignments,
   legacyAssignmentTasks,
@@ -32,6 +36,7 @@ export type ServerOptions = {
   sameSite?: 'lax' | 'strict' | 'none';
   logger?: boolean;
   trustProxy?: boolean;
+  classSourceDir?: string;
 };
 export const passwordOptions = {
   type: argon2.argon2id,
@@ -282,7 +287,7 @@ export async function createServer(options: ServerOptions = {}) {
   );
   app.get('/health', async () => ({
     status: 'ok',
-    version: '0.1.0',
+    version: atlasVersion,
     contentSnapshot: snapshot.date,
     deploySha: /^[a-f0-9]{40}$/i.test(process.env.ATLAS_DEPLOY_SHA ?? '')
       ? process.env.ATLAS_DEPLOY_SHA
@@ -291,6 +296,30 @@ export async function createServer(options: ServerOptions = {}) {
   app.get('/session', async (req) => {
     const s = session(req);
     return s ? { user: publicUser(userFor(s)), csrf: s.csrf } : { user: null };
+  });
+  // Owner's classroom transcripts and measurements are runtime-only files.
+  // They never enter the public build, a shared account, or the static cache.
+  app.get('/physics/sources/:id', async (req, reply) => {
+    const authorized = await auth(req, reply, true);
+    if (!authorized) return;
+    reply.header('Cache-Control', 'private, no-store');
+    if (authorized.u.username.toLowerCase() !== 'jovan')
+      return reply.code(403).send({ error: 'Owner authorization required' });
+    const { id } = req.params as { id: string };
+    if (!assignments.some((a) => a.id === id && a.course === 'physics'))
+      return reply.code(404).send({ error: 'Class source unavailable' });
+    try {
+      const dir =
+        options.classSourceDir ??
+        join(process.env.DATA_DIR || './data', 'class-sources');
+      return privatePhysicsSourceSchema.parse(
+        JSON.parse(await readFile(join(dir, `${id}.json`), 'utf8')),
+      );
+    } catch {
+      return reply.code(404).send({
+        error: 'A faithful transcription is not yet available for this sheet.',
+      });
+    }
   });
   app.post(
     '/auth/register',
@@ -338,7 +367,9 @@ export async function createServer(options: ServerOptions = {}) {
     '/auth/login',
     { config: { rateLimit: { max: 8, timeWindow: '15 minutes' } } },
     async (req, reply) => {
-      const parsed = credentials.safeParse(req.body);
+      const parsed = credentials
+        .extend({ password: z.string().min(1).max(128) })
+        .safeParse(req.body);
       if (!parsed.success)
         return reply.code(401).send({ error: 'Invalid username or password' });
       const u = db

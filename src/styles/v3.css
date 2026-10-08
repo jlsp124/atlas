@@ -539,7 +539,7 @@
   font-size: clamp(19px, 2.1vw, 26px);
   line-height: 1;
 }
-.equation-token {
+.equation-stage > .equation-token {
   position: absolute;
   transform: translate(-50%, -50%);
   white-space: nowrap;

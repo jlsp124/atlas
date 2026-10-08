@@ -1,6 +1,9 @@
 <!doctype html>
 <html lang="en">
-  <meta charset="utf-8" /><title>Blank formal lab report</title
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  /><title>Blank formal lab report</title
   ><style>
     @page {
       size: letter;
@@ -44,7 +47,34 @@
     .citations {
       break-before: page;
     }
+    .template-toolbar {
+      font:
+        14px system-ui,
+        sans-serif;
+      line-height: 1.6;
+      padding: 12px;
+      border: 1px solid #ddd;
+      margin-bottom: 24px;
+    }
+    .template-toolbar button {
+      margin: 4px 8px 4px 0;
+      padding: 8px 12px;
+    }
+    [contenteditable] {
+      outline-offset: 5px;
+    }
+    @media screen and (max-width: 600px) {
+      body {
+        margin: 20px;
+      }
+      .identity {
+        margin-left: 35%;
+      }
+    }
     @media print {
+      .template-toolbar {
+        display: none;
+      }
       body {
         margin: 0;
       }
@@ -54,6 +84,18 @@
     }
   </style>
   <body>
+    <aside class="template-toolbar" aria-label="Template tools">
+      <strong>Your blank Wadson formal report</strong>
+      <p>
+        Edit the title and each section with your own work. Your edits save on
+        this browser only. Save an HTML copy to keep or share your report, or
+        print to PDF.
+      </p>
+      <button id="save-copy">Save my HTML copy</button
+      ><button id="print-report">Print / save PDF</button
+      ><button id="clear-report">Reset blank template</button
+      ><span role="status" id="save-status"></span>
+    </aside>
     <div class="title">
       <h1 contenteditable="true">[Laboratory title]</h1>
       <div class="identity" contenteditable="true">
@@ -124,5 +166,62 @@
         information in the report text.]
       </div>
     </section>
+    <script>
+      (() => {
+        const key = 'atlas:wadson-lab-draft:v1';
+        const fields = [...document.querySelectorAll('[contenteditable]')];
+        const blanks = fields.map((f) => f.innerHTML);
+        const status = document.getElementById('save-status');
+        try {
+          const saved = JSON.parse(localStorage.getItem(key) || 'null');
+          if (Array.isArray(saved) && saved.length === fields.length)
+            fields.forEach((f, i) => {
+              f.textContent = saved[i];
+            });
+        } catch {}
+        fields.forEach((f) =>
+          f.addEventListener('input', () => {
+            try {
+              localStorage.setItem(
+                key,
+                JSON.stringify(fields.map((f) => f.innerText)),
+              );
+              status.textContent = 'Saved on this browser.';
+            } catch {
+              status.textContent =
+                'Browser storage unavailable. Save an HTML copy.';
+            }
+          }),
+        );
+        document.getElementById('print-report').onclick = () => window.print();
+        document.getElementById('clear-report').onclick = () => {
+          if (
+            confirm('Clear your local report and restore the blank template?')
+          ) {
+            fields.forEach((f, i) => (f.innerHTML = blanks[i]));
+            try {
+              localStorage.removeItem(key);
+            } catch {}
+            status.textContent = 'Blank template restored.';
+          }
+        };
+        document.getElementById('save-copy').onclick = () => {
+          const copy = document.documentElement.cloneNode(true);
+          copy
+            .querySelectorAll('script,.template-toolbar')
+            .forEach((n) => n.remove());
+          const blob = new Blob(['<!doctype html>\n' + copy.outerHTML], {
+            type: 'text/html',
+          });
+          const href = URL.createObjectURL(blob),
+            a = document.createElement('a');
+          a.href = href;
+          a.download = 'my-formal-lab.html';
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(href), 1000);
+          status.textContent = 'Your edited HTML copy was downloaded.';
+        };
+      })();
+    </script>
   </body>
 </html>

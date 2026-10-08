@@ -1,9 +1,9 @@
 node_modules
 dist
+.atlas-test-dist
 .astro
 evidence
 data
 package-lock.json
 playwright-report
 test-results
-

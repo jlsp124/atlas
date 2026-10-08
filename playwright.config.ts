@@ -23,18 +23,21 @@ export default defineConfig({
   webServer: [
     {
       command: 'npx tsx scripts/test-server.ts',
-      url: 'http://localhost:8787/health',
+      url: 'http://localhost:8790/health',
       env: { NODE_ENV: 'test', ATLAS_TEST_ADMIN_PASSWORD: adminPassword },
       reuseExistingServer: false,
     },
     {
-      command: 'npm run dev -- --port 4321',
+      // Exercise the production bundles and CSS, with an isolated test API.
+      command:
+        'npx astro build --outDir .atlas-test-dist && npx pagefind --site .atlas-test-dist && npx astro preview --outDir .atlas-test-dist --host 127.0.0.1 --port 4321 --ignore-lock',
       url: 'http://localhost:4321/atlas/',
-      env: { PUBLIC_API_URL: 'http://localhost:8787', NODE_ENV: 'development' },
+      env: { PUBLIC_API_URL: 'http://localhost:8790', NODE_ENV: 'production' },
       reuseExistingServer: false,
+      timeout: 120000,
     },
     {
-      command: 'npm run preview -- --port 4322',
+      command: 'npm run preview -- --port 4322 --ignore-lock',
       url: 'http://localhost:4322/atlas/',
       reuseExistingServer: !process.env.CI,
     },

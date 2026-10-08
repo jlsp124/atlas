@@ -98,12 +98,12 @@ describe('V3 material and motion contracts', () => {
         expect.objectContaining({ id: 't', value: '2.0', phrase: '2.0 s' }),
         expect.objectContaining({
           id: 'a',
-          value: '9.8',
+          value: '-9.8',
           implied: expect.any(String),
         }),
       ]),
     );
-    expect(equationText(guide.equations![2])).toBe('v_f = 0 + 9.8 × 2.0');
+    expect(equationText(guide.equations![2])).toBe('v_f = 0 + (-9.8) × 2.0');
     expect(guide.steps.at(-1)?.action).toBe('student');
   });
   it('keeps identities through denominator movement, square roots and substitution', () => {

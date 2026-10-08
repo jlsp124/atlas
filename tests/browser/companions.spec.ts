@@ -2,6 +2,19 @@ import { test, expect } from '@playwright/test';
 async function open(page: import('@playwright/test').Page, path: string) {
   await page.goto('/atlas/' + path);
   await expect(page.locator('.topbar')).toHaveAttribute('data-ready', 'true');
+  await expect(page.locator('main astro-island[ssr]')).toHaveCount(0);
+  if (path.startsWith('work/kinematics-review/')) {
+    await expect(page.locator('.paper-workspace')).toHaveAttribute(
+      'data-ready',
+      'true',
+    );
+    await expect(page.locator('.paper-workspace')).toHaveAttribute(
+      'data-location-ready',
+      'true',
+    );
+    if (path.includes('#q-'))
+      await expect(page.locator('.walkthrough')).toBeVisible();
+  }
 }
 
 test('real worksheet guides the paper working, saves the step and returns to the document', async ({
@@ -19,9 +32,7 @@ test('real worksheet guides the paper working, saves the step and returns to the
   const guide = page.locator('.walkthrough');
   await expect(guide).toHaveAttribute('data-question', 'q-1');
   await guide.getByRole('button', { name: 'Next', exact: true }).click();
-  await expect(guide.locator('mark[data-active=true]')).toContainText(
-    'uniformly',
-  );
+  await expect(guide.locator('mark[data-active=true]')).toContainText('slows');
   await guide.getByRole('button', { name: 'Next', exact: true }).click();
   const at = await guide.getAttribute('data-step');
   await page.reload();
@@ -32,16 +43,18 @@ test('real worksheet guides the paper working, saves the step and returns to the
     await guide.getByRole('button', { name: 'Next', exact: true }).click();
   await expect(guide.locator('.calculated-result')).toContainText('63 m');
   await guide
-    .getByRole('button', { name: 'Done on paper', exact: true })
+    .getByRole('button', { name: 'Next question', exact: true })
     .click();
   await page
     .getByRole('button', { name: 'Whole assignment', exact: true })
     .click();
   await expect(page.locator('.document-question')).toHaveCount(37);
-  await expect(page.locator('.assignment-resume')).toContainText('1 of 37');
+  await expect(page.locator('.assignment-resume')).not.toContainText(
+    'done on paper',
+  );
   await page.reload();
   await expect(
-    page.getByRole('button', { name: 'Continue question 1', exact: true }),
+    page.getByRole('button', { name: 'Continue question 2', exact: true }),
   ).toBeVisible();
 });
 

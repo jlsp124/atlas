@@ -31,6 +31,9 @@ export type PhysicsWork = {
   context?: string;
   why: string;
   rearrangement?: { equation: string; text: string };
+  finalValue?: string;
+  precisionExplanation?: string;
+  finalLabel?: string;
 };
 export type ConversionWork = {
   value: string;
@@ -68,7 +71,7 @@ export const symbols: Record<string, string> = {
   vi: 'vᵢ',
   vf: 'v𝒇',
   Δt: 'Δt',
-  Δx: 'Δx',
+  Δx: 'Δd',
   a: 'a',
 };
 const units: Record<string, string> = {
@@ -82,10 +85,21 @@ export const conciseNumber = (n: number) =>
   Number(n.toPrecision(4)).toString().replace('-', '−');
 const readable = (text: string) =>
   text
+    .replace(/Δx/g, 'Δd')
     .replace(/vf/g, 'v𝒇')
     .replace(/vi/g, 'vᵢ')
     .replace(/Rearrange for the unknown before substituting\./g, '')
     .trim();
+export function physicsFinalNumber(n: number, figures: number) {
+  let text = Math.abs(n).toPrecision(figures);
+  // A bare trailing zero would hide the precision taught on the class reminder.
+  if (/^\d+0$/.test(text)) text = Math.abs(n).toExponential(figures - 1);
+  return text.replace(
+    /e([+-]?)(\d+)/,
+    (_, sign, power) =>
+      ` × 10${superscript(Number((sign === '-' ? '-' : '') + power))}`,
+  );
+}
 
 /** Only animate a numerical solution when its inputs and reviewed answer agree.
  * Missing original figures and ambiguous multi-part setups use the paper guide.
@@ -139,16 +153,28 @@ export function physicsWork(
   if (/dropped|starts? from rest|from rest/i.test(evidence))
     add('vi', 0, /dropped/i.test(q.prompt) ? 'dropped' : 'rest');
   if (q.concepts.includes('free-fall') && !values.some((v) => v.symbol === 'a'))
-    add('a', up ? -9.8 : 9.8, 'gravity');
+    add('a', -9.8, 'gravity');
   const authored = physicsSetups[assignment]?.[q.id];
   if (authored) {
     values.length = 0;
     for (const [symbol, value] of Object.entries(authored.values)) {
-      const token = [...q.prompt.matchAll(/[−-]?\d+(?:\.\d+)?/g)].find(
-        (m) => Number(m[0].replace('−', '-')) === Math.abs(value),
+      const matches = [...q.prompt.matchAll(/[−-]?\d+(?:\.\d+)?/g)].filter(
+        (m) => Math.abs(Number(m[0].replace('−', '-'))) === Math.abs(value),
       );
+      const unitPattern =
+        symbol === 'Δt'
+          ? /^\s*(?:s\b|seconds?\b|years?\b)/i
+          : symbol === 'a'
+            ? /^\s*(?:m\/s²|cm\/year²)/
+            : symbol === 'Δx'
+              ? /^\s*m\b/
+              : /^\s*(?:m\/s\b|cm\/year)/;
+      const token =
+        matches.find((m) =>
+          unitPattern.test(q.prompt.slice((m.index ?? 0) + m[0].length)),
+        ) ?? matches[0];
       const text = token
-        ? `${value < 0 ? '−' : ''}${token[0]}`
+        ? `${value < 0 ? '−' : ''}${token[0].replace(/^[−-]/, '')}`
         : Number(value.toPrecision(12)).toString().replace('-', '−');
       values.push({
         symbol,
@@ -161,14 +187,13 @@ export function physicsWork(
               ? 'year'
               : units[symbol],
         source:
-          token?.[0] ??
-          (symbol === 'a' && Math.abs(value) === 9.8
+          symbol === 'a' && Math.abs(value) === 9.8
             ? 'gravity'
             : symbol === 'vi' && value === 0
-              ? /dropped/i.test(q.prompt)
-                ? 'dropped'
-                : 'rest'
-              : text),
+              ? (q.prompt.match(
+                  /dropped|from rest|released from rest|steps off/i,
+                )?.[0] ?? 'rest')
+              : (token?.[0] ?? text),
       });
     }
   }
@@ -232,6 +257,11 @@ export function physicsWork(
     if (target === 'vf' && has('vi', 'a', 'Δx')) {
       rearranged = 'vf = √(vi² + 2 × a × Δx)';
       result = Math.sqrt(v.vi ** 2 + 2 * v.a * v['Δx']);
+      if (
+        (v.vi === 0 && v.a < 0) ||
+        /^(?:down|left|west|backward)/.test(q.answer.directions?.[0] ?? '')
+      )
+        result = -result;
     }
     if (target === 'vi' && has('vf', 'a', 'Δx')) {
       rearranged = 'vi = √(vf² − 2 × a × Δx)';
@@ -273,10 +303,10 @@ export function physicsWork(
   )
     return;
   const rhs = rearranged.split(' = ')[1];
-  const substituted = rhs.replace(
-    /vi|vf|Δt|Δx|a/g,
-    (key) => `(${values.find((x) => x.symbol === key)?.text ?? key})`,
-  );
+  const substituted = rhs.replace(/vi|vf|Δt|Δx|a/g, (key) => {
+    const value = values.find((x) => x.symbol === key);
+    return value ? (value.value < 0 ? `(${value.text})` : value.text) : key;
+  });
   const velocityUnit = authored?.velocityUnit ?? 'm/s';
   const timeUnit = authored?.velocityUnit ? 'year' : 's';
   const unitWorking =
@@ -313,9 +343,19 @@ export function physicsWork(
     unit: q.answer.unit ?? '',
     unitWorking,
     direction: q.answer.directions?.[0],
+    finalLabel:
+      target === 'vf' && !q.answer.directions?.length && /speed/i.test(q.prompt)
+        ? 'Speed'
+        : target === 'Δx' && !q.answer.directions?.length
+          ? /height|high|rise/i.test(q.prompt + ' ' + q.asking)
+            ? 'Height'
+            : 'Distance'
+          : target === 'a' && /magnitude|deceleration/i.test(q.prompt)
+            ? 'Acceleration magnitude'
+            : symbols[target],
     context: authored?.context,
     why: equation.includes('((vi')
-      ? 'The speed changes evenly. Its average is halfway between the starting and ending speeds. Multiply that average by the elapsed time to get the displacement.'
+      ? 'With constant acceleration, velocity changes evenly. Its average is halfway between the signed starting and ending velocities. Multiply that average velocity by elapsed time to get displacement.'
       : equation.includes('vf²')
         ? 'This connects the two velocities, acceleration and displacement. Time is not in it, so you can solve without knowing how long the motion takes.'
         : equation.includes('½')
@@ -350,12 +390,20 @@ export function physicsWork(
                   text: 'Subtract the starting velocity from both sides. The difference is the change in velocity.',
                 }
         : undefined,
+    finalValue:
+      authored?.finalValue ??
+      (Number.isFinite(result)
+        ? physicsFinalNumber(result, authored?.significantFigures ?? 2)
+        : undefined),
+    precisionExplanation:
+      authored?.precisionNote ??
+      `The stated measurements limit this result to ${authored?.significantFigures ?? 2} significant figures. For a velocity difference, subtract first using the least decimal place; then apply the multiply/divide rule. Rest/stop zeros, ½ and unit conversions are exact. Keep extra digits until the last line.`,
     axis:
       authored?.axis ??
       (up
         ? 'Take up as positive.'
         : /down/.test(evidence)
-          ? 'Take down as positive.'
+          ? 'Take up as positive; down is negative.'
           : 'Take forward as positive.'),
   };
 }
@@ -550,12 +598,26 @@ export function makeWalkthrough(
           write: 'Keep the matching question on your paper beside you.',
         },
         ...written.map((s, i) => ({ ...s, phase: `point-${i}` })),
-        {
-          title: 'Finish the working on your paper',
-          text: 'Check the setup, the requested unit and the final precision. Include direction words when the answer is a vector.',
-          phase: 'finish',
-          write: 'Write the result and its reasoning on the assignment.',
-        },
+        a.course === 'physics'
+          ? {
+              title: written.some(
+                (s) =>
+                  /Source.*need|Identify the missing|measurement/i.test(
+                    s.title,
+                  ) && /missing|not.*available|need|unavailable/i.test(s.text),
+              )
+                ? 'What is still needed'
+                : 'Your final line',
+              text: written.at(-1)!.text,
+              phase: 'finish',
+              write: written.at(-1)!.write ?? written.at(-1)!.text,
+            }
+          : {
+              title: 'Finish the working on your paper',
+              text: 'Check the setup, the requested unit and the final precision. Include direction words when the answer is a vector.',
+              phase: 'finish',
+              write: 'Write the result and its reasoning on the assignment.',
+            },
       ],
     };
   const physics = a.course === 'physics' ? physicsWork(q, a.id) : undefined;
@@ -568,10 +630,9 @@ export function makeWalkthrough(
         write: 'Read the question once. Leave room for the working underneath.',
       },
     ];
-    const clue = q.clues.find((c) =>
+    for (const clue of q.clues.filter((c) =>
       q.prompt.toLowerCase().includes(c.word.toLowerCase()),
-    );
-    if (clue)
+    ))
       steps.push({
         title: `Notice “${clue.word}”`,
         text:
@@ -600,14 +661,20 @@ export function makeWalkthrough(
         title: `Write ${symbols[value.symbol]}`,
         text:
           value.source === 'gravity'
-            ? 'Near Earth, the free-fall model uses 9.8 m/s² downward. Use the sign that fits your chosen direction.'
+            ? 'The object is in free fall, so its acceleration is gravity. Up is positive and down is negative, giving a = −9.8 m/s². Wadson’s supplied 2026 formula sheet uses 9.8 rather than 9.81; keep that class model through this calculation.'
             : value.source === 'dropped' || value.source === 'rest'
               ? 'It starts from rest, so the starting velocity is zero.'
               : value.symbol === 'vf' && value.value === 0
                 ? q.concepts.includes('free-fall')
                   ? 'At the highest point, the vertical velocity is zero for one instant. Gravity still acts downward.'
                   : 'It comes to rest, so the ending velocity is zero.'
-                : `This is the ${value.symbol === 'vi' ? 'starting velocity' : value.symbol === 'vf' ? 'ending velocity' : value.symbol === 'Δt' ? 'elapsed time' : value.symbol === 'a' ? 'acceleration' : 'displacement'} ${physics.context && !q.prompt.includes(value.source) ? 'from the related information above' : 'from the question'}. Keep its unit with the number.`,
+                : value.symbol === 'a'
+                  ? `Acceleration describes how velocity changes each second. ${value.value < 0 ? 'It points in the negative direction on this axis' : 'It points in the positive direction on this axis'}, so a = ${value.text} ${value.unit}. Slowing down means it opposes the velocity; it does not by itself choose a minus sign.`
+                  : value.symbol === 'Δt'
+                    ? `This is the elapsed time for the part of the motion we are solving: ${value.text} ${value.unit}. ${physics.context && !q.prompt.includes(value.source) ? 'It comes from the related part above.' : 'Time elapsed is positive.'}`
+                    : value.symbol === 'Δx'
+                      ? `Displacement compares the finish with the start. ${value.value < 0 ? 'The finish is in the negative direction from the start' : 'The finish is in the positive direction from the start'}, so Δd = ${value.text} m. Distance would use the path length instead.`
+                      : `This is the ${value.symbol === 'vi' ? 'starting' : 'ending'} velocity: ${value.text} ${value.unit}. ${value.value < 0 ? 'Its minus sign means motion in the negative direction on this axis.' : 'It points in the positive direction on this axis.'} ${physics.context && !q.prompt.includes(value.source) ? 'Use the value carried from the related part above.' : ''}`,
         phase: 'known',
         focus: value.source,
         write: `${symbols[value.symbol]} = ${value.text} ${value.unit}`,
@@ -654,7 +721,7 @@ export function makeWalkthrough(
       steps.push({
         title: 'Put the unknown on its own',
         text: physics.rearranged.includes('√')
-          ? 'Undo the square with a square root. Here the physical situation selects the positive time or speed.'
+          ? `Undo the square with a square root. ${physics.target === 'Δt' ? 'Choose the positive root because elapsed time cannot be negative.' : physics.result < 0 ? 'The root gives the speed. The object is moving in the negative direction on our axis, so its velocity takes the negative root.' : 'Choose the root that matches the motion: this velocity points in the positive direction.'}`
           : 'Undo the operations around the unknown. Do the same operation on both sides so the equation stays equal.',
         phase: 'rearrange',
         equation: readable(physics.rearranged),
@@ -678,10 +745,10 @@ export function makeWalkthrough(
       title: 'Calculate, then finish the line',
       text: physics.direction
         ? `Keep extra digits until the last line. Write the unit and the direction in words: ${physics.direction}. A minus sign by itself is incomplete.`
-        : 'Calculate the expression. Keep extra digits until the last line, then use the precision requested on your assignment.',
+        : `Calculate the expression and keep extra digits until the last line. ${physics.result < 0 ? 'The signed result describes the negative direction; the requested magnitude is positive.' : 'A speed, distance or elapsed time is a magnitude.'}`,
       phase: 'finish',
-      equation: `${symbols[physics.target]} ≈ ${conciseNumber(physics.result)} ${physics.unit}`,
-      write: `${symbols[physics.target]} ≈ ${conciseNumber(physics.result)} ${physics.unit}${physics.direction ? ` (${physics.direction})` : ''}`,
+      equation: `${physics.finalLabel} ≈ ${physics.finalValue} ${physics.unit}${physics.direction ? ` ${physics.direction}` : ''}`,
+      write: `${physics.finalLabel} ≈ ${physics.finalValue} ${physics.unit}${physics.direction ? ` ${physics.direction}` : ''}. ${physics.precisionExplanation}`,
     });
     return { kind: 'physics', physics, steps };
   }
@@ -926,5 +993,7 @@ export function makeWalkthrough(
 }
 
 export function superscript(n: number) {
-  return String(n).replace(/\d/g, (d) => '⁰¹²³⁴⁵⁶⁷⁸⁹'[Number(d)]);
+  return String(n)
+    .replace('-', '⁻')
+    .replace(/\d/g, (d) => '⁰¹²³⁴⁵⁶⁷⁸⁹'[Number(d)]);
 }

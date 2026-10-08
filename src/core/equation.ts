@@ -48,7 +48,7 @@ export const symbols: Record<string, string> = {
   vi: 'v_i',
   vf: 'v_f',
   a: 'a',
-  d: 'd',
+  d: 'Δd',
   t: 'Δt',
   v: 'v',
 };
@@ -72,7 +72,10 @@ export function substitute(e: Expr, known: Record<string, string>): Expr {
       ? e
       : {
           ...e,
-          text: Number(known[e.id]) < 0 ? `(${known[e.id]})` : known[e.id],
+          text:
+            Number(known[e.id].replace('−', '-')) < 0
+              ? `(${known[e.id]})`
+              : known[e.id],
         };
   if (e.kind === 'op')
     return {

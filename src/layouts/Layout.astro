@@ -5,6 +5,7 @@ import '../styles/global.css';
 import '../styles/flows.css';
 import '../styles/v3.css';
 import '../styles/workspace.css';
+import '../styles/physics-polish.css';
 const {
   title = 'Your atlas',
   description = 'Everything from class, without digging for it.',
@@ -36,6 +37,10 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
       if (/\/work\//.test(location.pathname) && location.hash.startsWith('#q-'))
         document.documentElement.dataset.pendingQuestion = 'true';
       try {
+        const sidebar = localStorage.getItem('atlas:sidebar');
+        document.documentElement.dataset.sidebar =
+          sidebar ??
+          (matchMedia('(max-width: 800px)').matches ? 'collapsed' : 'open');
         const theme = localStorage.getItem('atlas:theme');
         if (['light', 'dark', 'system'].includes(theme))
           document.documentElement.dataset.theme = theme;
@@ -120,6 +125,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site).href;
                 document.body.append(notice);
               };
               const watchInstalling = (worker: ServiceWorker | null) => {
+                if (worker?.state === 'installed')
+                  showUpdate(reg.waiting ?? worker);
                 worker?.addEventListener('statechange', () => {
                   if (worker.state === 'installed')
                     showUpdate(reg.waiting ?? worker);

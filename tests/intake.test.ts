@@ -477,7 +477,9 @@ describe('saved classwork evidence and minimal updates', () => {
   });
   it('all companion questions use genuine inputs and concept-specific short repair checks', () => {
     for (const a of assignments.filter(
-      (a) => a.assistance !== 'independent-only',
+      (a) =>
+        a.assistance !== 'independent-only' &&
+        !(a.course === 'physics' && a.kind === 'notes'),
     ))
       expect(
         (a.reading?.length ?? 0) + (a.companionQuestions?.length ?? 0),

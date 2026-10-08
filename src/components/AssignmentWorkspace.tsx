@@ -30,6 +30,7 @@ export default function AssignmentWorkspace({ id }: { id: string }) {
   const state = useLearner();
   const restricted = a.assistance === 'independent-only';
   const japanese = a.course === 'japanese';
+  const physics = a.course === 'physics';
   const questions = restricted ? [] : (a.companionQuestions ?? []);
   const progress = assignmentProgress(a, state.events);
   const [source, setSource] = useState(false),
@@ -52,7 +53,9 @@ export default function AssignmentWorkspace({ id }: { id: string }) {
 
   function readLocation() {
     const checkpoint = location.hash.slice(1);
-    const target = questions.find((q) => q.id === checkpoint);
+    const target = questions.find(
+      (q) => q.id === checkpoint || `q-${q.id}` === checkpoint,
+    );
     setActive(target?.id);
     const n = Number(new URLSearchParams(location.search).get('step'));
     setStep(Number.isSafeInteger(n) && n >= 0 && n <= 100 ? n : 0);
@@ -68,6 +71,30 @@ export default function AssignmentWorkspace({ id }: { id: string }) {
       window.removeEventListener('hashchange', readLocation);
     };
   }, []);
+  useEffect(() => {
+    if (
+      !physics ||
+      !state.ready ||
+      active ||
+      !new URLSearchParams(location.search).has('focus')
+    )
+      return;
+    const saved = [...state.events]
+      .reverse()
+      .find(
+        (e) =>
+          (e.type === 'checkpoint_saved' || e.type === 'assignment_progress') &&
+          e.payload.assignment === id,
+      );
+    const checkpoint =
+      saved?.type === 'checkpoint_saved'
+        ? saved.payload.checkpoint
+        : saved?.type === 'assignment_progress'
+          ? saved.payload.question
+          : undefined;
+    const target = questions.find((q) => q.id === checkpoint) ?? questions[0];
+    if (target) openQuestion(target.id);
+  }, [physics, state.ready, active, id]);
   useEffect(() => {
     if (q) {
       window.scrollTo({ top: 0, behavior: 'instant' });
@@ -108,7 +135,9 @@ export default function AssignmentWorkspace({ id }: { id: string }) {
       step: at,
       done,
       status:
-        progress.status === 'complete' || allDone ? 'complete' : 'in-progress',
+        progress.status === 'complete' || (!physics && allDone)
+          ? 'complete'
+          : 'in-progress',
     });
   }
   function openQuestion(question: string) {
@@ -185,25 +214,29 @@ export default function AssignmentWorkspace({ id }: { id: string }) {
             <Icon name="document" size={17} />
             Whole assignment
           </button>
-        ) : (
+        ) : !physics ? (
           <p className="meta">{a.teacher}</p>
+        ) : (
+          <span />
         )}
         <div className="document-tools">
-          <label className="work-status">
-            <span className="sr-only">Assignment status</span>
-            <select
-              aria-label="Assignment status"
-              value={progress.status}
-              disabled={!state.ready}
-              onChange={(e) => status(e.target.value as WorkStatus)}
-            >
-              {Object.entries(statusLabel).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </label>
+          {!physics && (
+            <label className="work-status">
+              <span className="sr-only">Assignment status</span>
+              <select
+                aria-label="Assignment status"
+                value={progress.status}
+                disabled={!state.ready}
+                onChange={(e) => status(e.target.value as WorkStatus)}
+              >
+                {Object.entries(statusLabel).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <button className="quiet" onClick={() => setSource(true)}>
             <Icon name="external" size={15} />
             Sources
@@ -233,7 +266,7 @@ export default function AssignmentWorkspace({ id }: { id: string }) {
           <p>
             {japanese
               ? `${due.length} words ready to review`
-              : progress.completed.size
+              : !physics && progress.completed.size
                 ? `${progress.completed.size} of ${questions.length} questions done on paper`
                 : 'Keep your assignment beside you. Write your working there.'}
           </p>
@@ -264,7 +297,7 @@ export default function AssignmentWorkspace({ id }: { id: string }) {
           )}
         </div>
       )}
-      {reviewFinished && (
+      {reviewFinished && !physics && (
         <p className="review-finished" role="status">
           Review finished. Easy returns in four days, Okay tomorrow, and Hard in
           ten minutes.
@@ -329,8 +362,11 @@ export default function AssignmentWorkspace({ id }: { id: string }) {
                   )
                 }
                 next={
-                  activeIndex < questions.length - 1 ? nextQuestion : undefined
+                  physics || activeIndex < questions.length - 1
+                    ? nextQuestion
+                    : undefined
                 }
+                finalQuestion={activeIndex === questions.length - 1}
                 onLearn={(el) => openLearn(q.concepts, el)}
               />
             )
@@ -412,7 +448,9 @@ export default function AssignmentWorkspace({ id }: { id: string }) {
                                   {progress.completed.has(q.id) ? (
                                     <>
                                       <Icon name="check" size={14} />
-                                      Done on paper · revisit
+                                      {physics
+                                        ? 'Walk through again'
+                                        : 'Done on paper · revisit'}
                                     </>
                                   ) : (
                                     <>
@@ -445,30 +483,32 @@ export default function AssignmentWorkspace({ id }: { id: string }) {
                       </button>
                     </div>
                   )}
-                  <details className="progress-checklist">
-                    <summary>Mark a section finished</summary>
-                    {a.tasks.map((t) => (
-                      <label className="task-progress" key={t.id}>
-                        <input
-                          type="checkbox"
-                          disabled={!state.ready}
-                          checked={Boolean(taskDone(id, t.id, state.events))}
-                          onChange={(e) =>
-                            emit('assignment_task', {
-                              assignment: id,
-                              task: t.id,
-                              done: e.target.checked,
-                            })
-                          }
-                        />
-                        {t.title}
-                      </label>
-                    ))}
-                    <p className="source-meta">
-                      This records your progress. It does not submit work to
-                      your teacher.
-                    </p>
-                  </details>
+                  {!physics && (
+                    <details className="progress-checklist">
+                      <summary>Mark a section finished</summary>
+                      {a.tasks.map((t) => (
+                        <label className="task-progress" key={t.id}>
+                          <input
+                            type="checkbox"
+                            disabled={!state.ready}
+                            checked={Boolean(taskDone(id, t.id, state.events))}
+                            onChange={(e) =>
+                              emit('assignment_task', {
+                                assignment: id,
+                                task: t.id,
+                                done: e.target.checked,
+                              })
+                            }
+                          />
+                          {t.title}
+                        </label>
+                      ))}
+                      <p className="source-meta">
+                        This records your progress. It does not submit work to
+                        your teacher.
+                      </p>
+                    </details>
+                  )}
                 </>
               )}
             </>

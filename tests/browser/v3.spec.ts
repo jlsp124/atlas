@@ -4,175 +4,123 @@ import { randomBytes } from 'node:crypto';
 async function open(page: Page, path: string) {
   await page.goto('/atlas/' + path);
   await expect(page.locator('.topbar')).toHaveAttribute('data-ready', 'true');
+  await expect(page.locator('main astro-island[ssr]')).toHaveCount(0);
+  if (path.startsWith('work/kinematics-review/')) {
+    await expect(page.locator('.paper-workspace')).toHaveAttribute(
+      'data-ready',
+      'true',
+    );
+    await expect(page.locator('.paper-workspace')).toHaveAttribute(
+      'data-location-ready',
+      'true',
+    );
+    if (path.includes('#q-'))
+      await expect(page.locator('.walkthrough')).toBeVisible();
+  }
 }
 async function next(page: Page, count = 1) {
   for (let i = 0; i < count; i++)
     await page.getByRole('button', { name: 'Next step', exact: true }).click();
 }
-test('units lead with real school materials and old view links resolve to the same list', async ({
+test('Physics opens a sparse unit list and old view links reach the same material sections', async ({
   page,
 }) => {
   await open(page, 'courses/physics/');
-  await expect(page.locator('.current-work-band')).toContainText(
-    'Kinematics Review',
-  );
+  await expect(page.locator('.current-work-band')).toHaveCount(0);
+  await expect(page.locator('.unit-row')).toHaveCount(2);
   await open(page, 'courses/physics/units/kinematics/?view=learn');
   await expect(page).toHaveURL(/\/kinematics\/$/);
-  await expect(page.locator('.material-unit')).toBeVisible();
+  await expect(page.locator('.physics-unit')).toBeVisible();
+  await expect(page.locator('[data-material=kinematics-review]')).toBeVisible();
+  for (const name of ['Assignments', 'Notes', 'Labs'])
+    await expect(
+      page.getByRole('heading', { name, exact: true }),
+    ).toBeVisible();
   await expect(
-    page.locator('.material-row[href$="/kinematics-review/"]'),
-  ).toBeVisible();
-  await expect(
-    page.getByRole('button', { name: /^(Learn|Classwork)$/ }),
+    page.getByRole('button', {
+      name: /^(All materials|To do|Learn|Classwork)$/,
+    }),
   ).toHaveCount(0);
   await open(page, 'courses/physics/learn/');
   await expect(page).toHaveURL(/\/units\/kinematics\/$/);
 });
-test('overview, focus, completion and question deep links preserve student control', async ({
+test('Physics overview and both old and current focus deep links preserve the actual question', async ({
   page,
 }) => {
   await open(page, 'work/kinematics-review/');
-  await expect(page.locator('.assignment-document')).toBeVisible();
-  await expect(page.locator('.companion-question')).toHaveCount(0);
   await expect(page.locator('.document-question')).toHaveCount(37);
-  await page
-    .getByRole('combobox', { name: 'Assignment status' })
-    .selectOption('complete');
-  await page.reload();
   await expect(
     page.getByRole('combobox', { name: 'Assignment status' }),
-  ).toHaveValue('complete');
+  ).toHaveCount(0);
   await page
-    .getByRole('combobox', { name: 'Assignment status' })
-    .selectOption('in-progress');
-  await page
-    .locator('.document-question')
-    .filter({ hasText: 'A ball is dropped.' })
-    .getByRole('link')
+    .getByRole('link', { name: 'Walk through question 10', exact: true })
     .click();
   await expect(page).toHaveURL(/#q-10$/);
   await expect(page.locator('.walkthrough')).toHaveCount(1);
   await page
     .getByRole('button', { name: 'Whole assignment', exact: true })
     .click();
-  await expect(page.locator('.document-question')).toHaveCount(37);
-});
-test('clue, known data and formula substitution keep the same question and equation tokens', async ({
-  page,
-}) => {
-  await open(page, 'work/kinematics-review/?focus=1#q-10');
-  await expect(page.locator('.story-workspace')).toHaveCount(0);
-  await page.getByLabel('Your answer', { exact: true }).fill('-19.6');
-  await page.getByLabel('Unit', { exact: true }).fill('m/s');
-  await page
-    .getByRole('button', { name: 'Help me start', exact: true })
-    .click();
-  await expect(page.locator('.question-token.is-highlighted')).toHaveText(
-    'dropped',
-  );
-  await next(page);
-  await expect(page.locator('[data-motion=known-vi]')).toContainText('0');
-  await page
-    .getByRole('button', { name: 'Explain dropped', exact: true })
-    .click();
-  const sheet = page.getByRole('dialog', {
-    name: 'A quick connection',
-    exact: true,
-  });
-  await expect(sheet).toContainText('released from rest');
-  await sheet
-    .getByRole('button', { name: 'Back to question 10', exact: true })
-    .click();
-  await expect(page.locator('.story-stage')).toHaveAttribute(
-    'data-guide-step',
-    '1',
-  );
-  await expect(page.getByLabel('Your answer', { exact: true })).toHaveValue(
-    '-19.6',
-  );
-  await next(page, 4);
-  await expect(page.locator('.equation-stage')).toHaveAttribute(
-    'data-formula-frame',
-    '0',
-  );
-  await page.locator('[data-token=vi]').evaluate((el) => {
-    (el as HTMLElement).dataset.identity = 'same-node';
-  });
-  await next(page);
-  await expect(page.locator('[data-token=vi]')).toHaveAttribute(
-    'data-identity',
-    'same-node',
-  );
-  await expect(page.locator('[data-token=vi]')).toHaveText('0');
-  await expect(page.locator('[data-token=a]')).toHaveText('9.8');
-  await expect(page.locator('[data-token=t]')).toHaveText('2.0');
-  await page.getByRole('button', { name: 'Check answer', exact: true }).click();
-  await expect(page.locator('.question-feedback')).toContainText('direction');
-  await page.getByLabel('Direction in words', { exact: true }).fill('downward');
-  await page.getByRole('button', { name: 'Check answer', exact: true }).click();
-  await expect(page.locator('.question-feedback')).toContainText(
-    'That matches',
-  );
-  await page.getByRole('button', { name: 'Okay', exact: true }).click();
-  await open(page, 'courses/physics/');
-  await page
-    .locator('.current-work-footer')
-    .getByRole('link', { name: 'Continue', exact: true })
-    .click();
-  await expect(page.locator('.companion-question')).toHaveAttribute(
+  await open(page, 'work/kinematics-review/?focus=1#q-q-10');
+  await expect(page.locator('.walkthrough')).toHaveAttribute(
     'data-question',
     'q-10',
   );
-  await expect(page.getByLabel('Your answer', { exact: true })).toHaveValue(
-    '-19.6',
-  );
-  await expect(page.locator('.story-stage')).toHaveAttribute(
-    'data-guide-step',
-    '6',
-  );
-  await expect(
-    page.getByRole('button', { name: 'Okay', exact: true }),
-  ).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByLabel('Your answer', { exact: true })).toHaveCount(0);
 });
-test('algebra moves a stable denominator token into the numerator and back', async ({
+test('dropped highlighting selects the word and keeps signed gravity in the substitution', async ({
   page,
 }) => {
-  await open(page, 'work/kinematics-review/?focus=1#q-4');
-  await page
-    .getByRole('button', { name: 'Help me start', exact: true })
-    .click();
-  await next(page, 5);
-  await expect(page.locator('.equation-stage')).toHaveAttribute(
-    'data-formula-frame',
-    '0',
+  await open(page, 'work/kinematics-review/?focus=1#q-10');
+  const guide = page.locator('.walkthrough');
+  await guide.getByRole('button', { name: 'Next', exact: true }).click();
+  await expect(guide.locator('mark[data-active=true]')).toHaveText('dropped');
+  await expect(guide.locator('.narration-copy')).toContainText(
+    'initial velocity is 0',
   );
-  const before = await page.locator('[data-token=two]').evaluate((el) => ({
-    top: (el as HTMLElement).style.top,
-    left: (el as HTMLElement).style.left,
-  }));
-  await next(page);
-  await expect(page.locator('.equation-stage')).toHaveAttribute(
-    'data-formula-frame',
-    '1',
+  let safety = 20;
+  while (
+    !(await guide.locator('.narration-copy h3').innerText()).includes(
+      'Put each value',
+    )
+  ) {
+    if (!safety--) throw Error('No substitution');
+    await guide.getByRole('button', { name: 'Next', exact: true }).click();
+  }
+  await expect(guide.locator('.live-equation')).toHaveText(
+    'vf = 0 + (−9.8) × 2.0',
   );
-  const after = await page.locator('[data-token=two]').evaluate((el) => ({
-    top: (el as HTMLElement).style.top,
-    left: (el as HTMLElement).style.left,
-  }));
-  expect(after.top).not.toBe(before.top);
-  await page.getByRole('button', { name: 'Back step', exact: true }).click();
-  await expect(page.locator('.equation-stage')).toHaveAttribute(
-    'data-formula-frame',
-    '0',
+  await expect(guide.locator('.live-equation')).toHaveAttribute(
+    'aria-label',
+    /−9.8/,
   );
-  expect(
-    await page
-      .locator('[data-token=two]')
-      .evaluate((el) => (el as HTMLElement).style.top),
-  ).toBe(before.top);
+  await page.reload();
+  await expect(guide.locator('.live-equation')).toHaveText(
+    'vf = 0 + (−9.8) × 2.0',
+  );
 });
-
-test('the student turn keeps the setup and brings the answer into a short laptop or phone viewport', async ({
+test('average-velocity algebra and substitutions preserve operators and parentheses', async ({
+  page,
+}) => {
+  await open(page, 'work/kinematics-review/?focus=1#q-1');
+  const guide = page.locator('.walkthrough');
+  let safety = 20;
+  while (
+    !(await guide.locator('.narration-copy h3').innerText()).includes(
+      'Put each value',
+    )
+  ) {
+    if (!safety--) throw Error('No substitution');
+    await guide.getByRole('button', { name: 'Next', exact: true }).click();
+  }
+  await expect(guide.locator('.live-equation')).toHaveText(
+    'Δd = ((24 + 18) / 2) × 3.00',
+  );
+  await guide.getByRole('button', { name: 'Back', exact: true }).click();
+  await expect(guide.locator('.live-equation')).toHaveText(
+    'Δd = ((vi + vf) / 2) × Δt',
+  );
+});
+test('focused Physics working and navigation fit short desktop and phone viewports', async ({
   browser,
 }) => {
   for (const viewport of [
@@ -188,42 +136,33 @@ test('the student turn keeps the setup and brings the answer into a short laptop
     });
     const page = await context.newPage();
     await open(page, 'work/kinematics-review/?focus=1#q-11');
-    await page
-      .getByRole('button', { name: 'Help me start', exact: true })
-      .click();
-    await next(page, 8);
-    await expect(page.locator('.story-stage')).toHaveAttribute(
-      'data-guide-action',
-      'student',
+    let safety = 20;
+    while (
+      await page
+        .locator('.walkthrough')
+        .getByRole('button', { name: 'Next', exact: true })
+        .count()
+    ) {
+      if (!safety--) throw Error('No finish');
+      await page
+        .locator('.walkthrough')
+        .getByRole('button', { name: 'Next', exact: true })
+        .click();
+    }
+    await expect(page.locator('.calculated-result')).toContainText('2.4 s');
+    await expect(
+      page.getByRole('button', { name: 'Done on paper', exact: true }),
+    ).toHaveCount(0);
+    const bounds = await page.locator('.walkthrough-footer').boundingBox();
+    expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(
+      viewport.height - (viewport.width < 400 ? 68 : 0),
     );
-    await page.locator('.story-stage').evaluate(async (el) => {
-      await Promise.all(
-        el
-          .getAnimations({ subtree: true })
-          .map((a) => a.finished.catch(() => {})),
-      );
-    });
-    await expect(page.locator('.persistent-question')).toBeVisible();
-    await expect(page.locator('.equation-stage')).toHaveAttribute(
-      'data-formula-frame',
-      '2',
-    );
-    await expect(page.locator('.formula-options')).not.toBeVisible();
-    await expect(async () => {
-      const question = await page.locator('.persistent-question').boundingBox();
-      const answer = await page
-        .getByLabel('Your answer', { exact: true })
-        .boundingBox();
-      const navigation = await page.locator('.focus-navigation').boundingBox();
-      expect(question!.y).toBeGreaterThan(0);
-      const bottomInset = viewport.width < 400 ? 64 : 16;
-      expect(answer!.y + answer!.height).toBeLessThan(
-        viewport.height - bottomInset,
-      );
-      expect(navigation!.y).toBeGreaterThan(answer!.y + answer!.height);
-    }).toPass();
-    await page.getByRole('button', { name: 'Back step', exact: true }).click();
-    await expect(page.locator('.formula-options')).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth + 1,
+      ),
+    ).toBe(true);
+    await expect(page.locator('.transforming-question')).toBeVisible();
     await context.close();
   }
 });
@@ -298,47 +237,44 @@ test('Hebden unit cancellation and Lewis/VSEPR build progressively while formal 
   await expect(page.locator('.restricted-work')).toBeVisible();
   await expect(page.locator('.story-stage')).toHaveCount(0);
 });
-test('reduced motion gives identical formula states and narrow stages never overflow', async ({
+test('reduced motion keeps the same signed formula and narrow Physics stages remain accessible', async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   for (const width of [360, 390]) {
     await page.setViewportSize({ width, height: 844 });
-    await open(page, 'work/kinematics-review/?focus=1#q-11');
-    if (
+    await open(page, 'work/kinematics-review/?step=0#q-11');
+    let safety = 20;
+    while (
       await page
-        .getByRole('button', { name: 'Help me start', exact: true })
+        .locator('.walkthrough')
+        .getByRole('button', { name: 'Next', exact: true })
         .count()
-    )
+    ) {
+      if (!safety--) throw Error('No finish');
       await page
-        .getByRole('button', { name: 'Help me start', exact: true })
+        .locator('.walkthrough')
+        .getByRole('button', { name: 'Next', exact: true })
         .click();
-    await next(page, width === 360 ? 7 : 0);
-    await expect(page.locator('.story-stage')).toHaveAttribute(
-      'data-reduced-motion',
-      'true',
-    );
-    await expect(page.locator('.equation-stage')).toHaveAttribute(
-      'data-formula-frame',
-      '2',
-    );
+    }
+    await expect(page.locator('.live-equation')).toContainText('−28');
+    expect(
+      await page
+        .locator('.walkthrough')
+        .evaluate((el) => el.getAnimations({ subtree: true }).length),
+    ).toBe(0);
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth + 1,
       ),
     ).toBe(true);
-    expect(
-      await page
-        .locator('.story-stage')
-        .evaluate((el) => el.getAnimations({ subtree: true }).length),
-    ).toBe(0);
     const result = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
       .analyze();
     expect(result.violations).toEqual([]);
   }
 });
-test('account drafts, guide position and material completion sync between independent devices', async ({
+test('Physics walkthrough position and list completion sync between independent devices', async ({
   page,
   browser,
 }) => {
@@ -354,15 +290,16 @@ test('account drafts, guide position and material completion sync between indepe
   await expect(
     page.getByRole('heading', { name: `Hi, ${username}.` }),
   ).toBeVisible();
-  await open(page, 'work/kinematics-review/?focus=1#q-10');
-  await page.getByLabel('Your answer', { exact: true }).fill('-19.6');
-  await page.getByLabel('Unit', { exact: true }).fill('m/s');
+  await open(page, 'work/kinematics-review/?step=0#q-10');
+  for (let i = 0; i < 3; i++)
+    await page
+      .locator('.walkthrough')
+      .getByRole('button', { name: 'Next', exact: true })
+      .click();
+  await open(page, 'courses/physics/units/kinematics/');
   await page
-    .getByRole('button', { name: 'Help me start', exact: true })
-    .click();
-  await next(page, 3);
-  await page
-    .getByRole('button', { name: 'Mark assignment complete', exact: true })
+    .locator('[data-material=kinematics-review]')
+    .getByRole('button', { name: /^Mark complete:/ })
     .click();
   await open(page, 'account/');
   await expect(page.locator('.sync-status')).toContainText('Progress synced');
@@ -372,50 +309,51 @@ test('account drafts, guide position and material completion sync between indepe
   await peer.getByLabel('Username', { exact: true }).fill(username);
   await peer.getByLabel('Password', { exact: true }).fill(password);
   await peer
+    .locator('form')
     .getByRole('button', { name: 'Sign in', exact: true })
     .last()
     .click();
   await expect(
     peer.getByRole('heading', { name: `Hi, ${username}.` }),
   ).toBeVisible();
-  await peer.goto(
-    'http://localhost:4321/atlas/work/kinematics-review/?focus=1#q-10',
-  );
-  await expect(peer.getByLabel('Your answer', { exact: true })).toHaveValue(
-    '-19.6',
-  );
-  await expect(peer.locator('.story-stage')).toHaveAttribute(
-    'data-guide-step',
-    '3',
-  );
-  await expect(peer.locator('.material-completion strong')).toHaveText(
-    'Complete',
-  );
-  await page.route('http://localhost:8787/**', (route) => route.abort());
-  await open(page, 'work/kinematics-review/?focus=1#q-10');
-  await page.getByLabel('Direction in words', { exact: true }).fill('downward');
-  await page.getByRole('button', { name: 'Next step', exact: true }).click();
+  await open(peer, 'courses/physics/units/kinematics/');
+  await expect(
+    peer.locator('[data-material=kinematics-review] button'),
+  ).toHaveAttribute('aria-pressed', 'true');
+  await open(peer, 'work/kinematics-review/');
+  await peer
+    .getByRole('button', { name: 'Continue question 10', exact: true })
+    .click();
+  await expect(peer.locator('.walkthrough')).toHaveAttribute('data-step', '3');
+  await expect(peer.getByLabel('Your answer', { exact: true })).toHaveCount(0);
+  await page.route('http://localhost:8790/**', (route) => route.abort());
+  await open(page, 'work/kinematics-review/');
+  await page
+    .getByRole('button', { name: 'Continue question 10', exact: true })
+    .click();
+  await page
+    .locator('.walkthrough')
+    .getByRole('button', { name: 'Next', exact: true })
+    .click();
   await open(page, 'account/');
   await expect(page.locator('.sync-status')).toContainText('waiting to sync');
-  await page.unroute('http://localhost:8787/**');
+  await page.unroute('http://localhost:8790/**');
   await page.evaluate(() => window.dispatchEvent(new Event('online')));
   await expect(page.locator('.sync-status')).toContainText('Progress synced');
-  await peer.reload();
-  await expect(
-    peer.getByLabel('Direction in words', { exact: true }),
-  ).toHaveValue('downward');
-  await expect(peer.locator('.story-stage')).toHaveAttribute(
-    'data-guide-step',
-    '4',
-  );
+  await open(peer, 'work/kinematics-review/');
+  await peer
+    .getByRole('button', { name: 'Continue question 10', exact: true })
+    .click();
+  await expect(peer.locator('.walkthrough')).toHaveAttribute('data-step', '4');
   await context.close();
 });
-test('offline V3 focus keeps a typed answer and reasoning position after refresh', async ({
+test('offline Physics keeps the walkthrough position after refresh', async ({
   page,
 }) => {
   await page.goto(
-    'http://localhost:4322/atlas/work/kinematics-review/?focus=1#q-10',
+    'http://localhost:4322/atlas/work/kinematics-review/?step=0#q-10',
   );
+  await expect(page.locator('.walkthrough')).toBeVisible();
   await page.evaluate(async () => {
     await navigator.serviceWorker.ready;
   });
@@ -426,18 +364,14 @@ test('offline V3 focus keeps a typed answer and reasoning position after refresh
     .toBe(true);
   await page.context().setOffline(true);
   await page.reload();
-  await page.getByLabel('Your answer', { exact: true }).fill('19.6');
-  await page
-    .getByRole('button', { name: 'Help me start', exact: true })
-    .click();
-  await next(page, 2);
+  await expect(page.locator('.walkthrough')).toHaveAttribute('data-step', '0');
+  for (let i = 0; i < 2; i++)
+    await page
+      .locator('.walkthrough')
+      .getByRole('button', { name: 'Next', exact: true })
+      .click();
   await page.reload();
-  await expect(page.getByLabel('Your answer', { exact: true })).toHaveValue(
-    '19.6',
-  );
-  await expect(page.locator('.story-stage')).toHaveAttribute(
-    'data-guide-step',
-    '2',
-  );
+  await expect(page.locator('.walkthrough')).toHaveAttribute('data-step', '2');
+  await expect(page.getByLabel('Your answer', { exact: true })).toHaveCount(0);
   await page.context().setOffline(false);
 });

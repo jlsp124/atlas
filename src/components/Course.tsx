@@ -78,6 +78,60 @@ export default function Course({
           e.type === 'project'),
     )
     .slice(0, 3);
+  if (id === 'physics')
+    return (
+      <div className="course-screen physics-course" data-course={id}>
+        <header className="course-heading">
+          <CourseMark course={id} />
+          <div>
+            <p className="meta">{edition.teacher}</p>
+            <h1>{c.title}</h1>
+          </div>
+          <a
+            className="quiet"
+            href={edition.resources[0]}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Class resources <Icon name="external" size={15} />
+          </a>
+        </header>
+        <div className="unit-list">
+          {c.units.map((u, i) => (
+            <a className="unit-row" key={u.id} href={url(unitUrl(id, u.id))}>
+              <span className="unit-index">
+                {unitLabel(id, u.id) || String(i + 1).padStart(2, '0')}
+              </span>
+              <span>
+                <strong>{unitTitle(id, u.id)}</strong>
+                <small>
+                  {
+                    assignments.filter(
+                      (a) => a.course === id && assignmentUnits[a.id] === u.id,
+                    ).length
+                  }{' '}
+                  materials
+                </small>
+              </span>
+              <Icon name="arrow" size={18} />
+            </a>
+          ))}
+        </div>
+        {events.filter((e) => e.start && e.confidence !== 'unverified').length >
+          0 && (
+          <section className="physics-coming">
+            <h2>Coming up</h2>
+            {events
+              .filter((e) => e.start && e.confidence !== 'unverified')
+              .map((e) => (
+                <a key={e.id} href={url(eventPath(e))}>
+                  {eventTitle(e)} <small>{displayUpcomingDate(e.start!)}</small>
+                </a>
+              ))}
+          </section>
+        )}
+      </div>
+    );
   return (
     <div className="v3-course course-screen" data-course={id}>
       <header className="course-heading">

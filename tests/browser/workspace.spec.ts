@@ -4,6 +4,19 @@ import { assignments } from '../../src/content/catalog';
 async function open(page: Page, path: string) {
   await page.goto('/atlas/' + path);
   await expect(page.locator('.topbar')).toHaveAttribute('data-ready', 'true');
+  await expect(page.locator('main astro-island[ssr]')).toHaveCount(0);
+  if (path.startsWith('work/kinematics-review/')) {
+    await expect(page.locator('.paper-workspace')).toHaveAttribute(
+      'data-ready',
+      'true',
+    );
+    await expect(page.locator('.paper-workspace')).toHaveAttribute(
+      'data-location-ready',
+      'true',
+    );
+    if (path.includes('#q-'))
+      await expect(page.locator('.walkthrough')).toBeVisible();
+  }
   await page.waitForTimeout(180); // Let the native page snapshot finish before inspection.
 }
 async function finish(page: Page) {
@@ -20,7 +33,21 @@ test('the complete science catalog opens as documents without answer forms', asy
   page,
 }) => {
   test.setTimeout(90000);
-  for (const a of assignments.filter((a) => a.course !== 'japanese')) {
+  for (const a of assignments.filter(
+    (a) =>
+      a.course !== 'japanese' &&
+      !(
+        a.course === 'physics' &&
+        (a.kind === 'notes' ||
+          a.kind === 'lab' ||
+          [
+            'physics-motion-packet',
+            'physics-average-velocity',
+            'physics-describing-acceleration',
+            'physics-calculating-acceleration',
+          ].includes(a.id))
+      ),
+  )) {
     await open(page, 'work/' + a.id + '/');
     await expect(page.locator('.assignment-document h1')).toHaveText(a.title);
     await expect(
@@ -150,7 +177,7 @@ test('Physics preserves a term through rearrangement and shows the resulting uni
     /work\/kinematics-review\/\?step=\d+#q-12$/,
   );
   await resume.click();
-  await expect(guide.locator('.calculated-result')).toContainText('9.391 m/s');
+  await expect(guide.locator('.calculated-result')).toContainText('9.4 m/s');
 });
 test('actual configurations fill to the correct total and rate units cancel', async ({
   page,
@@ -189,18 +216,25 @@ test('Biology uses evidence and paper response guidance without input', async ({
     q.checklist![0],
   );
 });
-test('a finished question and assignment status return to the unit list', async ({
+test('completion is manual on the assignment list and survives refresh', async ({
   page,
 }) => {
-  await open(page, 'work/physics-average-velocity/');
-  await page
-    .getByRole('combobox', { name: 'Assignment status' })
-    .selectOption('complete');
   await open(page, 'courses/physics/units/kinematics/');
-  const row = page.locator('.material-row[href$="/physics-average-velocity/"]');
-  await expect(row).toContainText('Complete');
-  await page.getByRole('button', { name: 'To do', exact: true }).click();
-  await expect(row).toHaveCount(0);
+  const row = page.locator('[data-material=physics-average-velocity]');
+  const check = row.getByRole('button', { name: /Mark complete/ });
+  await check.click();
+  await page.reload();
+  await expect(row.getByRole('button')).toHaveAttribute('aria-pressed', 'true');
+  await row.getByRole('link').click();
+  await expect(
+    page.getByRole('combobox', { name: 'Assignment status' }),
+  ).toHaveCount(0);
+  await open(page, 'courses/physics/units/kinematics/');
+  await row.getByRole('button').click();
+  await expect(row.getByRole('button')).toHaveAttribute(
+    'aria-pressed',
+    'false',
+  );
 });
 test('the 404 offers courses and working search', async ({ page }) => {
   await open(page, 'this-page-is-missing/');
@@ -268,7 +302,7 @@ test('failed feedback keeps the draft and offers email with its context', async 
   page,
 }) => {
   await open(page, 'work/chemistry-hebden-lewis/?step=2#q-86');
-  await page.route('http://localhost:8787/requests', (route) =>
+  await page.route('http://localhost:8790/requests', (route) =>
     route.fulfill({
       status: 503,
       contentType: 'application/json',

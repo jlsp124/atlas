@@ -27,6 +27,7 @@ import { url, useLearner } from '../client/store';
 import { Icon } from './Icons';
 import Sheet from './Sheet';
 import ReadableText from './ReadableText';
+import PhysicsUnit from './PhysicsUnit';
 
 const kindIcon: Record<string, string> = {
   notes: 'book',
@@ -93,6 +94,7 @@ export default function MaterialUnit({
           ),
         )
       : [];
+  if (course === 'physics') return <PhysicsUnit unit={unit} />;
   return (
     <div className="unit-screen material-unit" data-course={course}>
       <div className="breadcrumbs">

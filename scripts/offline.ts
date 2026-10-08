@@ -3,6 +3,8 @@ import { join, relative } from 'node:path';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import sharp from 'sharp';
+import { atlasVersion } from '../src/content/product';
+import { repoStats } from './repo-stats';
 
 const root = 'dist';
 const base = (process.env.ATLAS_BASE || '/atlas').replace(/\/$/, '');
@@ -14,7 +16,13 @@ const dirty = Boolean(
 );
 await writeFile(
   'dist/release.json',
-  JSON.stringify({ deploySha, dirty, base: base + '/' }),
+  JSON.stringify({
+    deploySha,
+    dirty,
+    version: atlasVersion,
+    stats: repoStats(),
+    base: base + '/',
+  }),
 );
 await mkdir('dist/icons', { recursive: true });
 const svg = await readFile('public/icon.svg');

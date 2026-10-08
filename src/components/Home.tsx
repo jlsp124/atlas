@@ -1,36 +1,28 @@
-import {
-  assignments,
-  concepts,
-  findCourse,
-  findEdition,
-  schedule,
-} from '../content/catalog';
+import { assignments, concepts, findEdition } from '../content/catalog';
 import {
   workspaceCourses,
   assignmentTitle,
-  eventPath,
-  eventTitle,
   topicTitle,
   unitTitle,
 } from '../content/workspaces';
-import { schoolDate, dayDifference, nearbyWeekday } from '../core/dates';
+import { schoolDate } from '../core/dates';
+import { schoolCalendar, schoolYearDetails } from '../core/school-calendar';
+import { atlasVersion } from '../content/product';
+import type { RepoStats } from '../../scripts/repo-stats';
 import { useLearner, url } from '../client/store';
 import { CourseMark, Icon } from './Icons';
 import { assignmentProgress } from '../core/assignment-progress';
-export default function Home({ chooser = false }: { chooser?: boolean }) {
+export default function Home({
+  chooser = false,
+  build,
+}: {
+  chooser?: boolean;
+  build?: RepoStats;
+}) {
   const state = useLearner(),
     today = schoolDate();
   const added = workspaceCourses.filter((c) => state.selected.includes(c.id));
-  const next = schedule
-    .filter(
-      (e) =>
-        e.start &&
-        (e.end ?? e.start) >= today &&
-        (!e.course || state.selected.includes(e.course)) &&
-        e.type !== 'research',
-    )
-    .sort((a, b) => a.start!.localeCompare(b.start!))
-    .slice(0, 5);
+  const year = schoolYearDetails(today);
   const recent = [...state.events]
     .reverse()
     .find((e) =>
@@ -87,70 +79,32 @@ export default function Home({ chooser = false }: { chooser?: boolean }) {
           <span className="sr-only">Manage your setup</span>
         </a>
       </div>
+      {!chooser && (
+        <div className="school-context">
+          <div className="school-coordinate" aria-hidden="true">
+            <span />
+            <span />
+            <i />
+          </div>
+          <div>
+            <p className="meta">
+              School District 57 ·{' '}
+              {year ? schoolCalendar.year : 'College Heights'}
+            </p>
+            <h2>College Heights</h2>
+            <p>Your classes, close at hand.</p>
+          </div>
+        </div>
+      )}
       <div className={`home-grid ${chooser ? 'course-chooser' : ''}`}>
-        {!chooser && (
-          <section className="up-next">
-            <div className="section-heading">
-              <h2>Up next</h2>
-              <a href={url('calendar/')}>
-                Calendar
-                <Icon name="arrow" size={16} />
-              </a>
-            </div>
-            <div className="event-list">
-              {next.map((e) => (
-                <a
-                  className="event-row"
-                  data-course={e.course}
-                  key={e.id}
-                  href={url(eventPath(e))}
-                >
-                  <time className="event-date" dateTime={e.start}>
-                    <strong>
-                      {new Date(e.start! + 'T12:00Z').getUTCDate()}
-                    </strong>
-                    <small>
-                      {[
-                        nearbyWeekday(e.start!, today),
-                        new Intl.DateTimeFormat('en', {
-                          month: 'short',
-                          timeZone: 'UTC',
-                        }).format(new Date(e.start! + 'T12:00Z')),
-                      ]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </small>
-                  </time>
-                  <span className="event-copy">
-                    <small className="event-class">
-                      {e.course
-                        ? findCourse(e.course).shortTitle
-                        : 'School · No classes'}
-                    </small>
-                    <strong>
-                      {eventTitle(e).replace(/^C(\d+)\b/, 'Chapter $1')}
-                    </strong>
-                  </span>
-                  <Icon name="arrow" size={17} />
-                </a>
-              ))}
-              {!next.length && (
-                <p className="empty-state">
-                  Nothing dated coming up. Your units are still here when you
-                  need them.
-                </p>
-              )}
-            </div>
-            {resume && (
-              <a className="continue-row" href={url(resume.path)}>
-                <span>
-                  <small>Continue</small>
-                  <strong>{resume.title}</strong>
-                </span>
-                <Icon name="arrow" />
-              </a>
-            )}
-          </section>
+        {!chooser && resume && (
+          <a className="continue-row" href={url(resume.path)}>
+            <span>
+              <small>Pick up where you left off</small>
+              <strong>{resume.title}</strong>
+            </span>
+            <Icon name="arrow" />
+          </a>
         )}
         <section className="my-courses">
           <div className="section-heading">
@@ -193,12 +147,36 @@ export default function Home({ chooser = false }: { chooser?: boolean }) {
         </section>
       </div>
       {!chooser && (
-        <div className="home-footnote">
-          <span>
-            {Math.max(0, dayDifference(today, '2026-12-21'))} days until winter
-            break
-          </span>
-          <span>Fall 2026</span>
+        <div className="home-footnote home-details">
+          {year?.winterDays !== undefined && (
+            <span>
+              <b>{year.winterDays}</b> days to winter break
+            </span>
+          )}
+          {year && (
+            <a
+              href={schoolCalendar.source}
+              target="_blank"
+              rel="noreferrer"
+              title={`${year.elapsed} of ${year.total} district instructional days have elapsed; today is excluded.`}
+            >
+              <b>{year.percent}%</b> of school days behind us
+            </a>
+          )}
+          {build?.sourceLines !== undefined && (
+            <span title="Nonblank lines in src, server and scripts, calculated for this build.">
+              about <b>{build.sourceLines.toLocaleString('en-CA')}</b> lines of
+              Atlas
+            </span>
+          )}
+          {build?.commits !== undefined && (
+            <span title="Commits reachable from this release; measured from the full Git history.">
+              <b>{build.commits}</b> commits so far
+            </span>
+          )}
+          <a href={url('about/')} className="atlas-version">
+            atlas. {atlasVersion}
+          </a>
         </div>
       )}
     </div>

@@ -42,6 +42,31 @@ export default function Shell({
     kind?: FeedbackKind;
   } | null>(null);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  useEffect(() => {
+    try {
+      const preference = localStorage.getItem('atlas:sidebar');
+      setCollapsed(
+        preference
+          ? preference === 'collapsed'
+          : matchMedia('(max-width: 800px)').matches,
+      );
+    } catch {
+      setCollapsed(matchMedia('(max-width: 800px)').matches);
+    }
+  }, []);
+  useEffect(() => {
+    document.documentElement.dataset.sidebar = collapsed ? 'collapsed' : 'open';
+  }, [collapsed]);
+  function toggleSidebar() {
+    const next = !collapsed;
+    setCollapsed(next);
+    try {
+      localStorage.setItem('atlas:sidebar', next ? 'collapsed' : 'open');
+    } catch {
+      /* Sidebar still toggles when storage is unavailable. */
+    }
+  }
   const onboardingRef = useRef<HTMLDialogElement>(null),
     searchRef = useRef<HTMLDialogElement>(null),
     inspectorRef = useRef<HTMLDialogElement>(null);
@@ -176,12 +201,23 @@ export default function Shell({
         data-ready={state.ready ? 'true' : 'false'}
       >
         <div className="atlas-identity">
-          <a className="wordmark" href={url()} aria-label="atlas home">
+          <button
+            className="wordmark sidebar-toggle"
+            onClick={toggleSidebar}
+            aria-label={collapsed ? 'Reopen sidebar' : 'Collapse sidebar'}
+            aria-expanded={!collapsed}
+            aria-controls="atlas-sidebar"
+          >
             atlas<span>.</span>
-          </a>
+          </button>
           <span className="beta-label">BETA</span>
         </div>
-        <nav className="sidebar" aria-label="Main navigation">
+        <nav
+          id="atlas-sidebar"
+          className="sidebar"
+          aria-label="Main navigation"
+          inert={collapsed ? true : undefined}
+        >
           <a className={course ? 'nav-item' : 'nav-item home-nav'} href={url()}>
             <Icon name="home" />
             Home

@@ -7,6 +7,7 @@ export default defineConfig(
   {
     ignores: [
       'dist/**',
+      '.atlas-test-dist/**',
       '.astro/**',
       'node_modules/**',
       'evidence/**',

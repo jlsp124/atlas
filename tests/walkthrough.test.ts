@@ -83,12 +83,12 @@ describe('assignment tutoring over the reviewed catalog', () => {
     )!;
     expect(carried.result).toBeCloseTo(-110.4);
     expect(carried.context).toContain('24a');
-    expect(carried.axis).toBe('Take up as positive.');
+    expect(carried.axis).toBe('Take up as positive; down is negative.');
     const otherPlanet = physicsWork(
       question('kinematics-review', 'q-16'),
       'kinematics-review',
     )!;
-    expect(otherPlanet.result).toBeCloseTo(44.444444);
+    expect(otherPlanet.result).toBeCloseTo(-44.444444);
     expect(otherPlanet.values.some((v) => v.value === 9.8)).toBe(false);
   });
   it('refuses a numerical animation when the reviewed result and setup disagree', () => {

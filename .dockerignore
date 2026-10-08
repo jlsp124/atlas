@@ -2,6 +2,7 @@ node_modules
 raw pictures
 atlas-sources
 dist
+.atlas-test-dist
 .astro
 .git
 .github

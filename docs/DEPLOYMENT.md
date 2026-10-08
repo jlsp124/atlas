@@ -111,7 +111,7 @@ The Pages build has `PUBLIC_API_URL` set as a repository variable. Current brows
 Normal registration cannot claim `Jovan` or choose an admin role. Supply a unique secret interactively on the server; no default password exists:
 
 ```sh
-read -r -s -p 'Unique admin password (16–128 characters): ' ATLAS_ADMIN_PASSWORD
+read -r -s -p 'Admin password (8–128 characters): ' ATLAS_ADMIN_PASSWORD
 printf '\n'
 export ATLAS_ADMIN_PASSWORD
 docker compose run --rm -e ATLAS_ADMIN_PASSWORD atlas node --import tsx server/bootstrap.ts

@@ -92,16 +92,18 @@ export function physicsGuide(q: CompanionQuestion): Guide | undefined {
   if (q.input !== 'numeric') return;
   const knownText =
     q.steps.find((s) => s.title === 'Write the known values')?.text ?? '';
-  const relationship =
-    q.steps.find((s) => s.title === 'Choose the relationship')?.text ?? '';
+  const relationship = (
+    q.steps.find((s) => s.title === 'Choose the relationship')?.text ?? ''
+  ).replaceAll('Δd', 'Δx');
   const known = [
     ...knownText.matchAll(
-      /(?<![a-z])(vi|vf|a|g|h|Δx|Δt)\s*=\s*([−+-]?\d+(?:\.\d+)?)(?:\s*(m\/s²|m\/s|m|s))?/g,
+      /(?<![a-z])(vi|vf|a|g|h|Δx|Δd|Δt)\s*=\s*([−+-]?\d+(?:\.\d+)?)(?:\s*(cm\/year²|cm\/year|m\/s²|m\/s|year|m|s))?/g,
     ),
   ].map((m) => {
     const id =
-      ({ Δx: 'd', Δt: 't', g: 'a', h: 'd' } as Record<string, string>)[m[1]] ??
-      m[1];
+      ({ Δx: 'd', Δd: 'd', Δt: 't', g: 'a', h: 'd' } as Record<string, string>)[
+        m[1]
+      ] ?? m[1];
     const value = m[2].replace('−', '-');
     const unit =
       m[3] ??
@@ -114,7 +116,7 @@ export function physicsGuide(q: CompanionQuestion): Guide | undefined {
     return {
       id,
       symbol: (
-        { vi: 'vᵢ', vf: 'v𝒻', d: 'd', t: 'Δt', a: 'a' } as Record<
+        { vi: 'vᵢ', vf: 'v𝒻', d: 'Δd', t: 'Δt', a: 'a' } as Record<
           string,
           string
         >
@@ -132,7 +134,7 @@ export function physicsGuide(q: CompanionQuestion): Guide | undefined {
     known.push({
       id: 'a',
       symbol: 'a',
-      value: /up positive/i.test(knownText + q.prompt) ? '-9.8' : '9.8',
+      value: '-9.8',
       unit: 'm/s²',
       phrase: undefined,
     });
@@ -140,7 +142,7 @@ export function physicsGuide(q: CompanionQuestion): Guide | undefined {
   const target =
     q.answer?.unit === 's'
       ? 't'
-      : q.answer?.unit === 'm/s²'
+      : q.answer?.unit === 'm/s²' || q.answer?.unit === 'cm/y²'
         ? 'a'
         : q.answer?.unit === 'm'
           ? 'd'
@@ -263,7 +265,7 @@ export function physicsGuide(q: CompanionQuestion): Guide | undefined {
   facts.forEach((f) => {
     if (f.id === 'a' && !f.phrase && q.concepts.includes('free-fall'))
       f.implied =
-        'Gravity is implied. Ignore air resistance; use the 9.8 m/s² convention in this material and one consistent axis.';
+        'This is free fall. Up is positive, so gravity points in the negative direction: a = −9.8 m/s², using Wadson’s supplied formula-sheet value.';
   });
   if (restFact && rest)
     facts.sort((a, b) => (a === restFact ? -1 : b === restFact ? 1 : 0));

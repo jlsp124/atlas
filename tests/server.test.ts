@@ -4,6 +4,10 @@ import { createServer } from '../server/app';
 import { openDatabase } from '../server/database';
 import type { FastifyInstance } from 'fastify';
 import type { AtlasDatabase } from '../server/database';
+import { mkdtemp, writeFile, rm } from 'node:fs/promises';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import argon2 from 'argon2';
 const origin = 'http://localhost:4321';
 const headers = {
   origin,
@@ -12,6 +16,7 @@ const headers = {
 };
 let app: FastifyInstance;
 let db: AtlasDatabase;
+let classSourceDir: string;
 const password = () => randomBytes(20).toString('base64url');
 async function account(name = 'student_' + randomBytes(4).toString('hex')) {
   const pass = password();
@@ -53,12 +58,120 @@ const authed = (a: { cookie: string; csrf: string }) => ({
 });
 beforeEach(async () => {
   db = openDatabase('', true);
-  app = await createServer({ db, origin, secure: false });
+  classSourceDir = await mkdtemp(join(tmpdir(), 'atlas-private-test-'));
+  await writeFile(
+    join(classSourceDir, 'physics-motion-notes.json'),
+    JSON.stringify({
+      title: 'Test-only note',
+      captured: '2026-09-23',
+      status: 'partial-transcription',
+      sections: [{ heading: 'Test', text: 'Owner-only fixture text' }],
+      gaps: ['Missing original diagram'],
+    }),
+    { mode: 0o600 },
+  );
+  app = await createServer({ db, origin, secure: false, classSourceDir });
 });
 afterEach(async () => {
   await app.close();
+  await rm(classSourceDir, { recursive: true, force: true });
 });
 describe('accounts and authorization', () => {
+  it('allows an explicitly provisioned short owner secret while restricting private sources and retaining registration rules', async () => {
+    const secret = randomBytes(6).toString('base64url'),
+      now = new Date().toISOString();
+    db.prepare('INSERT INTO users VALUES (?,?,?,?,?,?,?)').run(
+      randomUUID(),
+      'Jovan',
+      await argon2.hash(secret),
+      'admin',
+      now,
+      now,
+      0,
+    );
+    expect(
+      (await app.inject('/physics/sources/physics-motion-notes')).statusCode,
+    ).toBe(401);
+    const ordinary = await account();
+    expect(
+      (
+        await app.inject({
+          url: '/physics/sources/physics-motion-notes',
+          headers: authed(ordinary),
+        })
+      ).statusCode,
+    ).toBe(403);
+    db.prepare("UPDATE users SET role='admin' WHERE id=?").run(
+      ordinary.user.id,
+    );
+    expect(
+      (
+        await app.inject({
+          url: '/physics/sources/physics-motion-notes',
+          headers: authed(ordinary),
+        })
+      ).statusCode,
+    ).toBe(403);
+    const login = await app.inject({
+      method: 'POST',
+      url: '/auth/login',
+      headers,
+      payload: { username: 'Jovan', password: secret },
+    });
+    expect(login.statusCode).toBe(200);
+    expect(login.json().user.role).toBe('admin');
+    const owner = {
+      cookie: login.headers['set-cookie']!.toString().split(';')[0],
+      csrf: login.json().csrf,
+    };
+    const copy = await app.inject({
+      url: '/physics/sources/physics-motion-notes',
+      headers: authed(owner),
+    });
+    expect(copy.statusCode).toBe(200);
+    expect(copy.headers['cache-control']).toBe('private, no-store');
+    expect(copy.json().sections[0].text).toBe('Owner-only fixture text');
+    expect(
+      (
+        await app.inject({
+          url: '/physics/sources/bio-c17-notes',
+          headers: authed(owner),
+        })
+      ).statusCode,
+    ).toBe(404);
+    expect(
+      (
+        await app.inject({
+          url: '/physics/sources/physics-freefall-notes',
+          headers: authed(owner),
+        })
+      ).statusCode,
+    ).toBe(404);
+    expect(
+      (
+        await app.inject({
+          method: 'POST',
+          url: '/auth/register',
+          headers,
+          payload: { username: 'short_secret', password: secret },
+        })
+      ).statusCode,
+    ).toBe(400);
+    await app.inject({
+      method: 'POST',
+      url: '/auth/logout',
+      headers: authed(owner),
+      payload: {},
+    });
+    expect(
+      (
+        await app.inject({
+          url: '/physics/sources/physics-motion-notes',
+          headers: authed(owner),
+        })
+      ).statusCode,
+    ).toBe(401);
+  });
   it('stages exact additional frontend origins with secure cookies and rejects unrelated origins', async () => {
     for (const invalid of [
       '*',

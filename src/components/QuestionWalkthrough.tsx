@@ -8,6 +8,10 @@ import { Icon } from './Icons';
 import { openFeedback } from '../client/feedback';
 import GuidedVisual from './GuidedVisual';
 import ReadableText from './ReadableText';
+import PhysicsGraph from './PhysicsGraph';
+import PhysicsPrompt from './PhysicsPrompt';
+import MotionDiagram from './MotionDiagram';
+import { questionGraphs } from '../core/physics-graphs';
 
 export default function QuestionWalkthrough({
   assignment: a,
@@ -18,6 +22,7 @@ export default function QuestionWalkthrough({
   onLearn,
   done,
   next,
+  finalQuestion = false,
 }: {
   assignment: Assignment;
   question: CompanionQuestion;
@@ -27,6 +32,7 @@ export default function QuestionWalkthrough({
   onLearn: (element: HTMLElement) => void;
   done: boolean;
   next?: () => void;
+  finalQuestion?: boolean;
 }) {
   const state = useLearner();
   const guide = makeWalkthrough(a, q);
@@ -43,7 +49,8 @@ export default function QuestionWalkthrough({
       return;
     }
     previousStep.current = index;
-    if (!matchMedia('(max-width: 800px)').matches) return;
+    if (a.course === 'physics' || !matchMedia('(max-width: 800px)').matches)
+      return;
     const points = root.current?.querySelectorAll(
       '.response-outline > p[data-on=true]',
     );
@@ -106,6 +113,12 @@ export default function QuestionWalkthrough({
   }, [index]);
   const rating = latestDifficulty(a.id, q.id, state.events);
   const physics = guide.physics;
+  const graphs = a.course === 'physics' ? questionGraphs(a.id, q.id) : [];
+  const missing =
+    a.course === 'physics' &&
+    guide.steps.some((s) =>
+      /Source.*need|Identify the missing|Missing/i.test(s.title),
+    );
   const formulaStep = guide.steps.findIndex((s) => s.phase === 'formula');
   const formulaVisible = formulaStep >= 0 && index >= formulaStep;
   const substituted = ['substitute', 'units', 'finish'].includes(current.phase);
@@ -128,9 +141,15 @@ export default function QuestionWalkthrough({
     [];
   const unknown = guide.steps.find((s) => s.phase === 'unknown');
   const addCue = (text: string, source: string, last = false) => {
-    const start = last
-      ? q.prompt.toLowerCase().lastIndexOf(text.toLowerCase())
-      : q.prompt.toLowerCase().indexOf(text.toLowerCase());
+    if (!text) return;
+    const escaped = text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const boundary = /\d/.test(text) ? '[\\p{L}\\p{N}.]' : '[\\p{L}\\p{N}]';
+    const matches = [
+      ...q.prompt.matchAll(
+        new RegExp(`(?<!${boundary})${escaped}(?!${boundary})`, 'giu'),
+      ),
+    ];
+    const start = (last ? matches.at(-1) : matches[0])?.index ?? -1;
     if (
       start < 0 ||
       cues.some((c) => start < c.end && start + text.length > c.start)
@@ -165,7 +184,11 @@ export default function QuestionWalkthrough({
       <mark
         key={c.start}
         data-origin-id={c.source}
-        data-active={current.focus !== undefined && c.source === activeSource}
+        data-active={
+          current.focus !== undefined &&
+          (c.source === activeSource ||
+            c.text.toLowerCase() === current.focus.toLowerCase())
+        }
       >
         <ReadableText text={c.text} />
       </mark>,
@@ -292,7 +315,10 @@ export default function QuestionWalkthrough({
               </p>
               <div
                 className="live-equation"
-                aria-label={current.equation ?? equation}
+                aria-label={(current.equation ?? equation).replaceAll(
+                  'Δx',
+                  'Δd',
+                )}
               >
                 {tokens.map(({ part, i, id }) => {
                   const value = physics.values.find((v) => v.symbol === part);
@@ -308,7 +334,9 @@ export default function QuestionWalkthrough({
                       <ReadableText
                         text={
                           replacing
-                            ? `(${value.text})`
+                            ? value.value < 0
+                              ? `(${value.text})`
+                              : value.text
                             : (symbols[part] ?? part)
                         }
                       />
@@ -329,10 +357,19 @@ export default function QuestionWalkthrough({
                 aria-hidden={!last}
               >
                 <span>
-                  <ReadableText text={symbols[physics.target]} /> ≈{' '}
+                  <ReadableText
+                    text={physics.finalLabel ?? symbols[physics.target]}
+                  />{' '}
+                  ≈{' '}
                 </span>
                 <strong>
-                  {conciseNumber(physics.result)} {physics.unit}
+                  {physics.finalValue ??
+                    conciseNumber(
+                      physics.direction
+                        ? Math.abs(physics.result)
+                        : physics.result,
+                    )}{' '}
+                  {physics.unit}
                 </strong>
                 {physics.direction && (
                   <span className="result-direction">{physics.direction}</span>
@@ -341,7 +378,7 @@ export default function QuestionWalkthrough({
             </div>
             <p className="paper-origin">
               {last
-                ? `${q.answer?.origin === 'teacher' ? 'Teacher-provided result' : 'Atlas-derived working'} · match the precision on your assignment`
+                ? `${q.answer?.origin === 'teacher' ? 'Teacher-provided result' : 'Atlas-derived working'} · ${physics.precisionExplanation ?? 'Keep extra digits until the final line.'}`
                 : 'Build this working on your own paper.'}
             </p>
           </div>
@@ -384,6 +421,28 @@ export default function QuestionWalkthrough({
             <ReadableText text={current.write ?? ''} />
           </p>
         </div>
+        {graphs.length > 0 && index > 0 && (
+          <div className="physics-graphs">
+            {graphs.map((graph) => (
+              <PhysicsGraph key={graph.title} graph={graph} />
+            ))}
+          </div>
+        )}
+        {a.id === 'physics-textbook-accelerated-motion' &&
+          q.id === 'q-16c' &&
+          index > 0 && <MotionDiagram />}
+        {missing && (
+          <PhysicsPrompt
+            prompt={`Help with Mr. Wadson’s Physics 11 ${a.title}, question ${q.number}: ${q.prompt}\n\nAtlas is missing: ${guide.steps
+              .filter((s) =>
+                /Source.*need|Identify the missing|Missing/i.test(s.title),
+              )
+              .map((s) => s.text)
+              .join(
+                ' ',
+              )}\n\nFirst ask me for a clear photo of the original question, graph/table or measured tape with its ruler/timing, including all axis labels, units and scales. Wait for it. Do not invent the missing data. Then solve the exact question step by step: explain the wording, known values, signs (right/up positive unless the question defines otherwise), equation, substitution, units and final direction in words. Use Δd and Wadson’s formula sheet. Do not create extra questions or ask me to re-enter already visible work.`}
+          />
+        )}
         <details className="walkthrough-help">
           <summary>Need another explanation?</summary>
           <p>
@@ -448,7 +507,19 @@ export default function QuestionWalkthrough({
           </small>
         </div>
         {last ? (
-          done ? (
+          a.course === 'physics' ? (
+            <button
+              className="primary"
+              disabled={!state.ready}
+              onClick={() => {
+                onDone();
+                next?.();
+              }}
+            >
+              {finalQuestion ? 'Next' : 'Next question'}
+              <Icon name="arrow" size={16} />
+            </button>
+          ) : done ? (
             <button className="primary" disabled={!next} onClick={next}>
               {next ? 'Next question' : 'Question done'}
               <Icon name={next ? 'arrow' : 'check'} size={16} />

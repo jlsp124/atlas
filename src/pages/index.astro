@@ -1,8 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Home from '../components/Home';
+import { repoStats } from '../../scripts/repo-stats';
 ---
 
 <Layout>
-  <Home client:load />
+  <Home build={repoStats()} client:load />
 </Layout>
