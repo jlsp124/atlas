@@ -23,7 +23,7 @@ The production style that absolutely positioned every equation token is now scop
 
 ## Graphs
 
-Ten supported question graphs and eleven motion diagrams are available. Audited plots include a rocket’s quadratic position, the cyclist’s actual 2 m initial position, the elevator’s 0–2–14–18 s velocity stages and 15 m area, the golf ball’s parabolic throw and 4 s turning point, negative steady velocity, braking area, and bouncing motion. The bouncing problem uses its explicit down-positive convention; the position curve stays continuous while contact velocity changes are drawn as separate segments because contact duration was not supplied. Original textbook/review graphs with missing coordinates are not invented. Every plotted axis includes a quantity and unit, correctly signed ranges and a scale.
+Ten supported question graphs and eleven motion diagrams are available. Audited plots include a rocket’s quadratic position, the cyclist’s actual 2.0 m/s initial velocity, the elevator’s 0–2–14–18 s velocity stages and 15 m area, the golf ball’s parabolic throw and 4 s turning point, negative steady velocity, braking area, and bouncing motion. The bouncing problem uses its explicit down-positive convention; the position curve stays continuous while contact velocity changes are drawn as separate segments because contact duration was not supplied. Original textbook/review graphs with missing coordinates are not invented. Every plotted axis includes a quantity and unit, correctly signed ranges and a scale.
 
 ## Notes
 
