@@ -45,11 +45,17 @@ Ticker analysis uses the captured eleven legible time/position pairs privately o
 - Full acceleration/free-fall note sheets and missing portions/diagrams of the four partial notes.
 - Faint sprint/ticker readings and actual measurement uncertainty. Each student must supply their own formal toy-car run and instructions if different from the available capture.
 
+## Backend and owner access
+
+The owner administrator is Jovan; the requested password is provisioned privately as an Argon2id hash, with no plaintext credential committed or stored in the persistent deployment environment. The original private class archive stays in the backend data volume. Public API responses are not cached; the hostname adapter retains `no-store` when forwarding private source responses.
+
+Live QA exposed an existing sign-out race: a remembered account could render before reconnect had obtained its server CSRF token. Sign-out now confirms the current cookie session first, and stale reconnect responses cannot restore the account after it signs out. Desktop and phone regression checks deliberately delay the original session response through logout and confirm that both the session and account hint remain cleared.
+
 ## Validation
 
 The complete local `npm run check` passed: formatting, ESLint, Astro/TypeScript (141 files, zero errors/warnings/hints), all 129 unit/API/content checks, the production build/search/offline cache, and all 112 desktop/phone browser checks. Production CSS was used for substitution tests. Browser coverage includes average velocity, distance/displacement, braking in both directions, dropped/free-fall and upward motion, explicit final directions, rearrangement, negative substitutions/roots, precision, corrected graphs, source gaps, ticker analysis, private notes, formal resources, list completion, device sync, offline restoration and accessibility in both themes. `npm audit --audit-level=high` reported zero vulnerabilities.
 
-All five rendered Word pages and all six fillable-PDF pages were visually inspected. A separate production-preview pass checked desktop/phone Home, Physics units/materials, settled average-velocity substitutions and graphs with no horizontal overflow or JavaScript runtime errors. A deep comparison confirmed unchanged Chemistry, Biology and Japanese catalog records and preserved original assignment/question IDs. Publication is gated on the complete successful verification workflow for the exact main commit; the live frontend, backend, owner access and Word download are checked after deployment.
+All five rendered Word pages and all six fillable-PDF pages were visually inspected. A separate production-preview pass checked desktop/phone Home, Physics units/materials, settled average-velocity substitutions and graphs with no horizontal overflow or JavaScript runtime errors. A deep comparison confirmed unchanged Chemistry, Biology and Japanese catalog records and preserved original assignment/question IDs. The expanded release suite contains 114 browser checks, including both new sign-out regressions. Publication is gated on the complete successful verification workflow for the exact main commit; the live frontend, backend, owner access and Word download are checked after deployment.
 
 ## Question-by-question ledger
 

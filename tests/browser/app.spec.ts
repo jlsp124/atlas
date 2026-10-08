@@ -839,6 +839,62 @@ test('accounts sync across devices, isolate guest data, queue offline and reconn
   await other.close();
 });
 
+test('immediate sign-out confirms the server session and a delayed reconnect cannot restore it', async ({
+  page,
+}) => {
+  const name = 'logout_' + randomBytes(4).toString('hex');
+  const password = randomBytes(20).toString('base64url');
+  await open(page, 'account/');
+  await page
+    .getByRole('button', { name: 'Create account', exact: true })
+    .first()
+    .click();
+  await page.getByLabel('Username', { exact: true }).fill(name);
+  await page.getByLabel('Password', { exact: true }).fill(password);
+  await page
+    .getByRole('button', { name: 'Create account', exact: true })
+    .last()
+    .click();
+  await expect(page.locator('.sync-status')).toContainText('Progress synced');
+  let release!: () => void;
+  let captured!: () => void;
+  const hold = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const snapshotReady = new Promise<void>((resolve) => {
+    captured = resolve;
+  });
+  let requests = 0;
+  await page.route('http://localhost:8790/session', async (route) => {
+    if (requests++) return route.continue();
+    const response = await route.fetch();
+    captured();
+    await hold;
+    await route.fulfill({ response });
+  });
+  await open(page, 'account/');
+  await snapshotReady;
+  const logout = page.waitForResponse((r) => r.url().endsWith('/auth/logout'));
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+  expect((await logout).status()).toBe(200);
+  await expect(page.getByLabel('Username', { exact: true })).toBeVisible();
+  const stale = page.waitForResponse((r) => r.url().endsWith('/session'));
+  release();
+  await stale;
+  await page.waitForLoadState('networkidle');
+  await expect(page.getByLabel('Username', { exact: true })).toBeVisible();
+  expect(
+    await page.evaluate(() => localStorage.getItem('atlas:last-account')),
+  ).toBeNull();
+  expect(
+    (await (await page.request.get('http://localhost:8790/session')).json())
+      .user,
+  ).toBeNull();
+  expect(
+    (await page.request.get('http://localhost:8790/admin/overview')).status(),
+  ).toBe(401);
+});
+
 test('request inbox and admin summaries use real authorized backend data', async ({
   page,
 }, testInfo) => {

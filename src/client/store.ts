@@ -51,6 +51,8 @@ let device = '';
 let csrf = '';
 let initialized = false;
 let syncing = false;
+let signingOut = false;
+let sessionGeneration = 0;
 let lastEventTime = 0;
 const listeners = new Set<() => void>();
 const notify = () => {
@@ -285,6 +287,7 @@ export async function signIn(
   register = false,
   importGuest = false,
 ) {
+  sessionGeneration++;
   const result = await request(register ? '/auth/register' : '/auth/login', {
     username,
     password,
@@ -300,18 +303,31 @@ export async function signIn(
   return result.user as User;
 }
 export async function signOut() {
-  await request('/auth/logout', {});
-  localStorage.removeItem('atlas:last-account');
-  csrf = '';
-  scope = 'guest';
-  state = {
-    ...initial,
-    ...readLocal(),
-    ready: true,
-    connection: API ? 'online' : 'local',
-  };
-  project();
-  notify();
+  signingOut = true;
+  sessionGeneration++;
+  try {
+    // A remembered account can render before reconnect has loaded its CSRF
+    // token. Confirm the cookie's current session before ending it.
+    const current = await request('/session');
+    if (current.user) {
+      csrf = current.csrf;
+      await request('/auth/logout', {});
+    }
+    localStorage.removeItem('atlas:last-account');
+    csrf = '';
+    scope = 'guest';
+    state = {
+      ...initial,
+      ...readLocal(),
+      ready: true,
+      connection: API ? 'online' : 'local',
+    };
+    project();
+    notify();
+  } finally {
+    sessionGeneration++;
+    signingOut = false;
+  }
 }
 export async function deleteAccount(password: string) {
   await request('/account', { password }, 'DELETE');
@@ -324,9 +340,11 @@ export async function deleteAccount(password: string) {
   notify();
 }
 export async function reconnect() {
-  if (!API || syncing) return;
+  if (!API || syncing || signingOut) return;
+  const generation = sessionGeneration;
   try {
     const result = await request('/session');
+    if (generation !== sessionGeneration || signingOut) return;
     if (result.user) {
       if (!state.user || state.user.id !== result.user.id)
         enterAccount(result.user, result.csrf);
