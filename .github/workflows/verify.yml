@@ -34,3 +34,30 @@ jobs:
           docker exec atlas-qa node --import tsx server/backup.ts
           docker exec atlas-qa node --input-type=module -e "import {statSync,readdirSync} from 'node:fs'; const modes=['/app/data/atlas.sqlite',...readdirSync('/app/data/backups').map(p=>'/app/data/backups/'+p)].map(p=>statSync(p).mode&511); if(process.getuid()===0 || modes.some(m=>m!==384) || (statSync('/app/data').mode&511)!==448) throw new Error('Private storage permissions failed'); console.log('Non-root runtime and private SQLite/backup permissions passed');"
           docker stop atlas-qa
+      - name: Build Pages artifact
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: npm run build
+        env:
+          PUBLIC_API_URL: ${{ vars.PUBLIC_API_URL }}
+          PUBLIC_SUPPORT_EMAIL: ${{ vars.PUBLIC_SUPPORT_EMAIL }}
+          ATLAS_SITE: ${{ vars.ATLAS_SITE || 'https://jlsp124.github.io' }}
+          ATLAS_BASE: ${{ vars.ATLAS_BASE || '/atlas' }}
+      - name: Upload Pages artifact
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
+        with:
+          path: dist
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: verify
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publish
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
