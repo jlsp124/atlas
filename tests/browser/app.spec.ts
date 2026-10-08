@@ -199,7 +199,7 @@ test('home and course fit desktop and units open real materials', async ({
     page.getByRole('button', { name: 'All materials', exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByRole('link', { name: /Kinematics problem set/ }),
+    page.getByRole('link', { name: /Kinematics Review/ }),
   ).toBeVisible();
   await expect(page.locator('main')).not.toContainText(
     /P1|Verified|coverage|Graph relationship/i,
