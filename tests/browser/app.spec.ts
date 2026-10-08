@@ -823,39 +823,6 @@ test('accounts sync across devices, isolate guest data, queue offline and reconn
       ),
     )
     .toBe(true);
-  await open(page, 'account/');
-  await page.getByRole('button', { name: 'Sign out', exact: true }).click();
-  await expect(
-    page.getByRole('heading', { name: 'Save your setup' }),
-  ).toBeVisible();
-  await open(page, 'concepts/vector-sign/');
-  expect(
-    await page.evaluate(() =>
-      JSON.parse(localStorage.getItem('atlas:v1:guest')!).events.some(
-        (e: { type: string }) => e.type === 'concept_marked_confused',
-      ),
-    ),
-  ).toBe(false);
-  await other.close();
-});
-
-test('immediate sign-out confirms the server session and a delayed reconnect cannot restore it', async ({
-  page,
-}) => {
-  const name = 'logout_' + randomBytes(4).toString('hex');
-  const password = randomBytes(20).toString('base64url');
-  await open(page, 'account/');
-  await page
-    .getByRole('button', { name: 'Create account', exact: true })
-    .first()
-    .click();
-  await page.getByLabel('Username', { exact: true }).fill(name);
-  await page.getByLabel('Password', { exact: true }).fill(password);
-  await page
-    .getByRole('button', { name: 'Create account', exact: true })
-    .last()
-    .click();
-  await expect(page.locator('.sync-status')).toContainText('Progress synced');
   let release!: () => void;
   let captured!: () => void;
   const hold = new Promise<void>((resolve) => {
@@ -893,6 +860,15 @@ test('immediate sign-out confirms the server session and a delayed reconnect can
   expect(
     (await page.request.get('http://localhost:8790/admin/overview')).status(),
   ).toBe(401);
+  await open(page, 'concepts/vector-sign/');
+  expect(
+    await page.evaluate(() =>
+      JSON.parse(localStorage.getItem('atlas:v1:guest')!).events.some(
+        (e: { type: string }) => e.type === 'concept_marked_confused',
+      ),
+    ),
+  ).toBe(false);
+  await other.close();
 });
 
 test('request inbox and admin summaries use real authorized backend data', async ({
