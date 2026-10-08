@@ -235,7 +235,10 @@ test('C17 notes correlate fossil layers and a real written question builds endos
     page.locator('.material-row[href$="/bio-c17-notes/"]'),
   ).toBeVisible();
   await open(page, 'work/bio-c17-notes/?focus=1#reading-2');
-  await page.getByRole('button', { name: 'Explain this', exact: true }).click();
+  await page
+    .locator('#reading-2')
+    .getByRole('button', { name: 'Explain this', exact: true })
+    .click();
   await next(page, 2);
   await expect(page.locator('.matched-layer')).toHaveCount(2);
   await expect(page.locator('.guide-caption')).toContainText('relative order');
