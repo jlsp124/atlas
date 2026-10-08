@@ -1,18 +1,16 @@
 # Implementation status
 
-**October 7, 2026:** the assignment-first Atlas Beta redesign is implemented and
-verified locally. The primary experience is Course → Unit → Material set → Whole
-assignment → Focused question → Guided work on paper. The former required
-Learn/Classwork split is superseded; optional reference learning and the original
-engine remain. The V2 neutral identity, accents, sidebar, source catalog,
-restricted Chemistry and account/offline behavior are preserved. A small BETA
-treatment and contextual Help/Feedback are included. See
-[ASSIGNMENT_REDESIGN.md](ASSIGNMENT_REDESIGN.md), [QA.md](QA.md) and
-[SUPPORT.md](SUPPORT.md). This implementation has not been published; its additive
-paper-progress event requires the matching server validator before frontend
-publication. No database migration or new environment variable is needed.
-
-## Historical classwork and V2 receipts
+**October 7, 2026:** [Atlas V3](V3.md) supersedes conflicting UX instructions
+below. Course and unit pages lead with actual materials; every assignment has
+overview/focus, controlled teaching motion and explicit completion. All 50
+materials, 353 checkpoint identities, source ingestion and teacher conventions
+remain. Draft/guide snapshots sync through additive events. The normal
+Learn/Classwork fork is removed. The custom-domain root build and coordinated
+origin configuration are prepared; Cloudflare sign-in and a fresh server SSH
+identity check are required before cutover. Certificate coverage for the nested
+API hostname must also be inspected after sign-in. See [deployment](DEPLOYMENT.md).
+The dated V2 reports below are historical; final V3 verification/deployment
+receipts are reported with the release.
 
 **October 6, 2026:** the classwork fidelity milestone supersedes conflicting
 parts of the V2 resumption contract below. Read [CLASSWORK_MILESTONE.md](CLASSWORK_MILESTONE.md)
@@ -22,7 +20,7 @@ The production API is configured and its HTTPS health endpoint was verified;
 older statements that no operator API has been connected are historical.
 The exact final validation and deployment receipt accompanies this release.
 
-Updated October 5, 2026. This is the V2 resumption contract. Read [UX.md](UX.md) before changing the student interface.
+Updated October 5, 2026. The following is the historical V2 resumption contract.
 
 ## V2 frontend
 

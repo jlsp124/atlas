@@ -26,8 +26,10 @@ export const unitLabel = (course: string, unit: string) => {
       ?.title ?? '';
   return title.includes(' · ') ? title.split(' · ')[0] : '';
 };
-export const unitUrl = (course: string, unit: string, view = 'materials') =>
-  `courses/${course}/units/${unit}/${view === 'classwork' ? '?view=classwork' : ''}`;
+export const unitUrl = (course: string, unit: string, legacyView?: string) => {
+  void legacyView; // Old callers retain their signature; every view now opens material.
+  return `courses/${course}/units/${unit}/`;
+};
 export const unitTopics = (course: string, unit: string) =>
   concepts.filter(
     (c) => c.course === course && c.unit === unit && c.status === 'publishable',
@@ -45,7 +47,7 @@ export const unitDescriptions: Record<string, string> = {
   classification: 'Read the relationships between living things.',
   origins: 'Use fossils and other evidence to understand the history of life.',
   microorganisms:
-    'Viruses, bacteria and disease. Open the class resources as this unit begins.',
+    'Viruses, bacteria and disease. I haven’t added these lessons yet.',
   writing: 'Match the written form to the sound, one small piece at a time.',
   greetings: 'Useful words and phrases for everyday situations.',
   numbers:
@@ -83,7 +85,9 @@ export const assignmentUnits: Record<string, string> = {
   'greetings-practice': 'greetings',
   ...Object.fromEntries(assignments.map((a) => [a.id, a.unit ?? ''])),
 };
-export const assignmentTitles: Record<string, string> = {};
+export const assignmentTitles: Record<string, string> = {
+  'kinematics-review': 'Kinematics Review',
+};
 export const assignmentTitle = (id: string) =>
   assignmentTitles[id] ?? assignments.find((a) => a.id === id)?.title ?? id;
 export function learningPlan(a: Assignment) {
@@ -165,7 +169,7 @@ export const eventPath = (e: ScheduleEvent) =>
         ? unitUrl(e.course, eventUnit(e)!, 'classwork')
         : `calendar/?date=${e.start ?? ''}`;
 export type SearchResult = {
-  group: 'Learn' | 'Classwork' | 'Other';
+  group: 'Materials' | 'Concepts' | 'Other';
   title: string;
   detail: string;
   path: string;
@@ -182,7 +186,8 @@ export function searchAtlas(
 ): SearchResult[] {
   const needle = normalize(query.trim());
   if (!needle) return [];
-  const matches = (s: string) => normalize(s).includes(needle);
+  const needles = query.trim().split(/\s+/).map(normalize).filter(Boolean);
+  const matches = (s: string) => needles.every((n) => normalize(s).includes(n));
   const topics = concepts.filter(
     (c) =>
       selected.includes(c.course) &&
@@ -198,7 +203,7 @@ export function searchAtlas(
   );
   const topicIds = new Set(topics.map((c) => c.id));
   const results: SearchResult[] = topics.map((c) => ({
-    group: 'Learn',
+    group: 'Concepts',
     title: topicTitle(c.id),
     detail: `${courses.find((x) => x.id === c.course)!.shortTitle} · ${unitTitle(c.course, c.unit)}`,
     path: `learn/${c.id}/`,
@@ -207,12 +212,12 @@ export function searchAtlas(
   for (const a of assignments.filter((a) => selected.includes(a.course)))
     if (
       matches(
-        `${a.title} ${a.summary} ${a.tasks.map((t) => t.title).join(' ')}`,
+        `${assignmentTitle(a.id)} ${a.title} ${a.summary} ${(a.questionReferences ?? []).join(' ')} ${(a.reading ?? []).map((r) => r.heading + ' ' + r.text).join(' ')} ${a.tasks.map((t) => t.title).join(' ')}`,
       ) ||
       a.concepts.some((id) => topicIds.has(id))
     )
       results.push({
-        group: 'Classwork',
+        group: 'Materials',
         title: assignmentTitle(a.id),
         detail: unitTitle(a.course, assignmentUnits[a.id]),
         path: `work/${a.id}/`,
@@ -231,7 +236,7 @@ export function searchAtlas(
     const edition = editions.find((e) => e.course === c.id)!;
     if (matches(`${c.title} ${edition.teacher} resources`))
       results.push({
-        group: 'Other',
+        group: 'Materials',
         title: `${c.shortTitle} resources`,
         detail: edition.teacher,
         path: `courses/${c.id}/?resources=1`,
@@ -263,5 +268,9 @@ export function searchAtlas(
         path: eventPath(e),
         course: e.course,
       });
-  return results;
+  return results.sort(
+    (a, b) =>
+      (a.group === 'Materials' ? 0 : a.group === 'Other' ? 1 : 2) -
+      (b.group === 'Materials' ? 0 : b.group === 'Other' ? 1 : 2),
+  );
 }

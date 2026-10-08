@@ -1,5 +1,10 @@
 # atlas assignment-first design authority
 
+**Historical:** Jovan's October 7, 2026 Atlas V3 brief supersedes conflicting
+UX/learning-flow instructions here. Read [V3.md](V3.md) for the current
+assignment-native experience. Brand, theme and typography guidance remains
+applicable; the primary Learn/Classwork model below is superseded.
+
 **The internal system can be complicated. The student experience must be extremely simple.**
 
 The October 7 assignment redesign supersedes the old required Learn/Classwork split. Keep the V2 shell, identity and existing engine. The student writes on their own worksheet or notebook; Atlas guides the reasoning beside it.

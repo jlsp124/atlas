@@ -1,8 +1,10 @@
 # Put this in Atlas
 
 The canonical authority is `02 Projects/Atlas Intake.md` in the private
-`jlsp124/obsidian-vaults` repository. That note contains the October 6 master
-brief and the intake/update contract. A chat must have access to that repository
+`jlsp124/obsidian-vaults` repository. That note contains the October 6 source
+brief/intake contract and October 7's superseding Atlas V3 product contract.
+The source workflow remains preserved; conflicting earlier UX instructions do
+not restore a primary Learn/Classwork path. A chat must have access to that repository
 or receive the note; writing a vault note cannot give unrelated chats automatic
 access to private files.
 

@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react';
 import { courses, concepts, questions } from '../content/catalog';
 import { eventSchema, type LearnerEvent } from '../core/schema';
 import { mergeEvents } from '../core/learning';
+import { syncBatch } from '../core/sync-batch';
 
 export const API = (import.meta.env.PUBLIC_API_URL || '').replace(/\/$/, '');
 export const base = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -50,6 +51,7 @@ let device = '';
 let csrf = '';
 let initialized = false;
 let syncing = false;
+let lastEventTime = 0;
 const listeners = new Set<() => void>();
 const notify = () => {
   for (const f of listeners) f();
@@ -189,10 +191,11 @@ export function emit(
   payload: LearnerEvent['payload'],
 ) {
   initialize();
+  lastEventTime = Math.max(Date.now(), lastEventTime + 1);
   const event = eventSchema.parse({
     id: crypto.randomUUID(),
     device,
-    at: new Date().toISOString(),
+    at: new Date(lastEventTime).toISOString(),
     type,
     payload,
   });
@@ -350,9 +353,9 @@ export async function synchronize() {
     let more = true;
     let rounds = 0;
     while (more && rounds++ < 30) {
-      const pending = state.events
-        .filter((e) => !state.synced.includes(e.id))
-        .slice(0, 100);
+      const pending = syncBatch(
+        state.events.filter((e) => !state.synced.includes(e.id)),
+      );
       const result = await request('/sync', {
         events: pending,
         cursor: state.cursor,

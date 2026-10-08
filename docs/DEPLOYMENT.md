@@ -12,15 +12,54 @@ This repository started private. GitHub returned HTTP 422 stating that the accou
 
 Optional repository **Variables** (not frontend secrets):
 
-| Variable         | Purpose                                          |
-| ---------------- | ------------------------------------------------ |
-| `PUBLIC_API_URL` | HTTPS API origin, with no trailing path or slash |
+| Variable               | Purpose                                                  |
+| ---------------------- | -------------------------------------------------------- |
+| `PUBLIC_API_URL`       | HTTPS API origin, with no trailing path or slash         |
+| `PUBLIC_SUPPORT_EMAIL` | Dedicated support contact; never a personal phone number |
+| `ATLAS_SITE`           | Site origin; defaults to `https://jlsp124.github.io`     |
+| `ATLAS_BASE`           | Site path; defaults to `/atlas`; custom domain uses `/`  |
 
-Changing a variable requires another Pages deployment. Never put credentials in frontend variables. An empty API value keeps a complete guest app and an explicit email fallback for feedback. Product contact is `atlas@jovanpahal.com`, centralized in `src/content/product.ts`; see [Support](SUPPORT.md) for mailbox setup.
-
-The assignment redesign adds `assignment_progress` events. Before an authorized frontend publication, deploy the matching `server/app.ts` validator so the server accepts these events. No database migration or new environment variables are needed. Confirm the server and Pages revisions separately; an old server will reject a sync batch containing the new event.
+Changing a variable requires another Pages deployment. Never put credentials in either variable. Empty values keep a complete guest app and a public issue link for non-private support.
 
 For a custom site path, set `ATLAS_SITE` and `ATLAS_BASE` at build time. Keep the manifest, service-worker scope and Astro base consistent. Do not serve the built `/atlas/` app at `/` without rebuilding.
+
+The build writes `/release.json` (under the configured base), containing the full source `deploySha`, base and dirty-worktree flag. A production release must match the successful Verify and Deploy workflow SHA and have `dirty: false`. This receipt is also available offline; bypass the service worker and HTTP cache when verifying a new live deployment.
+
+## Custom production domains
+
+Frontend: **https://atlas.jovanpahal.com/**. API: **https://api.atlas.jovanpahal.com**. The apex `jovanpahal.com` has no web destination. Its email records are independent and must remain intact. GitHub account ownership verification covers the apex and its immediate subdomains; retain the `_github-pages-challenge-jlsp124` TXT record.
+
+The frontend remains GitHub Pages. Set these repository Variables before rebuilding the exact verified commit:
+
+```dotenv
+ATLAS_SITE=https://atlas.jovanpahal.com
+ATLAS_BASE=/
+PUBLIC_API_URL=https://api.atlas.jovanpahal.com
+```
+
+Set the repository Pages custom domain to `atlas.jovanpahal.com`, then create a DNS-only CNAME `atlas` pointing to `jlsp124.github.io`. Do not include `/atlas/`, add apex A/AAAA records, or create wildcard DNS. Enable HTTPS once GitHub has issued the certificate. A custom Actions workflow does not require a CNAME file. [Current GitHub domain instructions](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site).
+
+The API hostname is a small Cloudflare Worker **TLS/hostname adapter** at [`deploy/api-proxy/worker.ts`](../deploy/api-proxy/worker.ts). It forwards only to the existing HTTPS Tailscale Funnel on port 8443, which reaches **`http://127.0.0.1:8787`** on the Linux server. Authentication, CSRF, sync and SQLite remain on that server. The Worker streams bodies, bypasses caching, rejects redirects and unrelated hostnames, preserves Secure HttpOnly host-only cookies, and logs only a generic upstream-failure code. Automatic request logs and traces are disabled. The original Funnel endpoint remains available for recovery; the unrelated Tailscale port 443 service is unchanged.
+
+A Workers Custom Domain automatically creates the DNS record and a certificate for **the exact multi-level hostname**. This does not require a separate Advanced Certificate Manager subscription. A direct Cloudflare Tunnel hostname at this depth would require additional certificate coverage because Universal SSL covers only one subdomain level. [Current Workers certificate behavior](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/#certificates). No paid plan or certificate add-on is enabled by this setup; the existing Workers plan limits apply.
+
+Deploy the tested adapter through the authenticated Cloudflare connector or, after restoring local Wrangler authentication:
+
+```sh
+npx wrangler deploy --config deploy/api-proxy/wrangler.jsonc
+```
+
+Use the checked-in configuration, disable workers.dev and preview hostnames, and associate `api.atlas.jovanpahal.com` with `atlas-api-proxy`. Attach the verified source SHA to the Worker version. Do not upload credentials, the private vault, source documents or runtime data. The adapter has no secret bindings.
+
+Apply origin configuration **before switching the frontend**. On `/opt/atlas`, keep the protected `.env.server` at mode 600 and set `ALLOWED_ORIGIN=https://atlas.jovanpahal.com`, `ADDITIONAL_ALLOWED_ORIGINS=https://jlsp124.github.io`, `COOKIE_SECURE=true` and `TRUST_PROXY=true`. Initially preserve `COOKIE_SAME_SITE=none` for the old cross-site frontend. Once the new same-parent frontend/API works, use `COOKIE_SAME_SITE=lax` and retest account sync. Cookies remain host-only; tokens never enter localStorage.
+
+**Apply changed environment variables with `atlasctl start`**, which runs Compose `up -d` and recreates containers whose configuration changed. `atlasctl restart` restarts the existing container without reloading its environment. Back up first, then verify loopback health, accepted exact origins, rejected unrelated origins, public API health and live account behavior.
+
+Verify the root release receipt, canonical URLs, assets, Pagefind, downloads, manifest and service-worker scope, saved deep links and offline use. Wait for a successful Verify run and exact Pages/server SHA before reporting deployment. DNS/certificate propagation is separate from application verification.
+
+GitHub redirects the old project URL after custom-domain configuration. Guest browser storage belongs to the old origin: use Settings export/import before cutover. Account events retain their IDs and sync after sign-in on the new origin. Do not claim automatic transfer of cross-origin localStorage.
+
+If login fails before cutover, keep the current Pages domain/build variables. For recovery after cutover, restore the old Pages domain/variables, `PUBLIC_API_URL=https://glucose-games-server.tail428a5c.ts.net:8443` and `COOKIE_SAME_SITE=none`, then rebuild the previously verified release. Accept both exact origins until recovery is confirmed. Do not remove SQLite data, expose port 8787 publicly, disable TLS verification, or weaken cookie security.
 
 ## Linux with Docker Compose
 
@@ -34,14 +73,7 @@ The systemd watcher runs every two minutes; it is not a self-hosted Actions runn
 
 The existing GitHub Pages workflow is preserved. The repository variable `PUBLIC_API_URL` is public build configuration; after DNS and the HTTPS API hostname exist, set it to the API origin and configure the Pages custom domain under the same parent domain. No support email is inferred.
 
-When the domain is available, use this hostname pair:
-
-```text
-Frontend: https://atlas.<your-domain>
-API:      https://api.atlas.<your-domain>
-```
-
-The current API endpoint is the Tailscale Funnel URL above. Keep the existing GitHub Pages guest/offline app available and do not change cookie security or substitute browser-stored bearer tokens. The root `jovanpahal.com` does not need a web destination; only `atlas` and `api.atlas` DNS records are needed for the planned setup.
+The Tailscale Funnel endpoint remains the upstream and recovery URL. Follow the custom production domain instructions above for `atlas.jovanpahal.com` and `api.atlas.jovanpahal.com`. The root `jovanpahal.com` does not need a web destination; only those subdomains and the GitHub-supplied verification TXT record are needed. Preserve cookie security and never substitute browser-stored bearer tokens.
 
 Install Docker Engine and the Compose plugin using your distribution's supported instructions. Clone this repository to a directory you control. Create `.env.server` with permissions `600`; this file is ignored by Git:
 

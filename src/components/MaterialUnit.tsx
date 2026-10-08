@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   assignments,
   findCourse,
@@ -52,6 +52,17 @@ export default function MaterialUnit({
   const [filter, setFilter] = useState('all'),
     [query, setQuery] = useState(''),
     [resources, setResources] = useState(false);
+  useEffect(() => {
+    const route = new URL(location.href);
+    if (route.searchParams.has('view')) {
+      route.searchParams.delete('view');
+      history.replaceState(
+        null,
+        '',
+        route.pathname + route.search + route.hash,
+      );
+    }
+  }, []);
   const work = assignments.filter(
     (a) => a.course === course && assignmentUnits[a.id] === unit,
   );

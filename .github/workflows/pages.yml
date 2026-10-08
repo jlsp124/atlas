@@ -27,6 +27,8 @@ jobs:
         env:
           PUBLIC_API_URL: ${{ vars.PUBLIC_API_URL }}
           PUBLIC_SUPPORT_EMAIL: ${{ vars.PUBLIC_SUPPORT_EMAIL }}
+          ATLAS_SITE: ${{ vars.ATLAS_SITE || 'https://jlsp124.github.io' }}
+          ATLAS_BASE: ${{ vars.ATLAS_BASE || '/atlas' }}
       - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
         with:
           path: dist

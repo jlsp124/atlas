@@ -291,6 +291,31 @@ export const eventSchema = z.discriminatedUnion('type', [
   z
     .object({
       ...base,
+      type: z.literal('material_completed'),
+      payload: z.object({ assignment: id, done: z.boolean() }).strict(),
+    })
+    .strict(),
+  z
+    .object({
+      ...base,
+      type: z.literal('checkpoint_saved'),
+      payload: z
+        .object({
+          assignment: id,
+          checkpoint: id,
+          value: z.string().max(8000),
+          unit: z.string().max(80),
+          direction: z.string().max(80),
+          step: z.number().int().min(0).max(100),
+          help: z.boolean(),
+          complete: z.boolean(),
+        })
+        .strict(),
+    })
+    .strict(),
+  z
+    .object({
+      ...base,
       type: z.literal('question_answered'),
       payload: z
         .object({
