@@ -71,7 +71,9 @@ test('Japanese has authentic strokes, useful component connections and real Japa
   await open(page, 'work/japanese-kana/');
   await expect(page.locator('.kana-practice')).toHaveCount(5);
   const vowel = page.locator('.kana-practice').first();
-  await expect(vowel.locator('ruby rt')).toContainText('a');
+  await expect(
+    vowel.getByRole('heading', { name: 'あ a' }).locator('rt'),
+  ).toHaveText('a');
   await vowel.getByRole('button', { name: 'Start', exact: true }).click();
   await expect(vowel).toContainText('0/3');
   await vowel.getByRole('button', { name: 'Next stroke', exact: true }).click();
