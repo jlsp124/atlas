@@ -18,6 +18,7 @@ import { schoolDate, displayUpcomingDate } from '../core/dates';
 import { url, useLearner } from '../client/store';
 import { CourseMark, Icon } from './Icons';
 import Sheet from './Sheet';
+import LifeSciences from './LifeSciences';
 import MaterialRow from './MaterialRow';
 export default function Course({
   id,
@@ -78,6 +79,7 @@ export default function Course({
           e.type === 'project'),
     )
     .slice(0, 3);
+  if (id === 'life-sciences') return <LifeSciences />;
   if (id === 'physics')
     return (
       <div className="course-screen physics-course" data-course={id}>

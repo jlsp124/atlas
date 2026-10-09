@@ -2,8 +2,9 @@
 
 For "Put this in Atlas" or "Update atlas", read `docs/INTAKE.md` first and the
 canonical `02 Projects/Atlas Intake.md` in the private `jlsp124/obsidian-vaults`
-repository. The October 7, 2026 Atlas V3 product brief supersedes conflicting
-earlier UX instructions. See `docs/V3.md` for the implementation contract.
+repository. The October 8, 2026 subject-specific product brief supersedes conflicting
+earlier UX instructions. See `docs/SUBJECT_MODELS.md` for the current product
+contract and `docs/V3.md` for the preserved shared foundation.
 
 Schoolwork is the interface: course → unit → material set → actual notes,
 worksheet, lab or reference → the smallest helpful explanation → the same work.

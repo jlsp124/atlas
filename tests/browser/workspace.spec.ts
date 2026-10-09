@@ -191,29 +191,24 @@ test('actual configurations fill to the correct total and rate units cancel', as
   await expect(page.locator('.conversion-result')).toContainText('0.01 g/L');
   await expect(page.locator('.cancel-unit[data-cancel=true]')).toHaveCount(4);
 });
-test('Biology uses evidence and paper response guidance without input', async ({
+test('Biology uses brief evidence and paper response guidance without input', async ({
   page,
 }) => {
-  const a = assignments.find((a) => a.id === 'bio-c17-sections')!;
-  const q = a.companionQuestions!.find((q) =>
-    q.concepts.includes('endosymbiosis'),
-  )!;
-  await open(page, 'work/' + a.id + '/?step=0#' + q.id);
+  await open(page, 'work/bio-c17-sections/?step=0#q-17-2-4');
+  await expect(page).toHaveURL(/bio-c17-2\/#q-17-2-4$/);
   await expect(
-    page.locator('.walkthrough textarea, .walkthrough input'),
+    page.locator('.life-assignment textarea, .life-assignment input'),
   ).toHaveCount(0);
-  await page
-    .locator('.walkthrough')
-    .getByRole('button', { name: 'Next', exact: true })
-    .click();
-  await expect(page.locator('.biological-scene svg')).toHaveAttribute(
+  await expect(page.locator('#q-17-2-4 svg[role=img]')).toHaveAttribute(
     'aria-label',
     /bacterium/,
   );
-  await finish(page);
-  await expect(page.locator('.paper-instruction')).toContainText('assignment');
-  await expect(page.locator('.response-outline')).toContainText(
-    q.checklist![0],
+  await expect(page.locator('#q-17-2-4 .life-answer-needs')).toContainText(
+    'How the partnership began and lasted',
+  );
+  await expect(page.locator('#q-17-2-4 .life-main-idea')).toHaveAttribute(
+    'href',
+    '/atlas/courses/life-sciences/key-ideas/#endosymbiosis',
   );
 });
 test('completion is manual on the assignment list and survives refresh', async ({

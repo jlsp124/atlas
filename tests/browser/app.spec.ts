@@ -256,27 +256,20 @@ test('Physics completion belongs on the list and walkthrough history survives re
 test('definitions give useful context and backlinks without a graph', async ({
   page,
 }) => {
-  await open(page, 'work/bio-c17-sections/');
-  const term = page
-    .getByRole('button', {
-      name: 'Define index fossils',
-      exact: true,
-    })
-    .first();
-  await term.click();
-  const inspector = page.getByRole('dialog', {
-    name: 'Definition: index fossil',
-  });
-  await expect(inspector).toContainText('short time');
+  await open(page, 'courses/life-sciences/key-ideas/#index-fossils');
+  const idea = page.locator('#index-fossils');
+  await expect(idea).toHaveAttribute('open', '');
+  await expect(idea).toContainText('short geologic time');
   await expect(
-    inspector.getByRole('link', { name: 'Learn this', exact: true }),
-  ).toHaveAttribute('href', '/atlas/learn/relative-dating/');
-  await expect(
-    inspector.getByRole('link', { name: /Chapter 17/ }).first(),
-  ).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(inspector).not.toBeVisible();
-  await expect(term).toBeFocused();
+    idea.getByRole('link', { name: /Relative dating/ }),
+  ).toHaveAttribute(
+    'href',
+    '/atlas/courses/life-sciences/key-ideas/#relative-dating',
+  );
+  await idea.getByRole('link', { name: /Relative dating/ }).click();
+  await expect(page.locator('#relative-dating')).toHaveAttribute('open', '');
+  await open(page, 'courses/life-sciences/key-ideas/#endosymbiosis');
+  await expect(page.locator('#endosymbiosis .life-backlinks a')).toBeVisible();
   await expect(page.locator('.graph-canvas')).toHaveCount(0);
 });
 test('learn teaches one step, renders math, keeps confusion evidence and secondary AI', async ({
@@ -647,11 +640,8 @@ for (const theme of ['light', 'dark'] as const)
             .analyze()
         ).violations,
       ).toEqual([]);
-      await open(page, 'work/bio-c17-sections/');
-      await page
-        .getByRole('button', { name: 'Define index fossils', exact: true })
-        .first()
-        .click();
+      await open(page, 'courses/life-sciences/key-ideas/#index-fossils');
+      await expect(page.locator('#index-fossils')).toHaveAttribute('open', '');
       expect(
         (
           await new AxeBuilder({ page })
@@ -951,11 +941,15 @@ test('production Pages base path, search index, deep links and cached offline ro
   await page.getByRole('button', { name: 'Next', exact: true }).click();
   await expect(page.locator('.learning-figure')).toBeVisible();
   await page.goto('http://localhost:4322/atlas/work/c17-research/');
-  await page.getByText('Mark a section finished', { exact: true }).click();
-  await page.getByRole('checkbox').first().check();
+  await expect(
+    page.getByRole('heading', { name: 'NOVA video questions', exact: true }),
+  ).toBeVisible();
+  await expect(page.locator('.life-video-question')).toHaveCount(15);
   await page.reload();
-  await page.getByText('Mark a section finished', { exact: true }).click();
-  await expect(page.getByRole('checkbox').first()).toBeChecked();
+  await expect(page.locator('.life-video-question')).toHaveCount(15);
+  await expect(
+    page.locator('.life-assignment input, .life-assignment textarea'),
+  ).toHaveCount(0);
   await page.context().setOffline(false);
 });
 

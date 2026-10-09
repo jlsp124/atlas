@@ -28,6 +28,7 @@ import { Icon } from './Icons';
 import Sheet from './Sheet';
 import ReadableText from './ReadableText';
 import PhysicsUnit from './PhysicsUnit';
+import LifeSciences from './LifeSciences';
 
 const kindIcon: Record<string, string> = {
   notes: 'book',
@@ -94,6 +95,7 @@ export default function MaterialUnit({
           ),
         )
       : [];
+  if (course === 'life-sciences') return <LifeSciences unit={unit} />;
   if (course === 'physics') return <PhysicsUnit unit={unit} />;
   return (
     <div className="unit-screen material-unit" data-course={course}>

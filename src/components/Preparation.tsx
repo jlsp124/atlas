@@ -16,6 +16,7 @@ import { Icon } from './Icons';
 import Coverage from './Coverage';
 import QuestionSession from './QuestionSession';
 import { Lesson } from './Lesson';
+import { lifeIdeas, lifeIdeaPath } from '../content/life-sciences';
 export default function Preparation({ id }: { id: string }) {
   const e = schedule.find((e) => e.id === id)!,
     state = useLearner(),
@@ -28,6 +29,13 @@ export default function Preparation({ id }: { id: string }) {
     0,
     8,
   );
+  const topicPath = (id: string) => {
+    const idea =
+      course === 'life-sciences'
+        ? lifeIdeas.find((idea) => idea.concept === id)
+        : undefined;
+    return idea ? lifeIdeaPath(idea.id) : `learn/${id}/`;
+  };
   const related = assignments.filter(
     (a) =>
       a.course === course &&
@@ -146,7 +154,7 @@ export default function Preparation({ id }: { id: string }) {
           <ul className="prep-topics">
             {e.concepts.map((id) => (
               <li key={id}>
-                <a href={url(`learn/${id}/`)}>
+                <a href={url(topicPath(id))}>
                   {topicTitle(id)}
                   <Icon name="arrow" size={16} />
                 </a>

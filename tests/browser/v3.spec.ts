@@ -166,45 +166,27 @@ test('focused Physics working and navigation fit short desktop and phone viewpor
     await context.close();
   }
 });
-test('C17 notes correlate fossil layers and a real written question builds endosymbiosis evidence', async ({
+test('Life Sciences links to teacher notes and preserves a paper-only question deep link', async ({
   page,
 }) => {
   await open(page, 'courses/life-sciences/units/origins/');
-  await expect(
-    page.locator('.material-row[href$="/bio-c17-notes/"]'),
-  ).toBeVisible();
-  await open(page, 'work/bio-c17-notes/?focus=1#reading-2');
-  await page
-    .locator('#reading-2')
-    .getByRole('button', { name: 'Explain this', exact: true })
-    .click();
-  await next(page, 2);
-  await expect(page.locator('.matched-layer')).toHaveCount(2);
-  await expect(page.locator('.guide-caption')).toContainText('relative order');
-  await open(page, 'work/bio-c17-sections/?focus=1#q-17-2-4');
-  await page
-    .getByRole('button', { name: 'Help me start', exact: true })
-    .click();
-  await next(page, 2);
-  await expect(page.locator('.scene-cell')).toContainText('DNA');
-  await page
-    .getByLabel('Your explanation', { exact: true })
-    .fill(
-      'Bacterial-like DNA and ribosomes support an origin from bacteria retained within a larger cell.',
-    );
-  await page
-    .getByRole('button', { name: 'Self-check response', exact: true })
-    .click();
-  await expect(page.locator('.self-check-stage')).toContainText(
-    'binary fission',
+  await expect(page.locator('.life-notes-link')).toHaveAttribute(
+    'href',
+    'https://sites.google.com/view/ecl-life-sciences-11/notes',
   );
-  await page
-    .getByRole('button', { name: 'I’ve checked my response', exact: true })
-    .click();
-  await page.reload();
+  await open(page, 'work/bio-c17-notes/?focus=1#reading-2');
+  await expect(page.locator('.life-notes-link')).toBeVisible();
+  await open(page, 'work/bio-c17-sections/?focus=1#q-17-2-4');
+  await expect(page).toHaveURL(/bio-c17-2\/#q-17-2-4$/);
+  await expect(page.locator('#q-17-2-4')).toHaveAttribute('open', '');
+  await expect(page.locator('#q-17-2-4 .life-question-body')).toContainText(
+    'lasting partnership',
+  );
   await expect(
-    page.getByLabel('Your explanation', { exact: true }),
-  ).toHaveValue(/Bacterial-like/);
+    page.locator('.life-assignment textarea, .life-assignment input'),
+  ).toHaveCount(0);
+  await page.reload();
+  await expect(page.locator('#q-17-2-4')).toHaveAttribute('open', '');
 });
 test('Hebden unit cancellation and Lewis/VSEPR build progressively while formal hand-ins stay restricted', async ({
   page,

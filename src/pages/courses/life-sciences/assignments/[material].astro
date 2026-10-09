@@ -1,0 +1,20 @@
+---
+import Layout from '../../../../layouts/Layout.astro';
+import LifeSciencesAssignment from '../../../../components/LifeSciencesAssignment';
+import { lifeMaterials } from '../../../../content/life-sciences';
+export function getStaticPaths() {
+  return lifeMaterials.map((material) => ({
+    params: { material: material.id },
+    props: { material },
+  }));
+}
+const { material } = Astro.props;
+---
+
+<Layout
+  title={material.title}
+  description={material.detail}
+  course="life-sciences"
+>
+  <LifeSciencesAssignment material={material.id} client:load />
+</Layout>
