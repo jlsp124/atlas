@@ -1,0 +1,35 @@
+/* Home is the course destination. Keep its details quiet and its routes close. */
+.mobile-wordmark {
+  display: none;
+}
+.home-screen {
+  max-width: 820px;
+}
+.home-screen .continue-row {
+  margin-top: 20px;
+  padding: 16px 0 0;
+  border-top: 1px solid var(--line);
+}
+.home-screen .home-details {
+  justify-content: flex-start;
+  line-height: 1.8;
+}
+@media (max-width: 800px) {
+  .topbar .sidebar,
+  .sidebar-toggle {
+    display: none;
+  }
+  .mobile-wordmark {
+    display: inline-block;
+  }
+  .home-screen .screen-heading {
+    margin-bottom: 20px;
+  }
+  .home-screen .course-row {
+    min-height: 78px;
+  }
+  .home-screen .home-details {
+    gap: 8px 20px;
+    margin-top: 24px;
+  }
+}

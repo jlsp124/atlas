@@ -65,7 +65,7 @@ test('dedicated onboarding chooses independent courses, saves locally and replay
     page.getByRole('heading', { name: 'Save your setup' }),
   ).toBeVisible();
   await page.getByRole('button', { name: 'Keep it on this device' }).click();
-  await expect(page).toHaveURL(/\/atlas\/courses\/$/);
+  await expect(page).toHaveURL(/\/atlas\/$/);
   await expect(page.locator('.topbar')).toHaveAttribute('data-ready', 'true');
   await expect(page.locator('.onboarding')).not.toBeVisible();
   await expect(page.locator('.course-row strong')).toHaveCount(3);

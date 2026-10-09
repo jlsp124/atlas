@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { makeWalkthrough } from '../../src/core/walkthrough';
 import { assignments } from '../../src/content/catalog';
+import { atlasVersion } from '../../src/content/product';
 async function open(page: Page, path: string, preview = false) {
   await page.goto(`${preview ? 'http://localhost:4322' : ''}/atlas/${path}`);
   await expect(page.locator('.topbar')).toHaveAttribute('data-ready', 'true');
@@ -46,33 +47,48 @@ test('Home is sparse, shows verified context and facts, and the logo animates th
       exact: true,
     })
     .click();
-  await expect(page.locator('.school-context')).toContainText(
-    'School District 57 · 2026–2027',
-  );
-  await expect(page.locator('.school-context')).toContainText(
+  await expect(page.locator('.school-context')).toHaveCount(0);
+  await expect(page.locator('.home-screen')).not.toContainText(
     'College Heights',
   );
-  await expect(page.locator('.home-details')).toContainText('atlas. 0.1.1');
+  await expect(page.locator('.home-details')).toContainText(
+    `atlas. ${atlasVersion}`,
+  );
+  await expect(page.locator('.home-details')).toContainText('lines of code');
+  await expect(page.locator('.home-details')).toContainText('updates');
   await expect(
     page.locator('.home-details a[href*="sd57.bc.ca"]'),
-  ).toContainText('school days');
+  ).toContainText('school year elapsed');
   await expect(
     page.locator('.home-screen .event-list, .home-screen .up-next'),
   ).toHaveCount(0);
   await expect(page.locator('.home-screen')).not.toContainText(
     'assignments completed',
   );
-  const logo = page.locator('.sidebar-toggle');
-  const initial = await logo.getAttribute('aria-expanded');
-  await logo.click();
-  await expect(logo).toHaveAttribute(
-    'aria-expanded',
-    initial === 'true' ? 'false' : 'true',
-  );
-  await logo.click();
-  await expect(logo).toHaveAttribute('aria-expanded', initial!);
-  if (info.project.name === 'desktop')
+  if (info.project.name === 'desktop') {
+    const logo = page.locator('.sidebar-toggle');
+    const initial = await logo.getAttribute('aria-expanded');
+    await logo.click();
+    await expect(logo).toHaveAttribute(
+      'aria-expanded',
+      initial === 'true' ? 'false' : 'true',
+    );
+    await logo.click();
+    await expect(logo).toHaveAttribute('aria-expanded', initial!);
     await expect(page.locator('.sidebar')).toContainText('Calendar');
+  } else {
+    await expect(page.locator('.sidebar')).not.toBeVisible();
+    await expect(page.locator('.sidebar-toggle')).not.toBeVisible();
+    expect(
+      await page.locator('.mobile-nav a,.mobile-nav button').allTextContents(),
+    ).toEqual(['Home', 'Calendar', 'Search', 'You']);
+    await expect(page.locator('.mobile-nav a').first()).toHaveAttribute(
+      'href',
+      '/atlas/',
+    );
+    await page.locator('.mobile-wordmark').click();
+    await expect(page).toHaveURL(/\/atlas\/$/);
+  }
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth + 1,

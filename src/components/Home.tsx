@@ -6,7 +6,12 @@ import {
   unitTitle,
 } from '../content/workspaces';
 import { schoolDate } from '../core/dates';
-import { schoolCalendar, schoolYearDetails } from '../core/school-calendar';
+import {
+  schoolCalendar,
+  schoolYearDetails,
+  schoolYearClock,
+} from '../core/school-calendar';
+import { useEffect, useState } from 'react';
 import { atlasVersion } from '../content/product';
 import type { RepoStats } from '../../scripts/repo-stats';
 import { useLearner, url } from '../client/store';
@@ -19,8 +24,19 @@ export default function Home({
   chooser?: boolean;
   build?: RepoStats;
 }) {
-  const state = useLearner(),
-    today = schoolDate();
+  const state = useLearner();
+  const [now, setNow] = useState(() => new Date(build?.builtAt ?? Date.now()));
+  useEffect(() => {
+    const refresh = () => setNow(new Date());
+    refresh();
+    const timer = window.setInterval(refresh, 60_000);
+    document.addEventListener('visibilitychange', refresh);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', refresh);
+    };
+  }, []);
+  const today = schoolDate(now);
   const added = workspaceCourses.filter((c) => state.selected.includes(c.id));
   const year = schoolYearDetails(today);
   const recent = [...state.events]
@@ -64,14 +80,6 @@ export default function Home({
     <div className="home-screen">
       <div className="screen-heading">
         <div>
-          <p className="meta">
-            {new Intl.DateTimeFormat('en-CA', {
-              weekday: 'long',
-              month: 'long',
-              day: 'numeric',
-              timeZone: 'UTC',
-            }).format(new Date(today + 'T12:00Z'))}
-          </p>
           <h1>{chooser ? 'Your courses' : 'Your atlas'}</h1>
         </div>
         <a className="quiet" href={url('account/')}>
@@ -79,36 +87,10 @@ export default function Home({
           <span className="sr-only">Manage your setup</span>
         </a>
       </div>
-      {!chooser && (
-        <div className="school-context">
-          <div className="school-coordinate" aria-hidden="true">
-            <span />
-            <span />
-            <i />
-          </div>
-          <div>
-            <p className="meta">
-              School District 57 ·{' '}
-              {year ? schoolCalendar.year : 'College Heights'}
-            </p>
-            <h2>College Heights</h2>
-            <p>Your classes, close at hand.</p>
-          </div>
-        </div>
-      )}
       <div className={`home-grid ${chooser ? 'course-chooser' : ''}`}>
-        {!chooser && resume && (
-          <a className="continue-row" href={url(resume.path)}>
-            <span>
-              <small>Pick up where you left off</small>
-              <strong>{resume.title}</strong>
-            </span>
-            <Icon name="arrow" />
-          </a>
-        )}
         <section className="my-courses">
           <div className="section-heading">
-            <h2>{chooser ? 'Pick up where you left off' : 'My courses'}</h2>
+            <h2>Courses</h2>
             <a href={url('account/')} aria-label="Change courses">
               Edit
             </a>
@@ -124,7 +106,9 @@ export default function Home({
                 <span>
                   <strong>{c.title}</strong>
                   <small>
-                    {unitTitle(c.id, findEdition(c.id).currentUnit)}
+                    {c.id === 'japanese'
+                      ? 'Colors & shapes'
+                      : unitTitle(c.id, findEdition(c.id).currentUnit)}
                   </small>
                 </span>
                 <Icon name="arrow" size={18} />
@@ -145,6 +129,15 @@ export default function Home({
             </a>
           )}
         </section>
+        {!chooser && resume && (
+          <a className="continue-row" href={url(resume.path)}>
+            <span>
+              <small>Pick up where you left off</small>
+              <strong>{resume.title}</strong>
+            </span>
+            <Icon name="arrow" />
+          </a>
+        )}
       </div>
       {!chooser && (
         <div className="home-footnote home-details">
@@ -158,20 +151,19 @@ export default function Home({
               href={schoolCalendar.source}
               target="_blank"
               rel="noreferrer"
-              title={`${year.elapsed} of ${year.total} district instructional days have elapsed; today is excluded.`}
+              title={`Calendar time from September 8 to the end of June 29. ${year.elapsed} of ${year.total} instructional days have elapsed.`}
             >
-              <b>{year.percent}%</b> of school days behind us
+              <b>{schoolYearClock(now)}%</b> of the school year elapsed
             </a>
           )}
           {build?.sourceLines !== undefined && (
             <span title="Nonblank lines in src, server and scripts, calculated for this build.">
-              about <b>{build.sourceLines.toLocaleString('en-CA')}</b> lines of
-              Atlas
+              <b>{build.sourceLines.toLocaleString('en-CA')}</b> lines of code
             </span>
           )}
-          {build?.commits !== undefined && (
-            <span title="Commits reachable from this release; measured from the full Git history.">
-              <b>{build.commits}</b> commits so far
+          {build?.updates !== undefined && (
+            <span title="Source updates included in this release, measured from the full Git history.">
+              <b>{build.updates}</b> updates
             </span>
           )}
           <a href={url('about/')} className="atlas-version">

@@ -51,3 +51,13 @@ export function schoolYearDetails(today: string) {
         : undefined,
   };
 }
+
+// Continuous calendar progress, not a claim about instructional time. The
+// approved first/last dates are local to the school; DST offsets are explicit.
+export function schoolYearClock(now = new Date()) {
+  const first = Date.parse('2026-09-08T00:00:00-07:00');
+  const end = Date.parse('2027-06-30T00:00:00-07:00');
+  return (
+    Math.max(0, Math.min(1, (now.getTime() - first) / (end - first))) * 100
+  ).toFixed(2);
+}

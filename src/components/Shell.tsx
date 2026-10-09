@@ -170,7 +170,7 @@ export default function Shell({
   function finish(account = false) {
     emit('courses_selected', { courses: picked });
     finishOnboarding();
-    window.location.href = url(account ? 'account/?create=1' : 'courses/');
+    window.location.href = url(account ? 'account/?create=1' : '');
   }
   function openSearch(el: HTMLElement) {
     searchTrigger.current = el;
@@ -210,6 +210,13 @@ export default function Shell({
           >
             atlas<span>.</span>
           </button>
+          <a
+            className="wordmark mobile-wordmark"
+            href={url()}
+            aria-label="atlas Home"
+          >
+            atlas<span>.</span>
+          </a>
           <span className="beta-label">BETA</span>
         </div>
         <nav
@@ -224,7 +231,7 @@ export default function Shell({
           </a>
           <div className="sidebar-label">
             <span>Courses</span>
-            <a href={url('courses/')} aria-label="Manage courses">
+            <a href={url('account/')} aria-label="Manage courses">
               +
             </a>
           </div>
@@ -300,9 +307,9 @@ export default function Shell({
       </Sheet>
       {!focus && (
         <nav className="mobile-nav" aria-label="Mobile navigation">
-          <a href={url('courses/')}>
-            <Icon name="book" />
-            <span>Courses</span>
+          <a href={url()}>
+            <Icon name="home" />
+            <span>Home</span>
           </a>
           <a href={url('calendar/')}>
             <Icon name="calendar" />

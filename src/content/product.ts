@@ -1,3 +1,3 @@
-import packageInfo from '../../package.json';
+import packageInfo from '../../package.json' with { type: 'json' };
 export const atlasVersion = packageInfo.version;
 export const supportEmail = 'atlas@jovanpahal.com';

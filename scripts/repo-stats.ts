@@ -2,7 +2,11 @@ import { execFileSync } from 'node:child_process';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-export type RepoStats = { sourceLines: number; commits?: number };
+export type RepoStats = {
+  sourceLines: number;
+  updates?: number;
+  builtAt: string;
+};
 // Count nonblank lines in application/server/tooling code, excluding data,
 // dependencies, generated output, tests and documentation. Recomputed per build.
 export function repoStats(): RepoStats {
@@ -18,14 +22,14 @@ export function repoStats(): RepoStats {
     }
   }
   for (const dir of ['src', 'server', 'scripts']) count(dir);
-  let commits: number | undefined;
+  let updates: number | undefined;
   try {
     if (
       execFileSync('git', ['rev-parse', '--is-shallow-repository'], {
         encoding: 'utf8',
       }).trim() === 'false'
     )
-      commits = Number(
+      updates = Number(
         execFileSync('git', ['rev-list', '--count', 'HEAD'], {
           encoding: 'utf8',
         }).trim(),
@@ -33,5 +37,5 @@ export function repoStats(): RepoStats {
   } catch {
     /* Source archives can still report their measured code size. */
   }
-  return { sourceLines, commits };
+  return { sourceLines, updates, builtAt: new Date().toISOString() };
 }
