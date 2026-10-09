@@ -17,8 +17,20 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   projects: [
-    { name: 'desktop', use: { viewport: { width: 1365, height: 900 } } },
-    { name: 'phone', use: { ...devices['Pixel 7'] } },
+    {
+      name: 'desktop',
+      use: {
+        viewport: { width: 1365, height: 900 },
+        extraHTTPHeaders: { 'x-forwarded-for': '203.0.113.10' },
+      },
+    },
+    {
+      name: 'phone',
+      use: {
+        ...devices['Pixel 7'],
+        extraHTTPHeaders: { 'x-forwarded-for': '203.0.113.11' },
+      },
+    },
   ],
   webServer: [
     {
