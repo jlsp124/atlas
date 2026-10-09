@@ -5,7 +5,7 @@ User product contract: docs/SUBJECT_MODELS.md. Physics remains unchanged apart f
 - Home/mobile: ba3d2ef, version0.1.2. Full CI passed112 browser tests; exact frontend and API receipts verified live.
 - Life Sciences:36faec4, version0.1.3. Separate real sections, external teacher notes, Key Ideas/backlinks, separate review. Final focused desktop/phone checks6/6 passed; CI was in progress at the urgent final push.
 - Japanese:01bb226, version0.1.4. Weekly scope, vocabulary sets, adaptive review, reading modes and kana. All140 unit tests and16 targeted desktop/phone checks passed before the final aliases/deep-link corrections; correction unit checks8/8 passed. Final deep-link browser checks2/2 passed.
-- Admin:version0.1.5. Private aggregate JSON report, accounts, explicit metadata-only activity operation, feedback statuses, consented product events, active-time buckets and release comparisons. Targeted analytics/server tests33/33 and TypeScript passed. Dedicated browser checks remain to be confirmed by full CI.
+- Admin:version0.1.5. Private aggregate JSON report, accounts, explicit metadata-only activity operation, feedback statuses, consented product events, active-time buckets and release comparisons. Targeted analytics/server tests33/33 and TypeScript passed. Private dashboard/auth browser checks6/6 and actual opt-in search/hidden/idle checks2/2 passed. Updated legacy inbox checks are pending full CI.
 
 The user requested an immediate push because the session was near its time limit. Preserve the separate stage commits but prioritize saving all completed work remotely. Production auto-deploy remains gated on the exact successful Verify atlas main SHA. Confirm both release.json and API /health; a pushed commit is not proof of deployment.
 

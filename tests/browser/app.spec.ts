@@ -862,8 +862,9 @@ test('request inbox and admin summaries use real authorized backend data', async
   await expect(page.getByRole('link', { name: 'Open admin' })).toBeVisible();
   await open(page, 'admin/');
   await expect(
-    page.getByRole('heading', { name: 'How atlas is doing.' }),
+    page.getByRole('heading', { name: 'How atlas is used.' }),
   ).toBeVisible();
+  await page.getByRole('tab', { name: /Feedback/ }).click();
   const request = page.locator('.inbox-entry').filter({ hasText: message });
   await request.getByLabel('Status').selectOption('reviewed');
   await expect(request.getByLabel('Status')).toHaveValue('reviewed');
