@@ -58,7 +58,9 @@ await app.listen({ host: '127.0.0.1', port: 8791 });
 let requestNumber = 0;
 const proxy = createHttpServer((incoming, outgoing) => {
   const n = requestNumber++;
-  const forwardedFor = `10.${Math.floor(n / 65025) % 250}.${Math.floor(n / 255) % 255}.${(n % 254) + 1}`;
+  const forwardedFor =
+    `10.${Math.floor(n / 65025) % 250}.` +
+    `${Math.floor(n / 255) % 255}.${(n % 254) + 1}`;
   const upstream = httpRequest(
     {
       host: '127.0.0.1',
