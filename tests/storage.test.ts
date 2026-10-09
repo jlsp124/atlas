@@ -44,11 +44,17 @@ it('backs up active WAL data consistently and reopens without replaying migratio
     } finally {
       backup.close();
     }
+    const appliedMigrations = db
+      .prepare('SELECT version,applied_at FROM migrations ORDER BY version')
+      .all();
+    expect(appliedMigrations).toHaveLength(2);
     db.close();
     db = openDatabase(directory);
-    expect(db.prepare('SELECT COUNT(*) AS n FROM migrations').get()).toEqual({
-      n: 1,
-    });
+    expect(
+      db
+        .prepare('SELECT version,applied_at FROM migrations ORDER BY version')
+        .all(),
+    ).toEqual(appliedMigrations);
     expect(db.prepare('SELECT COUNT(*) AS n FROM events').get()).toEqual({
       n: 1,
     });
