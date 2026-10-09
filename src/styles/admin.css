@@ -1,0 +1,202 @@
+.admin-product {
+  max-width: 1120px;
+}
+.admin-controls,
+.admin-tabs,
+.admin-export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.admin-controls {
+  justify-content: space-between;
+  margin: 1.25rem 0;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.8rem;
+}
+.admin-tabs [aria-selected='true'] {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: inset 0 -2px var(--text);
+}
+.admin-period {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.8rem;
+}
+.admin-period select {
+  width: auto;
+}
+.admin-count {
+  margin-left: 0.35rem;
+  font-size: 0.75rem;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+}
+.admin-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  padding: 1.5rem 0;
+  border-bottom: 1px solid var(--line);
+  gap: 1rem;
+}
+.admin-summary dt {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.admin-summary dd {
+  font-size: clamp(1.4rem, 2vw, 2rem);
+  margin: 0.4rem 0 0;
+  font-weight: 550;
+}
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+.admin-panel {
+  min-width: 0;
+  padding: 1.4rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.admin-panel h2 {
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+}
+.admin-panel h3 {
+  font-size: 0.95rem;
+  margin-top: 1.25rem;
+}
+.admin-ranking {
+  list-style: none;
+  padding: 0;
+}
+.admin-ranking li {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 0 0.8rem;
+  font-size: 0.9rem;
+}
+.admin-ranking strong {
+  white-space: nowrap;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+.admin-ranking small {
+  color: var(--muted);
+  font-weight: 400;
+}
+.admin-bar {
+  height: 2px;
+  background: var(--muted);
+  opacity: 0.35;
+  position: absolute;
+  bottom: 0.25rem;
+  left: 0;
+}
+.admin-table-wrap {
+  overflow-x: auto;
+  max-width: 100%;
+}
+.admin-product table {
+  width: 100%;
+  font-size: 0.8rem;
+  border-collapse: collapse;
+}
+.admin-product th,
+.admin-product td {
+  text-align: left;
+  padding: 0.75rem 0.6rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+.admin-product th {
+  font-weight: 550;
+}
+.admin-product tbody td:first-child {
+  min-width: 180px;
+}
+.admin-product td a {
+  overflow-wrap: anywhere;
+}
+.admin-facts {
+  margin: 0;
+}
+.admin-facts > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.55rem 0;
+  font-size: 0.85rem;
+}
+.admin-facts dd {
+  margin: 0;
+  white-space: nowrap;
+}
+.admin-paths {
+  padding-left: 1.1rem;
+}
+.admin-paths li {
+  padding: 0.4rem 0;
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
+.admin-paths strong {
+  margin-left: 0.6rem;
+}
+.admin-export textarea {
+  width: 100%;
+  font-family: monospace;
+  font-size: 0.75rem;
+  margin-top: 0.6rem;
+}
+.admin-account-search {
+  max-width: 380px;
+  margin: 1rem 0;
+}
+.admin-account-id {
+  font-family: monospace;
+  font-size: 0.65rem;
+  overflow-wrap: anywhere;
+}
+.admin-feedback-message {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.admin-empty {
+  max-width: 650px;
+  padding: 1.2rem 0;
+}
+@media (max-width: 650px) {
+  .admin-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .admin-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .admin-controls {
+    align-items: flex-start;
+  }
+  .admin-export .section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+.admin-account-activity ol {
+  padding-left: 1.2rem;
+  max-width: 700px;
+}
+.admin-account-activity li {
+  padding: 0.35rem 0;
+}
+.admin-account-activity li span {
+  display: block;
+}

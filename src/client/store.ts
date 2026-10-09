@@ -243,6 +243,7 @@ export async function request(
       },
       body: body === undefined ? undefined : JSON.stringify(body),
       signal: AbortSignal.timeout(8000),
+      keepalive: path === '/analytics',
     });
   } catch {
     state = { ...state, connection: 'offline' };
@@ -253,6 +254,20 @@ export async function request(
   }
   const data = await response.json();
   if (!response.ok) {
+    if (
+      path !== '/analytics' &&
+      state.analytics &&
+      typeof window !== 'undefined'
+    )
+      window.dispatchEvent(
+        new CustomEvent('atlas:product-event', {
+          detail: {
+            type: 'client_error',
+            errorCode: 'api-failed',
+            success: false,
+          },
+        }),
+      );
     if (response.status === 401 && state.user) {
       state = { ...state, connection: 'sign-in' };
       notify();
@@ -410,13 +425,18 @@ export async function synchronize() {
 }
 export function track(type: string, course?: string, concept?: string) {
   if (!state.analytics || !API) return;
-  void request('/analytics', {
-    id: crypto.randomUUID(),
-    type,
-    course,
-    concept,
-    consent: true,
-  }).catch(() => {});
+  // The collector validates a strict public-metadata allowlist. No learner payload is copied.
+  void import('./analytics').then(({ trackProduct }) => {
+    trackProduct(type as import('../core/product-analytics').ProductEventType, {
+      ...(course
+        ? {
+            course:
+              course as import('../core/product-analytics').ProductMetadata['course'],
+          }
+        : {}),
+      ...(concept ? { concept } : {}),
+    });
+  });
 }
 export function exportProgress() {
   const blob = new Blob(

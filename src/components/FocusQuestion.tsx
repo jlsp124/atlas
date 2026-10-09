@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Assignment, CompanionQuestion } from '../core/schema';
 import { checkCompanionAnswer, latestDifficulty } from '../core/companion';
 import { questionGuide } from '../core/guide';
@@ -50,6 +50,71 @@ export default function FocusQuestion({
       e.payload.question === q.id,
   );
   const rating = latestDifficulty(a.id, q.id, state.events);
+  const analyticsGuide = useRef({
+    key: '',
+    started: false,
+    completed: false,
+    sawEarlierStep: false,
+  });
+  useEffect(() => {
+    if (
+      !ready ||
+      !state.analytics ||
+      (state.user && state.connection !== 'online') ||
+      !draft.help ||
+      a.assistance === 'independent-only'
+    )
+      return;
+    const key = `${state.user?.id ?? 'guest'}:${a.id}:${q.id}`;
+    if (analyticsGuide.current.key !== key)
+      analyticsGuide.current = {
+        key,
+        started: false,
+        completed: false,
+        sawEarlierStep: false,
+      };
+    const metadata = {
+      course: a.course,
+      material: a.id,
+      question: q.id,
+      feature: 'walkthrough',
+    };
+    if (!analyticsGuide.current.started) {
+      window.dispatchEvent(
+        new CustomEvent('atlas:product-event', {
+          detail: { type: 'walkthrough_started', ...metadata },
+        }),
+      );
+      analyticsGuide.current.started = true;
+    }
+    const last = position === guide.steps.length - 1;
+    if (!last) analyticsGuide.current.sawEarlierStep = true;
+    if (
+      last &&
+      analyticsGuide.current.sawEarlierStep &&
+      !analyticsGuide.current.completed
+    ) {
+      window.dispatchEvent(
+        new CustomEvent('atlas:product-event', {
+          detail: { type: 'walkthrough_completed', ...metadata, success: true },
+        }),
+      );
+      analyticsGuide.current.completed = true;
+    }
+  }, [
+    ready,
+    state.analytics,
+    state.connection,
+    state.user?.id,
+    draft.help,
+    position,
+    guide.steps.length,
+    a.id,
+    a.course,
+    a.assistance,
+    q.id,
+  ]);
+
   function help(
     action: 'asking' | 'hint' | 'example' | 'explanation' | 'reveal',
   ) {

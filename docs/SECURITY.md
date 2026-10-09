@@ -26,7 +26,7 @@ The service worker only caches same-origin static `/atlas/` GET resources. It ne
 
 ## Data minimization
 
-Learning events contain IDs, correctness, hints, timing, seed, timestamp and preferences/checklist markers. Typed answers, private written work and search queries are not persisted in sync/analytics. Analytics are optional and off by default. Product counts separate guest/account actors without collecting guest identity; consented account daily-activity rows support coarse return counts.
+Learning events contain IDs, correctness, hints, timing, seed, timestamp and preferences/checklist markers. Assignment drafts can synchronize privately when explicitly saved by that feature. Typed answers, private written work and search terms are never copied into product analytics. Analytics are optional and off by default. Product counts use expiring random guest analytics IDs and hashed account pseudonyms; consented account daily-activity rows support coarse return counts.
 
 Account deletion rechecks the password and cascades live events, sessions, activity and linked requests. Aggregate counts are not individually attributed and remain aggregate. Other devices and old backups may retain data until explicitly cleared/retention expires. The privacy page states these limits.
 
@@ -46,3 +46,5 @@ MFA/passkeys/TOTP and recovery email are not shipped. Add them in versioned migr
 No recovery route or fake MFA switch exists in the current UI. The account page clearly says recovery is unavailable. HTTPS hosting and cookie behavior on the actual deployed API still require operator validation.
 
 Dependencies are pinned in the lockfile, Actions are pinned to verified SHAs, and CI audits dependencies. Report a vulnerability privately to the repository owner through an available private GitHub channel; do not post sensitive account information in public issues.
+
+The private product-analytics boundary, retention and aggregate JSON schema are documented in [PRODUCT_ANALYTICS.md](PRODUCT_ANALYTICS.md). Account administration and submitted feedback remain separate from aggregate product exports.

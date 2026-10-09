@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { courses } from '../content/catalog';
 import { API, request, track, useLearner } from '../client/store';
-import { supportEmail } from '../content/product';
+import { atlasVersion, supportEmail } from '../content/product';
+import { deviceClass } from '../client/analytics';
 export default function Help() {
   const state = useLearner();
   const [kind, setKind] = useState('wrong-information');
@@ -19,6 +20,9 @@ export default function Help() {
         course: course || undefined,
         message: text,
         contact: contact || undefined,
+        route: '/help/',
+        version: atlasVersion,
+        device: deviceClass(),
       });
       setText('');
       setMessage('Request received. Thank you for helping improve atlas.');

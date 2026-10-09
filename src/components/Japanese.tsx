@@ -504,6 +504,37 @@ export default function Japanese({
   const [kana, setKana] = useState({ code: '03042', step: 0 });
   const accountScope = state.user?.id ?? 'guest';
   useEffect(() => {
+    if (
+      !state.ready ||
+      !state.analytics ||
+      (state.user && state.connection !== 'online')
+    )
+      return;
+    const feature = (
+      {
+        'this-week': 'japanese-this-week',
+        vocabulary: 'japanese-vocabulary',
+        kana: 'kana',
+        grammar: 'grammar',
+        review: 'japanese-review',
+        resources: 'resources',
+      } as const
+    )[section];
+    window.dispatchEvent(
+      new CustomEvent('atlas:product-event', {
+        detail: { type: 'feature_entered', course: 'japanese', feature },
+      }),
+    );
+    return () => {
+      window.dispatchEvent(
+        new CustomEvent('atlas:product-event', {
+          detail: { type: 'feature_exited', course: 'japanese', feature },
+        }),
+      );
+    };
+  }, [state.ready, state.analytics, state.connection, state.user?.id, section]);
+
+  useEffect(() => {
     const readRoute = () => {
       const params = new URLSearchParams(location.search);
       const view = params.get('view');
@@ -587,6 +618,7 @@ export default function Japanese({
             key={tab.id}
             href={url(`courses/japanese/?view=${tab.id}`)}
             aria-current={section === tab.id ? 'page' : undefined}
+            data-atlas-feature-managed="true"
             data-atlas-feature={
               tab.id === 'review'
                 ? 'japanese-review'

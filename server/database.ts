@@ -35,6 +35,29 @@ const migrations = [
     user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, day TEXT NOT NULL,
     PRIMARY KEY(user_id,day)
   );`,
+  `ALTER TABLE requests ADD COLUMN route TEXT;
+  ALTER TABLE requests ADD COLUMN material TEXT;
+  ALTER TABLE requests ADD COLUMN question TEXT;
+  ALTER TABLE requests ADD COLUMN version TEXT;
+  ALTER TABLE requests ADD COLUMN device TEXT;
+  CREATE TABLE product_sessions (
+    id TEXT PRIMARY KEY, actor_hash TEXT NOT NULL, user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+    actor TEXT NOT NULL CHECK(actor IN ('guest','account')), device TEXT NOT NULL, version TEXT NOT NULL,
+    started_at TEXT NOT NULL, last_active_at TEXT NOT NULL, last_activity_at TEXT NOT NULL,
+    active_seconds INTEGER NOT NULL DEFAULT 0, route_views INTEGER NOT NULL DEFAULT 0, useful_actions INTEGER NOT NULL DEFAULT 0,
+    first_useful_seconds INTEGER
+  );
+  CREATE INDEX product_sessions_started ON product_sessions(started_at);
+  CREATE INDEX product_sessions_actor ON product_sessions(actor_hash,started_at);
+  CREATE TABLE product_events (
+    id TEXT PRIMARY KEY, session_id TEXT NOT NULL REFERENCES product_sessions(id) ON DELETE CASCADE,
+    type TEXT NOT NULL, course TEXT, material TEXT, concept TEXT, question TEXT, feature TEXT, scope TEXT,
+    route TEXT NOT NULL, previous_route TEXT, version TEXT NOT NULL, device TEXT NOT NULL,
+    success INTEGER, result_bucket TEXT, duration_bucket TEXT, error_code TEXT,
+    active_seconds INTEGER NOT NULL DEFAULT 0, received_at TEXT NOT NULL
+  );
+  CREATE INDEX product_events_time ON product_events(received_at);
+  CREATE INDEX product_events_route ON product_events(route,type);`,
 ];
 export function openDatabase(
   dir = process.env.DATA_DIR || './data',

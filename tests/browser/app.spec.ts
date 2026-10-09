@@ -865,8 +865,8 @@ test('request inbox and admin summaries use real authorized backend data', async
     page.getByRole('heading', { name: 'How atlas is doing.' }),
   ).toBeVisible();
   const request = page.locator('.inbox-entry').filter({ hasText: message });
-  await request.getByLabel('Status').selectOption('reviewing');
-  await expect(request.getByLabel('Status')).toHaveValue('reviewing');
+  await request.getByLabel('Status').selectOption('reviewed');
+  await expect(request.getByLabel('Status')).toHaveValue('reviewed');
 });
 
 test('production Pages base path, search index, deep links and cached offline routes', async ({

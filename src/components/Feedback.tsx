@@ -5,7 +5,10 @@ import {
   type FeedbackContext,
   type FeedbackKind,
 } from '../client/feedback';
-import { supportEmail } from '../content/product';
+import { atlasVersion, supportEmail } from '../content/product';
+import { deviceClass } from '../client/analytics';
+import { publicRoute, routeMetadata } from '../core/product-analytics';
+import { base } from '../client/store';
 import { Icon } from './Icons';
 
 const intents: {
@@ -60,6 +63,12 @@ export default function Feedback({
         course: context.course,
         message: feedbackMessage(context, text),
         contact: contact || undefined,
+        route: publicRoute(window.location.pathname, base),
+        material: routeMetadata(publicRoute(window.location.pathname, base))
+          .material,
+        question: context.question,
+        version: atlasVersion,
+        device: deviceClass(),
       });
       draft('');
       setSent(true);
@@ -70,7 +79,7 @@ export default function Feedback({
       setBusy(false);
     }
   }
-  const mail = `mailto:${supportEmail}?subject=${encodeURIComponent('Atlas beta feedback')}&body=${encodeURIComponent(feedbackMessage(context, text))}`;
+  const mail = `mailto:${supportEmail}?subject=${encodeURIComponent('atlas beta feedback')}&body=${encodeURIComponent(feedbackMessage(context, text))}`;
   return (
     <div className="feedback-content">
       <div className="feedback-context">
@@ -173,23 +182,23 @@ export default function Feedback({
           {error && (
             <p className="feedback-error" role="alert">
               {error} Your draft is still here.{' '}
-              <a href={mail}>Email Atlas instead</a>.
+              <a href={mail}>Email atlas instead</a>.
             </p>
           )}
           {unavailable && (
             <p className="feedback-offline" role="status">
               The feedback inbox is offline. Your draft stays in this tab.{' '}
-              <a href={mail}>Email Atlas instead</a>.
+              <a href={mail}>Email atlas instead</a>.
             </p>
           )}
         </form>
       )}
-      <nav className="feedback-links" aria-label="Atlas help">
+      <nav className="feedback-links" aria-label="atlas help">
         <a href={url('help/')}>
           <Icon name="help" size={14} />
           Help
         </a>
-        <a href={url('about/')}>About Atlas Beta</a>
+        <a href={url('about/')}>About atlas beta</a>
         <a href={url('privacy/')}>Privacy</a>
         <a href={url('sources/')}>Sources</a>
       </nav>

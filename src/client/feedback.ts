@@ -1,4 +1,5 @@
 import { assignments, concepts, courses } from '../content/catalog';
+import { lifeMaterials } from '../content/life-sciences';
 import { assignmentUnits, unitTitle } from '../content/workspaces';
 import { base } from './store';
 
@@ -7,6 +8,7 @@ export type FeedbackContext = {
   course?: string;
   trail: string[];
   page: string;
+  question?: string;
 };
 
 // Capture public navigation context only. Never read inputs, answers or user data.
@@ -14,21 +16,29 @@ export function feedbackContext(): FeedbackContext {
   const location = new URL(window.location.href);
   const path = location.pathname.slice(base.length).replace(/^\//, '');
   const parts = path.split('/');
+  const life =
+    parts[0] === 'courses' &&
+    parts[1] === 'life-sciences' &&
+    parts[2] === 'assignments'
+      ? lifeMaterials.find((m) => m.id === parts[3])
+      : undefined;
   const assignment =
     parts[0] === 'work'
       ? assignments.find((a) => a.id === parts[1])
-      : undefined;
+      : life
+        ? assignments.find((a) => a.id === life.assignment)
+        : undefined;
   const concept =
     parts[0] === 'learn' ? concepts.find((c) => c.id === parts[1]) : undefined;
   const course = courses.find(
     (c) => c.id === (assignment?.course ?? concept?.course ?? parts[1]),
   );
   const unit = assignment
-    ? assignmentUnits[assignment.id]
+    ? (life?.unit ?? assignmentUnits[assignment.id])
     : (concept?.unit ?? (parts[2] === 'units' ? parts[3] : undefined));
   const trail: string[] = course ? [course.shortTitle] : [];
   if (course && unit) trail.push(unitTitle(course.id, unit));
-  if (assignment) trail.push(assignment.title);
+  if (assignment) trail.push(life?.title ?? assignment.title);
   if (concept) trail.push(concept.title);
   const question = assignment?.companionQuestions?.find(
     (q) => '#' + q.id === location.hash,
@@ -61,13 +71,18 @@ export function feedbackContext(): FeedbackContext {
           help: 'Help',
           about: 'About atlas',
         } as Record<string, string>
-      )[parts[0]] ?? 'Atlas',
+      )[parts[0]] ?? 'atlas',
     );
-  return { course: course?.id, trail, page: location.pathname + suffix };
+  return {
+    course: course?.id,
+    trail,
+    page: location.pathname + suffix,
+    ...(question ? { question: question.id } : {}),
+  };
 }
 
 export function feedbackMessage(context: FeedbackContext, text: string) {
-  return `${text.trim()}\n\nAtlas context\n${context.trail.join(' → ')}\n${context.page}`;
+  return `${text.trim()}\n\natlas context\n${context.trail.join(' → ')}\n${context.page}`;
 }
 
 export function openFeedback(kind?: FeedbackKind) {

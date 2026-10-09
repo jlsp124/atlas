@@ -23,6 +23,7 @@ import {
 } from '../client/feedback';
 import Feedback from './Feedback';
 import Sheet from './Sheet';
+import { startProductAnalytics, trackProduct } from '../client/analytics';
 export default function Shell({
   course,
   focus = false,
@@ -74,6 +75,7 @@ export default function Shell({
     searchTrigger = useRef<HTMLElement | null>(null);
   useEffect(() => {
     initialize();
+    const stopAnalytics = startProductAnalytics();
     const replay = () => {
       setStep(0);
       setOnboarding(true);
@@ -101,6 +103,7 @@ export default function Shell({
     };
     window.addEventListener('atlas:feedback', requestedFeedback);
     return () => {
+      stopAnalytics();
       window.removeEventListener('atlas:onboarding', replay);
       window.removeEventListener('atlas:definition', define);
       window.removeEventListener('atlas:search', requestedSearch);
@@ -178,6 +181,36 @@ export default function Shell({
     setSearch(true);
   }
   const results = searchAtlas(query, state.selected);
+  useEffect(() => {
+    if (!search) return;
+    trackProduct('feature_entered', { feature: 'search' });
+    return () => trackProduct('feature_exited', { feature: 'search' });
+  }, [search]);
+  useEffect(() => {
+    if (!search || !query.trim()) return;
+    const timer = window.setTimeout(() => {
+      const resultBucket =
+        results.length === 0
+          ? '0'
+          : results.length <= 5
+            ? '1-5'
+            : results.length <= 20
+              ? '6-20'
+              : '21+';
+      trackProduct('search_performed', {
+        feature: 'search',
+        resultBucket,
+        success: results.length > 0,
+      });
+      if (!results.length)
+        trackProduct('search_zero_results', {
+          feature: 'search',
+          resultBucket: '0',
+          success: false,
+        });
+    }, 700);
+    return () => window.clearTimeout(timer);
+  }, [search, query, results.length]);
   const related = definition
     ? edges
         .filter(

@@ -20,18 +20,30 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     <p>
       atlas stores a username, a securely hashed password, session records and
       learning events on the configured atlas server. Events synchronize your
-      progress across devices. Typed answer text is not part of the synced event
-      model. This is independent learning evidence, not a school grade.
+      progress across devices, including saved assignment drafts where the
+      feature supports them. This private sync data is separate from product
+      analytics. Review events contain word IDs and ratings, not typed Japanese
+      answers. This is independent learning evidence, not a school grade.
     </p>
     <h2>Optional aggregate analytics</h2>
     <p>
-      Analytics are off by default. If you opt in, atlas counts feature use and
-      concept-level attempts, misses, hints and confusion. It does not include
-      typed answers, search text, passwords or private homework. Admin sees
-      aggregates rather than an individual learner dashboard. Consented accounts
-      may contribute coarse daily activity used to measure return usage. Opting
-      out stops new analytics; existing unidentifiable aggregate counts cannot
-      be separated back into individual contributions.
+      Analytics are off by default. If you opt in, atlas records public page,
+      course, material and feature IDs, review scope, release version, broad
+      device class, result counts and coarse active-time buckets. It never
+      collects typed answers, search terms, tutoring content, photos, error
+      messages, passwords or tokens. Active time excludes hidden or unfocused
+      tabs and pauses after 60 seconds without interaction.
+    </p>
+    <p>
+      Random first-party guest analytics IDs expire after 30 days. Private
+      product events and sessions are kept for at most 30 days, with expired
+      records removed when new events arrive or an admin report is generated.
+      Product dashboards and copyable reports contain aggregates without names,
+      account IDs, emails or feedback messages. Administrators can separately
+      see usernames, creation and activity dates, account roles and server sync
+      totals to operate accounts. Registration does not collect an email. Opting
+      out stops new analytics; existing older unidentifiable aggregate counts
+      cannot be separated into individual contributions.
     </p>
     <h2>Requests</h2>
     <p>
@@ -48,10 +60,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     <p>
       Signed-in users can delete their account using a password confirmation in
       settings. This removes server events, sessions, daily account activity and
-      linked requests, plus this browser’s account store. Other devices may
-      retain local copies until you clear them. Server backups may retain
-      deleted records until their retention window expires; the operator must
-      apply deletion requests when restoring a backup.
+      linked requests and product sessions, plus this browser’s account store.
+      Other devices may retain local copies until you clear them. Server backups
+      may retain deleted records until their retention window expires; the
+      operator must apply deletion requests when restoring a backup.
     </p>
     <p>
       Guest requests without an account need a separate deletion request to{' '}

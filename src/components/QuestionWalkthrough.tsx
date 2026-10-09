@@ -41,6 +41,67 @@ export default function QuestionWalkthrough({
   const last = index === guide.steps.length - 1;
   const root = useRef<HTMLDivElement>(null);
   useContinuity(root, index);
+  const analyticsGuide = useRef({
+    key: '',
+    started: false,
+    completed: false,
+    sawEarlierStep: false,
+  });
+  useEffect(() => {
+    if (
+      !state.ready ||
+      !state.analytics ||
+      (state.user && state.connection !== 'online') ||
+      a.assistance === 'independent-only'
+    )
+      return;
+    const key = `${state.user?.id ?? 'guest'}:${a.id}:${q.id}`;
+    if (analyticsGuide.current.key !== key)
+      analyticsGuide.current = {
+        key,
+        started: false,
+        completed: false,
+        sawEarlierStep: false,
+      };
+    const metadata = {
+      course: a.course,
+      material: a.id,
+      question: q.id,
+      feature: 'walkthrough',
+    };
+    if (!analyticsGuide.current.started) {
+      window.dispatchEvent(
+        new CustomEvent('atlas:product-event', {
+          detail: { type: 'walkthrough_started', ...metadata },
+        }),
+      );
+      analyticsGuide.current.started = true;
+    }
+    if (!last) analyticsGuide.current.sawEarlierStep = true;
+    // A restored final step is not evidence that this visit traversed the guide.
+    if (
+      last &&
+      analyticsGuide.current.sawEarlierStep &&
+      !analyticsGuide.current.completed
+    ) {
+      window.dispatchEvent(
+        new CustomEvent('atlas:product-event', {
+          detail: { type: 'walkthrough_completed', ...metadata, success: true },
+        }),
+      );
+      analyticsGuide.current.completed = true;
+    }
+  }, [
+    state.ready,
+    state.analytics,
+    state.connection,
+    state.user?.id,
+    a.id,
+    a.course,
+    a.assistance,
+    q.id,
+    last,
+  ]);
   const previousStep = useRef<number | undefined>(undefined);
   useEffect(() => {
     const initial = previousStep.current === undefined;

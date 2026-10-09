@@ -14,6 +14,19 @@ import { z } from 'zod';
 import { openDatabase, type AtlasDatabase, type UserRow } from './database';
 import { eventSchema } from '../src/core/schema';
 import { japaneseWords } from '../src/content/japanese';
+import { lifeMaterials } from '../src/content/life-sciences';
+import {
+  deviceSchema,
+  productEventSchema,
+  publicRoute,
+  releaseSchema,
+} from '../src/core/product-analytics';
+import {
+  accountActivity,
+  accountSummaries,
+  productReport,
+  recordProductEvent,
+} from './analytics';
 import { validCheckpoint } from '../src/core/materials';
 import { atlasVersion } from '../src/content/product';
 import { readFile } from 'node:fs/promises';
@@ -66,6 +79,26 @@ const requestInput = z
       .optional(),
     message: z.string().trim().min(10).max(3000),
     contact: z.email().max(254).optional(),
+    route: z
+      .string()
+      .max(200)
+      .refine((route) => publicRoute(route) === route)
+      .optional(),
+    material: z
+      .string()
+      .max(100)
+      .refine(
+        (id) =>
+          assignments.some((a) => a.id === id) ||
+          lifeMaterials.some((m) => m.id === id),
+      )
+      .optional(),
+    question: z
+      .string()
+      .regex(/^[a-z0-9-]{1,100}$/)
+      .optional(),
+    version: releaseSchema.optional(),
+    device: deviceSchema.optional(),
   })
   .strict();
 const digest = (s: string) => createHash('sha256').update(s).digest('hex');
@@ -581,11 +614,13 @@ export async function createServer(options: ServerOptions = {}) {
           );
         }
       }
-      db.prepare('UPDATE users SET last_seen=? WHERE id=?').run(
-        new Date().toISOString(),
-        a.u.id,
-      );
-      if (a.u.analytics)
+      // Empty background reconnects are not evidence of an active student.
+      if (events.length)
+        db.prepare('UPDATE users SET last_seen=? WHERE id=?').run(
+          new Date().toISOString(),
+          a.u.id,
+        );
+      if (a.u.analytics && events.length)
         db.prepare('INSERT OR IGNORE INTO activity VALUES (?,?)').run(
           a.u.id,
           new Date().toISOString().slice(0, 10),
@@ -618,7 +653,7 @@ export async function createServer(options: ServerOptions = {}) {
         return reply.code(403).send({ error: 'CSRF check failed' });
       const id = randomUUID();
       db.prepare(
-        'INSERT INTO requests(id,user_id,kind,course,message,contact,created_at) VALUES (?,?,?,?,?,?,?)',
+        'INSERT INTO requests(id,user_id,kind,course,message,contact,created_at,route,material,question,version,device) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
       ).run(
         id,
         s?.user_id ?? null,
@@ -627,6 +662,11 @@ export async function createServer(options: ServerOptions = {}) {
         p.data.message,
         p.data.contact ?? null,
         new Date().toISOString(),
+        p.data.route ?? null,
+        p.data.material ?? null,
+        p.data.question ?? null,
+        p.data.version ?? atlasVersion,
+        p.data.device ?? null,
       );
       return reply.code(201).send({ id, status: 'new' });
     },
@@ -643,8 +683,9 @@ export async function createServer(options: ServerOptions = {}) {
     })
     .strict();
   app.post('/analytics', async (req, reply) => {
-    const p = analyticsInput.safeParse(req.body);
-    if (!p.success)
+    const modern = productEventSchema.safeParse(req.body);
+    const legacy = analyticsInput.safeParse(req.body);
+    if (!modern.success && !legacy.success)
       return reply.code(400).send({ error: 'Invalid aggregate event' });
     const s = session(req);
     if (s && !safeEqual(String(req.headers['x-csrf-token'] ?? ''), s.csrf))
@@ -653,6 +694,22 @@ export async function createServer(options: ServerOptions = {}) {
       return reply
         .code(403)
         .send({ error: 'Analytics are disabled for this account' });
+    if (modern.success) {
+      if (!recordProductEvent(db, modern.data, s?.user_id))
+        return reply.code(409).send({ error: 'Analytics session conflict' });
+      if (
+        s &&
+        !['route_performance', 'client_error'].includes(modern.data.type)
+      )
+        db.prepare('UPDATE users SET last_seen=? WHERE id=?').run(
+          new Date().toISOString(),
+          s.user_id,
+        );
+      return { ok: true };
+    }
+    if (!legacy.success)
+      return reply.code(400).send({ error: 'Invalid aggregate event' });
+    const p = legacy;
     if (p.data.concept && !concepts.some((c) => c.id === p.data.concept))
       return reply.code(400).send({ error: 'Unknown concept' });
     db.transaction(() => {
@@ -671,6 +728,40 @@ export async function createServer(options: ServerOptions = {}) {
         );
     })();
     return { ok: true };
+  });
+  app.get('/admin/report', async (req, reply) => {
+    if (!(await auth(req, reply, true))) return;
+    const query = z
+      .object({
+        days: z.coerce
+          .number()
+          .int()
+          .refine((days) => [7, 14, 30].includes(days))
+          .default(7),
+      })
+      .strict()
+      .safeParse(req.query);
+    if (!query.success)
+      return reply.code(400).send({ error: 'Choose a 7, 14 or 30 day period' });
+    return productReport(db, query.data.days);
+  });
+  app.get('/admin/accounts', async (req, reply) => {
+    if (!(await auth(req, reply, true))) return;
+    return {
+      accounts: accountSummaries(db),
+      email: 'Not collected by account registration',
+      limit: 250,
+    };
+  });
+  app.get('/admin/accounts/:id/activity', async (req, reply) => {
+    if (!(await auth(req, reply, true))) return;
+    const id = (req.params as { id: string }).id;
+    if (
+      !z.uuid().safeParse(id).success ||
+      !db.prepare('SELECT id FROM users WHERE id=?').get(id)
+    )
+      return reply.code(404).send({ error: 'Account not found' });
+    return { account_id: id, activity: accountActivity(db, id), limit: 15 };
   });
   app.get('/admin/overview', async (req, reply) => {
     const a = await auth(req, reply, true);
@@ -706,7 +797,7 @@ export async function createServer(options: ServerOptions = {}) {
         Date.now(),
       ),
       pendingRequests: scalar(
-        "SELECT COUNT(*) AS n FROM requests WHERE status IN ('new','reviewing')",
+        "SELECT COUNT(*) AS n FROM requests WHERE status IN ('new','reviewing','reviewed')",
       ),
       learning: db
         .prepare(
@@ -754,7 +845,7 @@ export async function createServer(options: ServerOptions = {}) {
     return {
       requests: db
         .prepare(
-          'SELECT id,kind,course,message,contact,status,created_at FROM requests ORDER BY created_at DESC LIMIT 200',
+          'SELECT id,kind,course,message,contact,status,created_at,route,material,question,version,device FROM requests ORDER BY created_at DESC LIMIT 200',
         )
         .all(),
     };
@@ -763,7 +854,16 @@ export async function createServer(options: ServerOptions = {}) {
     if (!(await auth(req, reply, true))) return;
     const p = z
       .object({
-        status: z.enum(['new', 'reviewing', 'planned', 'done', 'declined']),
+        status: z.enum([
+          'new',
+          'reviewed',
+          'fixed',
+          'wont_fix',
+          'reviewing',
+          'planned',
+          'done',
+          'declined',
+        ]),
       })
       .strict()
       .safeParse(req.body);
