@@ -19,17 +19,11 @@ export default defineConfig({
   projects: [
     {
       name: 'desktop',
-      use: {
-        viewport: { width: 1365, height: 900 },
-        extraHTTPHeaders: { 'x-forwarded-for': '203.0.113.10' },
-      },
+      use: { viewport: { width: 1365, height: 900 } },
     },
     {
       name: 'phone',
-      use: {
-        ...devices['Pixel 7'],
-        extraHTTPHeaders: { 'x-forwarded-for': '203.0.113.11' },
-      },
+      use: { ...devices['Pixel 7'] },
     },
   ],
   webServer: [
