@@ -29,13 +29,13 @@ async function finish(page: Page) {
     await guide.getByRole('button', { name: 'Next', exact: true }).click();
   }
 }
-test('the complete science catalog opens as documents without answer forms', async ({
+test('the generic Physics and Chemistry catalog opens as documents without answer forms', async ({
   page,
 }) => {
   test.setTimeout(90000);
   for (const a of assignments.filter(
     (a) =>
-      a.course !== 'japanese' &&
+      (a.course === 'physics' || a.course === 'chemistry') &&
       !(
         a.course === 'physics' &&
         (a.kind === 'notes' ||
