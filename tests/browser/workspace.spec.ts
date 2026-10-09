@@ -321,7 +321,7 @@ test('failed feedback keeps the draft and offers email with its context', async 
   );
   await expect(text).toHaveValue('The electron placement is hard to follow.');
   const mail = await sheet
-    .getByRole('link', { name: 'Email Atlas instead' })
+    .getByRole('link', { name: 'Email atlas instead' })
     .getAttribute('href');
   expect(decodeURIComponent(mail!)).toContain('atlas@jovanpahal.com');
   expect(decodeURIComponent(mail!)).toContain('Question 86');
