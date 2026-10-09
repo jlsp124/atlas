@@ -6,6 +6,7 @@ import PhysicsNotes from './PhysicsNotes';
 import PhysicsLab from './PhysicsLab';
 import PhysicsPacket from './PhysicsPacket';
 import LifeSciencesAssignment from './LifeSciencesAssignment';
+import JapaneseMaterial from './JapaneseMaterial';
 
 export default function Assignment({ id }: { id: string }) {
   const [savedFocus, setSavedFocus] = useState(false);
@@ -13,6 +14,7 @@ export default function Assignment({ id }: { id: string }) {
     setSavedFocus(new URLSearchParams(location.search).get('focus') === '1');
   }, []);
   const a = assignments.find((a) => a.id === id)!;
+  if (a.course === 'japanese') return <JapaneseMaterial id={id} />;
   if (a.course === 'life-sciences') return <LifeSciencesAssignment id={id} />;
   if (a.course === 'physics') {
     if (a.kind === 'lab' || id === 'wadson-formal-lab')

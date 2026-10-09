@@ -373,15 +373,27 @@ test('small phones reveal the new working and keep Japanese navigation visible',
   ).toBeInViewport({ ratio: 1 });
   await open(page, 'work/greetings-practice/?step=0#q-5');
   await expect(
-    page.getByRole('button', { name: 'Next word', exact: true }),
-  ).toBeInViewport({ ratio: 1 });
+    page.getByRole('navigation', { name: 'Japanese sections' }),
+  ).toBeVisible();
+  await expect(page.locator('.jp-word-list')).toContainText('こんにちは');
+  await expect(page.locator('.walkthrough-footer')).toHaveCount(0);
+  await page
+    .getByRole('button', { name: 'Review these words', exact: true })
+    .click();
+  await page.getByRole('button', { name: 'Start review', exact: true }).click();
+  await page.getByRole('button', { name: 'Show me', exact: true }).click();
   const ratings = await page
-    .getByRole('group', { name: 'How did question 5 feel?' })
+    .getByRole('group', { name: 'Rate recall difficulty' })
     .getByRole('button')
     .evaluateAll((buttons) =>
       buttons.map((b) => b.getBoundingClientRect().top),
     );
   expect(new Set(ratings).size).toBe(1);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth + 1,
+    ),
+  ).toBe(true);
 });
 
 test('focused paper is accessible and reflows in both themes with reduced motion', async ({

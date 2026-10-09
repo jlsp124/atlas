@@ -1,0 +1,454 @@
+.japanese-screen {
+  max-width: 960px;
+}
+.jp-navigation {
+  display: flex;
+  gap: 1.3rem;
+  flex-wrap: wrap;
+  padding: 0.35rem 0 1rem;
+  border-bottom: 1px solid var(--line);
+}
+.jp-navigation a {
+  padding: 0.5rem 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.jp-navigation a[aria-current='page'] {
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.75rem;
+  text-decoration-color: var(--accent);
+}
+.jp-display {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  margin: 1.2rem 0 2rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.jp-display select {
+  width: auto;
+  max-width: 100%;
+  padding: 0.45rem 1.8rem 0.45rem 0.7rem;
+  font-size: 0.8rem;
+}
+.jp-content h2 {
+  font-size: 1.6rem;
+  letter-spacing: -0.04em;
+}
+.jp-week h2 {
+  margin: 0.3rem 0 0.8rem;
+  font-size: clamp(2rem, 5vw, 2.8rem);
+}
+.jp-week > p:not(.eyebrow) {
+  max-width: 36rem;
+  color: var(--muted);
+}
+.jp-week-actions,
+.jp-week-kana,
+.jp-review-start,
+.jp-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.jp-week-actions {
+  justify-content: flex-start;
+  margin: 1.5rem 0 2rem;
+}
+.jp-week-sets {
+  border-top: 1px solid var(--line);
+}
+.jp-week-sets > button,
+.jp-materials > a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  padding: 1.25rem 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  text-align: left;
+  color: var(--text);
+}
+.jp-week-sets > button:hover,
+.jp-materials > a:hover {
+  color: var(--accent);
+}
+.jp-week-sets small,
+.jp-materials small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin-top: 0.3rem;
+}
+.jp-week-kana {
+  margin: 2rem 0;
+}
+.jp-week-kana h3 {
+  font-size: 1.6rem;
+  letter-spacing: 0.15em;
+  margin: 0.5rem 0;
+}
+.jp-section-heading {
+  margin-bottom: 1.6rem;
+}
+.jp-section-heading h2 {
+  margin-bottom: 0.5rem;
+}
+.jp-section-heading p {
+  margin-bottom: 0;
+}
+.jp-vocab-groups,
+.jp-presets,
+.jp-mode-picker,
+.jp-ratings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.jp-vocab-groups {
+  margin-bottom: 1.5rem;
+}
+.jp-vocab-groups small {
+  color: var(--muted);
+  margin-left: 0.3rem;
+}
+.japanese-screen button[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg));
+  color: var(--text);
+}
+.jp-word-list {
+  border-top: 1px solid var(--line);
+}
+.jp-word-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: baseline;
+  gap: 1.5rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--line);
+  scroll-margin-top: 2rem;
+}
+.jp-form {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.jp-written {
+  font-size: 1.18rem;
+  line-height: 1.7;
+}
+.jp-reading,
+.jp-romaji {
+  font-size: 0.83rem;
+  color: var(--muted);
+  font-weight: 400;
+  line-height: 1.55;
+  letter-spacing: 0;
+}
+.jp-meaning > small {
+  display: block;
+  margin-top: 0.5rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.jp-content .source-meta {
+  margin-top: 1.5rem;
+}
+.jp-source-note {
+  margin: 1.5rem 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.jp-source-note summary {
+  cursor: pointer;
+  padding: 0.5rem 0;
+}
+.jp-source-note p {
+  line-height: 1.7;
+  max-width: 45rem;
+}
+.jp-print-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  margin: 1rem 0 2.5rem;
+}
+.jp-kana-reference > details {
+  border-bottom: 1px solid var(--line);
+}
+.jp-kana-reference > details:first-of-type {
+  border-top: 1px solid var(--line);
+}
+.jp-kana-reference summary {
+  display: grid;
+  grid-template-columns: 7rem 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 0;
+  cursor: pointer;
+}
+.jp-kana-reference summary > [lang='ja'] {
+  font-size: 1.25rem;
+}
+.jp-kana-reference summary small {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.jp-kana-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.5rem;
+  padding: 0.6rem 0 1.2rem;
+}
+.jp-kana-row > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.6rem 0;
+}
+.jp-kana-row strong {
+  font-size: 2rem;
+  font-weight: 400;
+}
+.jp-kana-row span {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.jp-kana-reference > a {
+  margin-top: 1.3rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+.jp-familiar-piece {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
+}
+.jp-phrase-pairs,
+.jp-sentence-parts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+.jp-phrase-parts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+.jp-phrase-parts > span,
+.jp-sentence-parts > div {
+  padding: 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.jp-phrase-parts > span:last-child {
+  border-color: var(--accent);
+}
+.jp-external-resources {
+  margin: 2rem 0;
+}
+.jp-external-resources > a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: 35rem;
+  padding: 0.7rem 0;
+  font-size: 0.9rem;
+}
+.jp-review-setup,
+.jp-review-session,
+.jp-review-finished {
+  max-width: 45rem;
+}
+.jp-review-setup fieldset {
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  margin: 1.8rem 0;
+}
+.jp-review-setup legend {
+  margin-bottom: 0.8rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+.jp-set-picker {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem 1rem;
+  margin-top: 1.2rem;
+}
+.jp-set-picker label {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.87rem;
+}
+.jp-set-picker input {
+  flex: 0 0 auto;
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  accent-color: var(--accent);
+}
+.jp-script-picker {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+}
+.jp-script-picker select {
+  width: auto;
+}
+.jp-review-start {
+  padding-top: 1.5rem;
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--line);
+}
+.jp-review-start > span {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.jp-review-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--line);
+}
+.jp-review-question {
+  margin: 0.75rem 0 1.25rem;
+}
+.jp-review-question .jp-written {
+  font-size: clamp(1.7rem, 4vw, 2.5rem);
+}
+.jp-review-question h2 {
+  font-size: 2rem;
+  line-height: 1.35;
+}
+.jp-review-choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-top: 1.5rem;
+}
+.jp-review-choices > button {
+  text-align: left;
+  justify-content: flex-start;
+  min-height: 3.25rem;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.jp-review-choices > button[data-selected='true'] {
+  border-color: var(--accent);
+}
+.jp-typing-form {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1.5rem;
+}
+.jp-typing-form input {
+  min-width: 0;
+  flex: 1;
+}
+.jp-reveal {
+  margin-top: 1.2rem;
+}
+.jp-review-answer {
+  padding-top: 1.5rem;
+  margin-top: 2rem;
+  border-top: 1px solid var(--line);
+}
+.jp-review-answer .jp-written {
+  font-size: 1.5rem;
+}
+.jp-rate-label {
+  margin-top: 1.5rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.jp-ratings > button {
+  min-width: 5rem;
+}
+@media (max-width: 600px) {
+  .jp-navigation {
+    gap: 0.25rem 1.1rem;
+  }
+  .jp-navigation a {
+    font-size: 0.82rem;
+    padding: 0.7rem 0;
+  }
+  .jp-navigation a[aria-current='page'] {
+    text-underline-offset: 0.5rem;
+  }
+  .jp-display {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    margin: 1rem 0 1.6rem;
+  }
+  .jp-display label {
+    font-size: 0.75rem;
+  }
+  .jp-word-row {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    gap: 0.8rem;
+  }
+  .jp-written {
+    font-size: 1.05rem;
+  }
+  .jp-meaning {
+    font-size: 0.85rem;
+  }
+  .jp-kana-reference summary {
+    grid-template-columns: 4.4rem 1fr auto;
+    gap: 0.45rem;
+    font-size: 0.8rem;
+  }
+  .jp-kana-reference summary > [lang='ja'] {
+    font-size: 1.05rem;
+  }
+  .jp-kana-reference summary small {
+    font-size: 0.65rem;
+  }
+  .jp-phrase-pairs,
+  .jp-sentence-parts {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .jp-set-picker {
+    gap: 0.8rem 0.5rem;
+  }
+  .jp-set-picker label {
+    font-size: 0.78rem;
+  }
+  .jp-review-choices {
+    grid-template-columns: 1fr;
+  }
+  .jp-review-top {
+    margin-bottom: 1.5rem;
+  }
+}

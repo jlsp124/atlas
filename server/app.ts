@@ -13,6 +13,7 @@ import argon2 from 'argon2';
 import { z } from 'zod';
 import { openDatabase, type AtlasDatabase, type UserRow } from './database';
 import { eventSchema } from '../src/core/schema';
+import { japaneseWords } from '../src/content/japanese';
 import { validCheckpoint } from '../src/core/materials';
 import { atlasVersion } from '../src/content/product';
 import { readFile } from 'node:fs/promises';
@@ -472,6 +473,11 @@ export async function createServer(options: ServerOptions = {}) {
         Date.parse(e.at) < Date.parse('2020-01-01')
       )
         return reply.code(400).send({ error: 'Invalid event clock' });
+      if (
+        e.type === 'japanese_reviewed' &&
+        !japaneseWords.some((word) => word.id === e.payload.word)
+      )
+        return reply.code(400).send({ error: 'Unknown Japanese word' });
       const conceptId = 'concept' in e.payload ? e.payload.concept : undefined;
       if (e.type === 'material_completed' || e.type === 'checkpoint_saved') {
         const material = assignments.find((a) => a.id === e.payload.assignment);

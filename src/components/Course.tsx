@@ -19,6 +19,7 @@ import { url, useLearner } from '../client/store';
 import { CourseMark, Icon } from './Icons';
 import Sheet from './Sheet';
 import LifeSciences from './LifeSciences';
+import Japanese from './Japanese';
 import MaterialRow from './MaterialRow';
 export default function Course({
   id,
@@ -38,7 +39,9 @@ export default function Course({
         url(
           section === 'schedule'
             ? `calendar/?course=${id}`
-            : unitUrl(id, edition.currentUnit),
+            : id === 'japanese'
+              ? `courses/japanese/?view=${section === 'learn' ? 'vocabulary' : 'this-week'}`
+              : unitUrl(id, edition.currentUnit),
         ),
       );
   }, [section, id, edition.currentUnit]);
@@ -79,6 +82,7 @@ export default function Course({
           e.type === 'project'),
     )
     .slice(0, 3);
+  if (id === 'japanese') return <Japanese />;
   if (id === 'life-sciences') return <LifeSciences />;
   if (id === 'physics')
     return (

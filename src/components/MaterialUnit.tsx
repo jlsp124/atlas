@@ -29,6 +29,7 @@ import Sheet from './Sheet';
 import ReadableText from './ReadableText';
 import PhysicsUnit from './PhysicsUnit';
 import LifeSciences from './LifeSciences';
+import { JapaneseUnit } from './JapaneseMaterial';
 
 const kindIcon: Record<string, string> = {
   notes: 'book',
@@ -95,6 +96,7 @@ export default function MaterialUnit({
           ),
         )
       : [];
+  if (course === 'japanese') return <JapaneseUnit unit={unit} />;
   if (course === 'life-sciences') return <LifeSciences unit={unit} />;
   if (course === 'physics') return <PhysicsUnit unit={unit} />;
   return (

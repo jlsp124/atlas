@@ -420,64 +420,42 @@ test('hinted answers remain worth reviewing rather than declaring independent su
     ),
   ).toBe(true);
 });
-test('contextual help preserves the current Japanese input and paper position', async ({
+test('Japanese practice keeps typing separate from the source word list', async ({
   page,
 }) => {
   await open(page, 'work/greetings-practice/');
-  await page.getByText('Mark a section finished', { exact: true }).click();
-  await page.getByRole('checkbox').first().check();
-  await page
-    .getByRole('link', { name: 'Review question 5', exact: true })
-    .click();
-  const question = page.locator('.companion-question');
-  await question
-    .getByLabel('Write in Japanese', { exact: true })
-    .fill('こんにちは');
-  const help = question.getByRole('button', {
-    name: 'What do I need to know?',
-    exact: true,
-  });
-  await help.scrollIntoViewIfNeeded();
-  const position = await page.evaluate(() => scrollY);
-  await help.click();
-  const modal = page.getByRole('dialog', {
-    name: 'Explain this idea',
-    exact: true,
-  });
-  await expect(modal).toBeVisible();
-  expect(await modal.locator('.tiny-lesson').count()).toBeLessThanOrEqual(3);
-  await expect(modal.locator('.question-session')).toHaveCount(0);
-  await modal
-    .getByRole('button', { name: 'Back to assignment', exact: true })
-    .click();
-  await expect(modal).not.toBeVisible();
+  await expect(page).toHaveURL(
+    /courses\/japanese\/\?view=vocabulary&sets=greetings/,
+  );
+  await expect(page.locator('.jp-word-row')).toHaveCount(18);
   await expect(
-    question.getByLabel('Write in Japanese', { exact: true }),
-  ).toHaveValue('こんにちは');
-  expect(
-    Math.abs((await page.evaluate(() => scrollY)) - position),
-  ).toBeLessThanOrEqual(2);
+    page.locator('.jp-word-list input, .jp-word-list textarea'),
+  ).toHaveCount(0);
   await page
-    .getByRole('button', { name: 'Whole assignment', exact: true })
+    .getByRole('button', { name: 'Review these words', exact: true })
     .click();
-  await page.getByText('Mark a section finished', { exact: true }).click();
-  await expect(page.getByRole('checkbox').first()).toBeChecked();
+  await page
+    .getByRole('button', { name: 'Type Japanese', exact: true })
+    .click();
+  await page.getByRole('button', { name: 'Start review', exact: true }).click();
+  await page
+    .getByRole('textbox', { name: 'Japanese answer', exact: true })
+    .fill('にほん');
+  await page.getByRole('button', { name: 'Check', exact: true }).click();
+  await expect(page.locator('.jp-review-answer')).toContainText('That’s right');
+  await page.getByRole('button', { name: 'Easy', exact: true }).click();
+  await expect(page.locator('.jp-review-question')).toContainText('yes');
 });
 
-test('typed Japanese stays focused and assessed-work safeguards remain in AI context', async ({
+test('Japanese legacy practice reaches review and assessed-work safeguards remain in AI context', async ({
   page,
   context,
 }) => {
   await open(page, 'courses/japanese/practice/?target=jp-konnichiwa');
-  await page.getByRole('button', { name: 'Start quick check' }).click();
-  await answer(page);
-  await page.getByRole('button', { name: 'Continue', exact: true }).click();
-  await page.getByLabel('Your answer', { exact: true }).fill('こんにちは');
-  await page.getByRole('button', { name: 'Check answer', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'That’s it.' })).toBeVisible();
-  await expect(page.locator('main')).not.toContainText(
-    /prohibits AI|Independent study only/,
-  );
+  await expect(
+    page.getByRole('heading', { name: 'A small review, often', exact: true }),
+  ).toBeVisible();
+  await expect(page.locator('.question-session, .walkthrough')).toHaveCount(0);
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await open(page, 'learn/jp-sumimasen/');
   await page.getByRole('button', { name: 'Need more help?' }).click();

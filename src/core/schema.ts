@@ -276,6 +276,26 @@ export const eventSchema = z.discriminatedUnion('type', [
   z
     .object({
       ...base,
+      type: z.literal('japanese_reviewed'),
+      payload: z
+        .object({
+          word: id,
+          mode: z.enum([
+            'recognition',
+            'japanese-english',
+            'english-japanese',
+            'typing',
+          ]),
+          correct: z.boolean(),
+          rating: z.enum(['easy', 'okay', 'hard']),
+          revealed: z.boolean(),
+        })
+        .strict(),
+    })
+    .strict(),
+  z
+    .object({
+      ...base,
       type: z.literal('assignment_progress'),
       payload: z
         .object({

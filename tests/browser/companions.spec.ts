@@ -78,62 +78,31 @@ test('formal Chemistry hand-ins expose metadata without solution controls', asyn
   }
 });
 
-test('Japanese has authentic strokes, useful component connections and real Japanese input', async ({
+test('Japanese material links reach dedicated kana, vocabulary and weekly review', async ({
   page,
 }) => {
   await open(page, 'work/japanese-kana/');
-  await expect(page.locator('.kana-practice')).toHaveCount(5);
-  const vowel = page.locator('.kana-practice').first();
-  await expect(
-    vowel.getByRole('heading', { name: 'あ a' }).locator('rt'),
-  ).toHaveText('a');
-  await vowel.getByRole('button', { name: 'Start', exact: true }).click();
-  await expect(vowel).toContainText('0/3');
-  await vowel.getByRole('button', { name: 'Next stroke', exact: true }).click();
-  await expect(vowel).toContainText('1/3');
-  await open(page, 'work/greetings-practice/');
-  await expect(page.locator('.phrase-connection').first()).toContainText(
-    'ございます',
-  );
-  await expect(page.locator('.phrase-connection').last()).toContainText(
-    'Useful next',
-  );
-  await expect(
-    page
-      .locator('.kana-reading rt')
-      .filter({ hasText: /^ohayou gozaimasu$/ })
-      .first(),
-  ).toBeVisible();
-  await expect(
-    page.locator('.kana-reading rt').filter({ hasText: /^konnichiwa$/ }),
-  ).toBeVisible();
-  await page
-    .getByRole('link', { name: 'Review question 1', exact: true })
-    .click();
-  const q = page.locator('.companion-question').first();
-  await expect(
-    q.getByLabel('Write in Japanese', { exact: true }),
-  ).toHaveAttribute('lang', 'ja');
-  await q.getByLabel('Write in Japanese', { exact: true }).fill('にほん');
-  await q.getByRole('button', { name: 'Check answer', exact: true }).click();
-  await expect(q.getByRole('status')).toContainText('That matches');
+  await expect(page).toHaveURL(/courses\/japanese\/\?view=kana/);
+  await expect(page.locator('.kana-stage')).toBeVisible();
+  await page.getByRole('button', { name: 'Start', exact: true }).click();
+  await expect(page.locator('.kana-stage')).toContainText('0/3');
+  await page.getByRole('button', { name: 'Next stroke', exact: true }).click();
+  await expect(page.locator('.kana-stage')).toContainText('1/3');
+  await open(page, 'work/greetings-practice/#q-5');
+  await expect(page).toHaveURL(/view=vocabulary&sets=greetings#jp-basics-5/);
+  await expect(page.locator('#jp-basics-5')).toContainText('konnichiwa');
   await open(page, 'courses/japanese/units/greetings/');
-  await expect(
-    page.locator('.material-row[href$="/work/japanese-colours-shapes/"]'),
-  ).toHaveCount(0);
+  await expect(page.locator('.jp-word-row')).toHaveCount(37);
+  await expect(page.locator('.jp-word-list')).not.toContainText('さんかっけい');
   await open(page, 'courses/japanese/units/colours/');
+  await expect(
+    page.getByRole('heading', { name: 'Colors & shapes', exact: true }),
+  ).toBeVisible();
   await page
-    .locator('.material-row[href$="/work/japanese-colours-shapes/"]')
+    .getByRole('button', { name: 'See the word list', exact: true })
     .click();
-  await expect(page.locator('.assignment-document')).toContainText(
-    'Colours and Shapes',
-  );
-  await expect(
-    page.locator('.kana-reading rt').filter({ hasText: /^sankakkei$/ }),
-  ).toBeVisible();
-  await expect(
-    page.locator('.kana-reading rt').filter({ hasText: /^haato$/ }),
-  ).toBeVisible();
+  await expect(page.locator('.jp-word-list')).toContainText('sankakkei');
+  await expect(page.locator('.jp-word-list')).toContainText('ハート');
 });
 
 test('percent error uses the accepted denominator and has a percent result', async ({

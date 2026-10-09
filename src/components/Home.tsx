@@ -13,6 +13,7 @@ import {
 } from '../core/school-calendar';
 import { useEffect, useState } from 'react';
 import { atlasVersion } from '../content/product';
+import { japaneseWeek } from '../content/japanese';
 import type { RepoStats } from '../../scripts/repo-stats';
 import { useLearner, url } from '../client/store';
 import { CourseMark, Icon } from './Icons';
@@ -107,7 +108,7 @@ export default function Home({
                   <strong>{c.title}</strong>
                   <small>
                     {c.id === 'japanese'
-                      ? 'Colors & shapes'
+                      ? japaneseWeek.title
                       : unitTitle(c.id, findEdition(c.id).currentUnit)}
                   </small>
                 </span>
