@@ -42,6 +42,7 @@ const app = await createServer({
   db,
   origin: 'http://localhost:4321',
   secure: false,
+  trustProxy: true,
   classSourceDir,
 });
 await app.listen({ host: '127.0.0.1', port: 8790 });
