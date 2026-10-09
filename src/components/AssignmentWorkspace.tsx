@@ -594,7 +594,7 @@ export default function AssignmentWorkspace({ id }: { id: string }) {
       >
         <p>{a.originalAvailability}</p>
         <p>
-          Atlas uses original explanations. For exact wording, tables and
+          atlas uses original explanations. For exact wording, tables and
           figures, keep your teacher’s handout or textbook beside it.
         </p>
         {a.sources.map((id) => {

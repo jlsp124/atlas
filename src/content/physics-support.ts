@@ -8,7 +8,7 @@ const s = (title: string, text: string, write: string): GuideStep => ({
 const missing = (figure: string, relation: string, meaning: string) => [
   s(
     'The source we still need',
-    `Atlas has the question reference but not ${figure}. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.`,
+    `atlas has the question reference but not ${figure}. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.`,
     `Missing source: ${figure}.`,
   ),
   s('What the calculation will use', meaning, relation),

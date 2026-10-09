@@ -33,7 +33,7 @@ export default function NotFound() {
           disabled={!state.ready}
           onClick={() => openFeedback('bug')}
         >
-          Tell Atlas
+          Tell atlas
         </button>
         .
       </p>

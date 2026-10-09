@@ -439,7 +439,7 @@ export default function QuestionWalkthrough({
             </div>
             <p className="paper-origin">
               {last
-                ? `${q.answer?.origin === 'teacher' ? 'Teacher-provided result' : 'Atlas-derived working'} · ${physics.precisionExplanation ?? 'Keep extra digits until the final line.'}`
+                ? `${q.answer?.origin === 'teacher' ? 'Teacher-provided result' : 'atlas-derived working'} · ${physics.precisionExplanation ?? 'Keep extra digits until the final line.'}`
                 : 'Build this working on your own paper.'}
             </p>
           </div>

@@ -459,7 +459,7 @@ export default function FocusQuestion({
                 </strong>
                 <p className="source-meta">
                   {q.answer.origin === 'atlas'
-                    ? 'Atlas-derived solution'
+                    ? 'atlas-derived solution'
                     : q.answer.origin === 'teacher'
                       ? 'Teacher-provided answer'
                       : 'User-supplied answer'}{' '}

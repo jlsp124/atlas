@@ -56,7 +56,7 @@ export default function PhysicsPacket({
             </div>
           ))}
           <PhysicsPrompt
-            prompt={`Help me with Mr. Wadson’s Physics 11 ${a.title}, ${q.number}. First ask for a clear picture of the actual page and any graph/table (including axis labels, units, scales and all subquestions). Wait for it before solving missing numerical parts. The source Atlas has does not include the complete original page. Use my picture to identify the exact blanks/questions in order; explain the words, values, right/up-positive signs, formula, substitution and final direction. Use Δd for displacement and Wadson’s supplied formula sheet. Do not invent coordinates, teacher wording or precision requirements, or create extra exercises. Help fill or solve the real sheet one part at a time.`}
+            prompt={`Help me with Mr. Wadson’s Physics 11 ${a.title}, ${q.number}. First ask for a clear picture of the actual page and any graph/table (including axis labels, units, scales and all subquestions). Wait for it before solving missing numerical parts. The source atlas has does not include the complete original page. Use my picture to identify the exact blanks/questions in order; explain the words, values, right/up-positive signs, formula, substitution and final direction. Use Δd for displacement and Wadson’s supplied formula sheet. Do not invent coordinates, teacher wording or precision requirements, or create extra exercises. Help fill or solve the real sheet one part at a time.`}
           />
         </section>
       ))}

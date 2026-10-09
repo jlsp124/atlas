@@ -303,7 +303,7 @@ export default function CompanionQuestion({
                 ? 'Teacher-provided answer'
                 : q.answer.origin === 'student'
                   ? 'User-supplied answer'
-                  : 'Atlas-derived solution · round to the question’s precision'}
+                  : 'atlas-derived solution · round to the question’s precision'}
             </small>
             <p>
               <ReadableText text={q.answer.reasoning} />

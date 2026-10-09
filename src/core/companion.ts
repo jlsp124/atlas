@@ -12,7 +12,7 @@ export function checkCompanionAnswer(
     return {
       correct: null,
       feedback:
-        'Compare your explanation with the checklist. Atlas cannot mark this written answer automatically.',
+        'Compare your explanation with the checklist. atlas cannot mark this written answer automatically.',
     };
   const answer = question.answer;
   if (question.input === 'numeric') {

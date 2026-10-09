@@ -2137,14 +2137,14 @@
           "number": "B11",
           "section": "Part B · Graphs",
           "prompt": "Use the first supplied graph to find displacement over the first 3 s and the whole 6 s.",
-          "asking": "Atlas has the question reference but not the velocity–time graph for B11, including its plotted coordinates over 0–6 s. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
+          "asking": "atlas has the question reference but not the velocity–time graph for B11, including its plotted coordinates over 0–6 s. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
           "concepts": ["motion-graphs"],
           "input": "text",
           "clues": [],
           "steps": [
             {
               "title": "The source we still need",
-              "text": "Atlas has the question reference but not the velocity–time graph for B11, including its plotted coordinates over 0–6 s. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title."
+              "text": "atlas has the question reference but not the velocity–time graph for B11, including its plotted coordinates over 0–6 s. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title."
             },
             {
               "title": "What the calculation will use",
@@ -2156,7 +2156,7 @@
             }
           ],
           "hints": [
-            "Atlas has the question reference but not the velocity–time graph for B11, including its plotted coordinates over 0–6 s. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
+            "atlas has the question reference but not the velocity–time graph for B11, including its plotted coordinates over 0–6 s. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
             "Use rectangles (vΔt), triangles (½base×height) or trapezoids (½(vᵢ+v𝒇)Δt) for each straight segment. Areas below zero velocity are negative."
           ],
           "example": "Missing source: the velocity–time graph for B11, including its plotted coordinates over 0–6 s.\nΔd₀₋₃ = signed area from 0 to 3 s; Δd₀₋₆ = signed area from 0 to 6 s.\nUse the exact question and source image in the help prompt below.",
@@ -2175,14 +2175,14 @@
           "number": "B12",
           "section": "Part B · Graphs",
           "prompt": "Use the walking graph for distance, speed at 3.7 s, final displacement, and the time furthest from the start.",
-          "asking": "Atlas has the question reference but not the position–time graph for B12, including the segment around 3.7 s and every turning point. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
+          "asking": "atlas has the question reference but not the position–time graph for B12, including the segment around 3.7 s and every turning point. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
           "concepts": ["motion-graphs"],
           "input": "text",
           "clues": [],
           "steps": [
             {
               "title": "The source we still need",
-              "text": "Atlas has the question reference but not the position–time graph for B12, including the segment around 3.7 s and every turning point. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title."
+              "text": "atlas has the question reference but not the position–time graph for B12, including the segment around 3.7 s and every turning point. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title."
             },
             {
               "title": "What the calculation will use",
@@ -2194,7 +2194,7 @@
             }
           ],
           "hints": [
-            "Atlas has the question reference but not the position–time graph for B12, including the segment around 3.7 s and every turning point. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
+            "atlas has the question reference but not the position–time graph for B12, including the segment around 3.7 s and every turning point. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
             "Distance counts every change in position. Displacement compares only the endpoints. The furthest point has the largest |d(t)−d(0)|, not necessarily the largest positive position."
           ],
           "example": "Missing source: the position–time graph for B12, including the segment around 3.7 s and every turning point.\nDistance = Σ|d₂−d₁|; speed at 3.7 s = |local slope|; Δd = d(6)−d(0).\nUse the exact question and source image in the help prompt below.",
@@ -2703,14 +2703,14 @@
           "number": "E20",
           "section": "Part E · Data",
           "prompt": "Use the actual ticker tape, with a dot every 0.050 s, to estimate acceleration.",
-          "asking": "Atlas has the question reference but not a ruler-scale image or measured positions of the review-package tape, and the dot indexes for each reading. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
+          "asking": "atlas has the question reference but not a ruler-scale image or measured positions of the review-package tape, and the dot indexes for each reading. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
           "concepts": ["acceleration"],
           "input": "text",
           "clues": [],
           "steps": [
             {
               "title": "The source we still need",
-              "text": "Atlas has the question reference but not a ruler-scale image or measured positions of the review-package tape, and the dot indexes for each reading. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title."
+              "text": "atlas has the question reference but not a ruler-scale image or measured positions of the review-package tape, and the dot indexes for each reading. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title."
             },
             {
               "title": "What the calculation will use",
@@ -2722,7 +2722,7 @@
             }
           ],
           "hints": [
-            "Atlas has the question reference but not a ruler-scale image or measured positions of the review-package tape, and the dot indexes for each reading. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
+            "atlas has the question reference but not a ruler-scale image or measured positions of the review-package tape, and the dot indexes for each reading. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
             "This review tape uses 0.050 s per dot. The separate cart lab uses 1/60 s per dot; do not reuse its timing or measurements here. Count gaps, not the number of dots, and do not assume zero starting velocity."
           ],
           "example": "Missing source: a ruler-scale image or measured positions of the review-package tape, and the dot indexes for each reading.\nΔt = number of dot gaps × 0.050 s; v = Δd/Δt; tₘᵢd = (tᵢ+t𝒇)/2; a = slope of v vs t.\nUse the exact question and source image in the help prompt below.",
@@ -2741,14 +2741,14 @@
           "number": "E21",
           "section": "Part E · Data",
           "prompt": "Graph height against shoe size using the supplied data table; find the relationship graphically.",
-          "asking": "Atlas has the question reference but not the paired height and shoe-size values for E21, with height units. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
+          "asking": "atlas has the question reference but not the paired height and shoe-size values for E21, with height units. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
           "concepts": ["motion-graphs"],
           "input": "text",
           "clues": [],
           "steps": [
             {
               "title": "The source we still need",
-              "text": "Atlas has the question reference but not the paired height and shoe-size values for E21, with height units. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title."
+              "text": "atlas has the question reference but not the paired height and shoe-size values for E21, with height units. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title."
             },
             {
               "title": "What the calculation will use",
@@ -2760,7 +2760,7 @@
             }
           ],
           "hints": [
-            "Atlas has the question reference but not the paired height and shoe-size values for E21, with height units. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
+            "atlas has the question reference but not the paired height and shoe-size values for E21, with height units. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
             "Plot every actual pair, then describe the trend and scatter. A trend is not an exact prediction for each person; a fit needs the real pairs before a slope or intercept can be calculated."
           ],
           "example": "Missing source: the paired height and shoe-size values for E21, with height units.\nx = shoe size; y = height (with the given unit).\nUse the exact question and source image in the help prompt below.",
@@ -2820,14 +2820,14 @@
           "number": "1",
           "section": "Assigned textbook questions",
           "prompt": "Use Figure 8 to create a motion diagram with velocity arrows.",
-          "asking": "Atlas has the question reference but not Figure 8 and its timed object positions. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
+          "asking": "atlas has the question reference but not Figure 8 and its timed object positions. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
           "concepts": ["motion-graphs"],
           "input": "text",
           "clues": [],
           "steps": [
             {
               "title": "The source we still need",
-              "text": "Atlas has the question reference but not Figure 8 and its timed object positions. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title."
+              "text": "atlas has the question reference but not Figure 8 and its timed object positions. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title."
             },
             {
               "title": "What the calculation will use",
@@ -2839,7 +2839,7 @@
             }
           ],
           "hints": [
-            "Atlas has the question reference but not Figure 8 and its timed object positions. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
+            "atlas has the question reference but not Figure 8 and its timed object positions. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
             "Equal spacing at equal time means steady speed. Increasing spacing means speeding up; decreasing spacing means slowing. The figure is required to know which is actually shown."
           ],
           "example": "Missing source: Figure 8 and its timed object positions.\nVelocity arrow direction follows motion; arrow length reflects displacement per equal time interval.\nUse the exact question and source image in the help prompt below.",
@@ -2858,14 +2858,14 @@
           "number": "2",
           "section": "Assigned textbook questions",
           "prompt": "Use Figure 9 to identify steady speed, positive acceleration, and the steepest negative acceleration.",
-          "asking": "Atlas has the question reference but not Figure 9 with axes, scale and segment endpoints. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
+          "asking": "atlas has the question reference but not Figure 9 with axes, scale and segment endpoints. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
           "concepts": ["motion-graphs"],
           "input": "text",
           "clues": [],
           "steps": [
             {
               "title": "The source we still need",
-              "text": "Atlas has the question reference but not Figure 9 with axes, scale and segment endpoints. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title."
+              "text": "atlas has the question reference but not Figure 9 with axes, scale and segment endpoints. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title."
             },
             {
               "title": "What the calculation will use",
@@ -2877,7 +2877,7 @@
             }
           ],
           "hints": [
-            "Atlas has the question reference but not Figure 9 with axes, scale and segment endpoints. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
+            "atlas has the question reference but not Figure 9 with axes, scale and segment endpoints. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
             "Horizontal v–t portions have steady velocity. Positive slope is positive acceleration. The steepest downward slope is the greatest negative acceleration; a negative velocity by itself is not negative acceleration."
           ],
           "example": "Missing source: Figure 9 with axes, scale and segment endpoints.\na = slope = Δv/Δt.\nUse the exact question and source image in the help prompt below.",
@@ -2896,14 +2896,14 @@
           "number": "3",
           "section": "Assigned textbook questions",
           "prompt": "Use Figure 9 for average acceleration during 0–5, 15–20 and 0–40 s.",
-          "asking": "Atlas has the question reference but not Figure 9’s velocity readings at 0, 5, 15, 20 and 40 s. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
+          "asking": "atlas has the question reference but not Figure 9’s velocity readings at 0, 5, 15, 20 and 40 s. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
           "concepts": ["motion-graphs"],
           "input": "text",
           "clues": [],
           "steps": [
             {
               "title": "The source we still need",
-              "text": "Atlas has the question reference but not Figure 9’s velocity readings at 0, 5, 15, 20 and 40 s. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title."
+              "text": "atlas has the question reference but not Figure 9’s velocity readings at 0, 5, 15, 20 and 40 s. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title."
             },
             {
               "title": "What the calculation will use",
@@ -2915,7 +2915,7 @@
             }
           ],
           "hints": [
-            "Atlas has the question reference but not Figure 9’s velocity readings at 0, 5, 15, 20 and 40 s. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
+            "atlas has the question reference but not Figure 9’s velocity readings at 0, 5, 15, 20 and 40 s. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
             "Subtract final minus initial velocity for each requested interval. Keep signed readings. Do not average unweighted segment slopes over the whole trip."
           ],
           "example": "Missing source: Figure 9’s velocity readings at 0, 5, 15, 20 and 40 s.\na₀₋₅ = [v(5)−v(0)]/5; a₁₅₋₂₀ = [v(20)−v(15)]/5; a₀₋₄₀ = [v(40)−v(0)]/40.\nUse the exact question and source image in the help prompt below.",
@@ -3556,14 +3556,14 @@
           "number": "20",
           "section": "Assigned textbook questions",
           "prompt": "Find each cyclist’s displacement from Figure 13.",
-          "asking": "Atlas has the question reference but not Figure 13’s cyclist velocity–time curves and interval endpoints. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
+          "asking": "atlas has the question reference but not Figure 13’s cyclist velocity–time curves and interval endpoints. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
           "concepts": ["motion-graphs"],
           "input": "text",
           "clues": [],
           "steps": [
             {
               "title": "The source we still need",
-              "text": "Atlas has the question reference but not Figure 13’s cyclist velocity–time curves and interval endpoints. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title."
+              "text": "atlas has the question reference but not Figure 13’s cyclist velocity–time curves and interval endpoints. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title."
             },
             {
               "title": "What the calculation will use",
@@ -3575,7 +3575,7 @@
             }
           ],
           "hints": [
-            "Atlas has the question reference but not Figure 13’s cyclist velocity–time curves and interval endpoints. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
+            "atlas has the question reference but not Figure 13’s cyclist velocity–time curves and interval endpoints. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
             "Split each actual curve into rectangles, triangles and trapezoids. Use the axis scale to calculate each area in metres; subtract any below-zero area."
           ],
           "example": "Missing source: Figure 13’s cyclist velocity–time curves and interval endpoints.\nΔd for each cyclist = signed area under that cyclist’s curve.\nUse the exact question and source image in the help prompt below.",
@@ -3594,14 +3594,14 @@
           "number": "21",
           "section": "Assigned textbook questions",
           "prompt": "Find each walker’s displacement over 4 s from Figure 14.",
-          "asking": "Atlas has the question reference but not Figure 14’s walker velocity readings and time-axis scale over the 4 s interval. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
+          "asking": "atlas has the question reference but not Figure 14’s walker velocity readings and time-axis scale over the 4 s interval. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
           "concepts": ["motion-graphs"],
           "input": "text",
           "clues": [],
           "steps": [
             {
               "title": "The source we still need",
-              "text": "Atlas has the question reference but not Figure 14’s walker velocity readings and time-axis scale over the 4 s interval. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title."
+              "text": "atlas has the question reference but not Figure 14’s walker velocity readings and time-axis scale over the 4 s interval. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title."
             },
             {
               "title": "What the calculation will use",
@@ -3613,7 +3613,7 @@
             }
           ],
           "hints": [
-            "Atlas has the question reference but not Figure 14’s walker velocity readings and time-axis scale over the 4 s interval. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
+            "atlas has the question reference but not Figure 14’s walker velocity readings and time-axis scale over the 4 s interval. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
             "Displacement comes from velocity–time area, not the height or slope of the line. The figure is needed to obtain each walker’s velocities."
           ],
           "example": "Missing source: Figure 14’s walker velocity readings and time-axis scale over the 4 s interval.\nΔd = ½(vᵢ+v𝒇)Δt for a straight segment; add signed areas if there are multiple segments.\nUse the exact question and source image in the help prompt below.",
@@ -14646,14 +14646,14 @@
           "number": "Percent error",
           "section": "Questions",
           "prompt": "Use the experimental and accepted values in your actual percent-error question.",
-          "asking": "Atlas has the question reference but not the experimental measurement and accepted comparison value from the actual measurement exercise. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
+          "asking": "atlas has the question reference but not the experimental measurement and accepted comparison value from the actual measurement exercise. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
           "concepts": ["physics-units"],
           "input": "text",
           "clues": [],
           "steps": [
             {
               "title": "The source we still need",
-              "text": "Atlas has the question reference but not the experimental measurement and accepted comparison value from the actual measurement exercise. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title."
+              "text": "atlas has the question reference but not the experimental measurement and accepted comparison value from the actual measurement exercise. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title."
             },
             {
               "title": "What the calculation will use",
@@ -14665,7 +14665,7 @@
             }
           ],
           "hints": [
-            "Atlas has the question reference but not the experimental measurement and accepted comparison value from the actual measurement exercise. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
+            "atlas has the question reference but not the experimental measurement and accepted comparison value from the actual measurement exercise. Send a clear photo showing its labels, axes, scale and all relevant rows; those values cannot be reconstructed from the question title.",
             "Use the accepted value in the denominator and the same units for both measurements. The result is nonnegative and has %, not metres or seconds. Neither value is supplied in this public question."
           ],
           "example": "Missing source: the experimental measurement and accepted comparison value from the actual measurement exercise.\nPercent error = |experimental − accepted| / |accepted| × 100%.\nUse the exact question and source image in the help prompt below.",
@@ -15495,7 +15495,7 @@
       "teacher": "Mrs. Cote",
       "title": "Hand In #13 · Electronic structure",
       "status": "current",
-      "summary": "This one’s meant to be done on your own, so Atlas won’t walk through the answers.",
+      "summary": "This one’s meant to be done on your own, so atlas won’t walk through the answers.",
       "tasks": [
         {
           "id": "record",
@@ -15525,7 +15525,7 @@
       "teacher": "Mrs. Cote",
       "title": "Hand In #1 · Unit conversions",
       "status": "current",
-      "summary": "This one’s meant to be done on your own, so Atlas won’t walk through the answers.",
+      "summary": "This one’s meant to be done on your own, so atlas won’t walk through the answers.",
       "tasks": [
         {
           "id": "record",
@@ -15555,7 +15555,7 @@
       "teacher": "Mrs. Cote",
       "title": "Hand In #2 · Significant digits",
       "status": "current",
-      "summary": "This one’s meant to be done on your own, so Atlas won’t walk through the answers.",
+      "summary": "This one’s meant to be done on your own, so atlas won’t walk through the answers.",
       "tasks": [
         {
           "id": "record",

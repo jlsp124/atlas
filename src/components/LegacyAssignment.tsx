@@ -302,7 +302,7 @@ export default function Assignment({ id }: { id: string }) {
         <p>{a.originalAvailability}</p>
         {!restricted && (
           <p>
-            Atlas uses permitted original explanations beside the numbered
+            atlas uses permitted original explanations beside the numbered
             teacher work. Exact source wording, diagrams and tables remain in
             your handout or textbook.
           </p>

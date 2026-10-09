@@ -79,7 +79,7 @@ const turn = step(
   'your-turn',
   'student',
   'Your turn',
-  'Use the setup on your real work. Keep your reasoning and units; Atlas will check when you’re ready.',
+  'Use the setup on your real work. Keep your reasoning and units; atlas will check when you’re ready.',
 );
 const mul = (id: string, a: Expr, b: Expr) => op(id, '×', a, b);
 const eq = (a: Expr, b: Expr) => op('equals', '=', a, b);
