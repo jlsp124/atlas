@@ -394,6 +394,170 @@
 .jp-ratings > button {
   min-width: 5rem;
 }
+.jp-review-controls[data-ready='false'] {
+  visibility: hidden;
+}
+@media (max-width: 800px) {
+  html[data-japanese-review='open'],
+  html[data-japanese-review='open'] body {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+  html[data-japanese-review='open'] .topbar,
+  html[data-japanese-review='open'] .mobile-nav,
+  html[data-japanese-review='open'] .feedback-launcher,
+  html[data-japanese-review='open'] .japanese-screen > .course-heading,
+  html[data-japanese-review='open'] .jp-navigation,
+  html[data-japanese-review='open'] .jp-display {
+    visibility: hidden;
+  }
+  .jp-review-session {
+    position: fixed;
+    top: var(--jp-review-top, 0px);
+    left: 0;
+    right: 0;
+    height: var(--jp-review-height, 100dvh);
+    max-width: none;
+    z-index: 30;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 6px;
+    padding: 10px max(16px, env(safe-area-inset-right))
+      max(10px, env(safe-area-inset-bottom))
+      max(16px, env(safe-area-inset-left));
+    background: var(--bg);
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+  .jp-review-session .jp-review-top {
+    margin: 0;
+    padding: 0 0 5px;
+    min-height: 39px;
+    gap: 8px;
+    font-size: 0.72rem;
+  }
+  .jp-review-top button {
+    padding: 5px 8px;
+    min-height: 34px;
+    white-space: nowrap;
+    font-size: 0.8rem;
+  }
+  .jp-review-face {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 3px;
+    min-height: 0;
+  }
+  .jp-review-face > p {
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.3;
+  }
+  .jp-review-face .eyebrow {
+    font-size: 0.65rem;
+  }
+  .jp-review-session .jp-review-question {
+    margin: 0;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  .jp-review-question h2,
+  .jp-review-question .jp-written {
+    margin: 0;
+    font-size: clamp(
+      1.2rem,
+      calc(var(--jp-review-height, 100dvh) * 0.055),
+      2rem
+    );
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+  .jp-review-question .jp-reading,
+  .jp-review-question .jp-romaji {
+    font-size: 0.8rem;
+  }
+  .jp-review-composer {
+    display: grid;
+    grid-template-rows: auto 88px 44px;
+    gap: 6px;
+    min-width: 0;
+  }
+  .jp-review-session[data-typing='true'] .jp-review-composer {
+    grid-template-rows:
+      44px clamp(72px, calc(var(--jp-review-height, 100dvh) * 0.23), 112px)
+      44px;
+  }
+  .jp-review-session .jp-typing-form {
+    margin: 0;
+    gap: 8px;
+  }
+  .jp-typing-form input,
+  .jp-typing-form button {
+    height: 44px;
+    font-size: 16px;
+    padding: 8px 12px;
+  }
+  .jp-review-session .jp-review-choices {
+    margin: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .jp-review-choices > button {
+    padding: 8px 10px;
+    min-height: 50px;
+    line-height: 1.3;
+    font-size: 0.9rem;
+  }
+  .jp-review-session .jp-review-answer {
+    padding: 4px 0;
+    margin: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    font-size: 0.85rem;
+    line-height: 1.3;
+  }
+  .jp-review-answer p {
+    margin: 0;
+  }
+  .jp-review-answer .eyebrow {
+    font-size: 0.64rem;
+    margin-bottom: 3px;
+  }
+  .jp-review-answer .jp-form {
+    gap: 2px;
+  }
+  .jp-review-answer .jp-written {
+    font-size: 1.1rem;
+    line-height: 1.3;
+  }
+  .jp-review-answer .jp-reading,
+  .jp-review-answer .jp-romaji {
+    font-size: 0.75rem;
+    line-height: 1.2;
+  }
+  .jp-review-session .jp-reveal {
+    margin: 0;
+    min-height: 44px;
+  }
+  .jp-review-answer .jp-review-note,
+  .jp-review-controls .jp-rate-label {
+    display: none;
+  }
+  .jp-review-controls .jp-ratings {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .jp-ratings > button {
+    min-width: 0;
+    height: 44px;
+    padding: 8px;
+    font-size: 0.9rem;
+  }
+}
 @media (max-width: 600px) {
   .jp-navigation {
     gap: 0.25rem 1.1rem;

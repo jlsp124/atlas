@@ -1,4 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type PointerEvent,
+} from 'react';
+import { flushSync } from 'react-dom';
+import { useJapaneseReviewViewport } from '../client/japanese-viewport';
 import {
   japaneseGrammar,
   japaneseKanaRows,
@@ -164,6 +172,8 @@ function Review({
     revealed: boolean;
   } | null>(null);
   const answerRef = useRef<HTMLInputElement>(null);
+  const sessionRef = useRef<HTMLElement>(null);
+  const composing = useRef(false);
   const history = japaneseHistory(state.events);
   const selectedWords = reviewWords(japaneseWords, sets);
   const latest = new Map(history.map((record) => [record.word, record]));
@@ -173,9 +183,13 @@ function Review({
   const word = session?.queue[0]
     ? japaneseWords.find((word) => word.id === session.queue[0])
     : undefined;
-  useEffect(() => {
-    answerRef.current?.focus();
-  }, [word?.id]);
+  useJapaneseReviewViewport(sessionRef, !!session && !!word);
+  useLayoutEffect(() => {
+    answerRef.current?.focus({ preventScroll: true });
+  }, [word?.id, session?.rated]);
+  function keepKeyboard(event: PointerEvent<HTMLButtonElement>) {
+    if (document.activeElement === answerRef.current) event.preventDefault();
+  }
   const presets: { title: string; sets: JapaneseSet[] }[] = [
     { title: 'This week', sets: japaneseWeek.sets },
     { title: 'All words', sets: vocabularySets.map((set) => set.id) },
@@ -190,18 +204,23 @@ function Review({
   function start() {
     const queue = adaptiveJapaneseQueue(selectedWords, history, Date.now());
     if (!queue.length) return;
-    setSession({
-      queue,
-      visits: {},
-      rated: 0,
-      correct: 0,
-      total: queue.length,
-      sets: [...sets],
-      mode,
-      script,
+    // Mount and focus in the initiating gesture. iOS may refuse to open the
+    // keyboard for focus first attempted in a later effect/timer.
+    flushSync(() => {
+      setSession({
+        queue,
+        visits: {},
+        rated: 0,
+        correct: 0,
+        total: queue.length,
+        sets: [...sets],
+        mode,
+        script,
+      });
+      setAnswer('');
+      setResult(null);
     });
-    setAnswer('');
-    setResult(null);
+    answerRef.current?.focus({ preventScroll: true });
     productEvent('japanese_review_started', sets);
   }
   function check(value: string) {
@@ -238,9 +257,14 @@ function Review({
       rated: session.rated + 1,
       correct: session.correct + Number(result.correct && !result.revealed),
     };
-    setSession(next);
-    setAnswer('');
-    setResult(null);
+    flushSync(() => {
+      setSession(next);
+      setAnswer('');
+      setResult(null);
+    });
+    // The same enabled input stays mounted through feedback and the next card.
+    // Restore focus synchronously for keyboard users too; never scroll the page.
+    if (queue.length) answerRef.current?.focus({ preventScroll: true });
     if (!queue.length) productEvent('japanese_review_completed', session.sets);
   }
   if (session && !word)
@@ -272,7 +296,14 @@ function Review({
     const chosenWord = (choice: string) =>
       japaneseWords.find((word) => word.japanese === choice);
     return (
-      <section className="jp-review-session">
+      <section
+        className="jp-review-session"
+        ref={sessionRef}
+        data-word={word.id}
+        data-typing={
+          session.mode === 'typing' || session.mode === 'japanese-english'
+        }
+      >
         <div className="jp-review-top">
           <span>
             {modes.find((mode) => mode.id === session.mode)?.title} · Card{' '}
@@ -282,104 +313,134 @@ function Review({
             End review
           </button>
         </div>
-        <p className="eyebrow">
-          {japaneseSets.find((set) => set.id === word.set)?.title}
-        </p>
-        <div className="jp-review-question">
-          {japanesePrompt ? (
-            <JapaneseText
-              form={word}
-              reading={reading}
-              aids={word.set !== 'vowels'}
-            />
-          ) : (
-            <h2>{word.meaning}</h2>
-          )}
-        </div>
-        <p className="muted">
-          {japanesePrompt
-            ? 'What does this mean?'
-            : session.mode === 'typing'
-              ? `Type the Japanese in ${session.script === 'kana' ? 'kana' : 'romaji'}.`
-              : 'Choose the Japanese.'}
-        </p>
-        {['recognition', 'english-japanese'].includes(session.mode) ? (
-          <div
-            className="jp-review-choices"
-            role="group"
-            aria-label="Answer choices"
-          >
-            {choices.map((choice) => (
-              <button
-                className="secondary"
-                key={choice}
-                disabled={!!result}
-                data-selected={answer === choice}
-                onClick={() => check(choice)}
-              >
-                {session.mode === 'english-japanese' && chosenWord(choice) ? (
-                  <JapaneseText
-                    form={chosenWord(choice)!}
-                    reading={reading}
-                    aids={word.set !== 'vowels'}
-                  />
-                ) : (
-                  choice
-                )}
-              </button>
-            ))}
+        <div className="jp-review-face">
+          <p className="eyebrow">
+            {japaneseSets.find((set) => set.id === word.set)?.title}
+          </p>
+          <div className="jp-review-question">
+            {japanesePrompt ? (
+              <JapaneseText
+                form={word}
+                reading={reading}
+                aids={word.set !== 'vowels'}
+              />
+            ) : (
+              <h2>{word.meaning}</h2>
+            )}
           </div>
-        ) : (
-          <form
-            className="jp-typing-form"
-            onSubmit={(event) => {
-              event.preventDefault();
-              if (answer.trim()) check(answer);
-            }}
-          >
-            <label className="sr-only" htmlFor="jp-answer">
-              {japanesePrompt ? 'English meaning' : 'Japanese answer'}
-            </label>
-            <input
-              id="jp-answer"
-              ref={answerRef}
-              value={answer}
-              onChange={(event) => setAnswer(event.target.value)}
-              disabled={!!result}
-              autoComplete="off"
-              spellCheck={false}
-              maxLength={200}
-              lang={
-                session.mode === 'typing' && session.script === 'kana'
-                  ? 'ja'
-                  : 'en'
-              }
-            />
-            <button className="primary" disabled={!!result || !answer.trim()}>
-              Check
-            </button>
-          </form>
-        )}
-        {!result && (
-          <button
-            className="quiet jp-reveal"
-            onClick={() => setResult({ correct: false, revealed: true })}
-          >
-            Show me
-          </button>
-        )}
-        {result && (
+          <p className="muted">
+            {japanesePrompt
+              ? 'What does this mean?'
+              : session.mode === 'typing'
+                ? `Type the Japanese in ${session.script === 'kana' ? 'kana' : 'romaji'}.`
+                : 'Choose the Japanese.'}
+          </p>
+        </div>
+        <div className="jp-review-composer">
+          {['recognition', 'english-japanese'].includes(session.mode) ? (
+            <div
+              className="jp-review-choices"
+              role="group"
+              aria-label="Answer choices"
+            >
+              {choices.map((choice) => (
+                <button
+                  className="secondary"
+                  key={choice}
+                  disabled={!!result}
+                  data-selected={answer === choice}
+                  onClick={() => check(choice)}
+                >
+                  {session.mode === 'english-japanese' && chosenWord(choice) ? (
+                    <JapaneseText
+                      form={chosenWord(choice)!}
+                      reading={reading}
+                      aids={word.set !== 'vowels'}
+                    />
+                  ) : (
+                    choice
+                  )}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <form
+              className="jp-typing-form"
+              onSubmit={(event) => {
+                event.preventDefault();
+                if (answer.trim() && !composing.current) check(answer);
+              }}
+            >
+              <label className="sr-only" htmlFor="jp-answer">
+                {japanesePrompt ? 'English meaning' : 'Japanese answer'}
+              </label>
+              <input
+                id="jp-answer"
+                ref={answerRef}
+                value={answer}
+                onChange={(event) => setAnswer(event.target.value)}
+                onCompositionStart={() => {
+                  composing.current = true;
+                }}
+                onCompositionEnd={() => {
+                  composing.current = false;
+                }}
+                onKeyDown={(event) => {
+                  if (
+                    event.key === 'Enter' &&
+                    (event.nativeEvent.isComposing ||
+                      event.nativeEvent.keyCode === 229)
+                  )
+                    event.preventDefault();
+                }}
+                autoComplete="off"
+                autoCapitalize="none"
+                autoCorrect="off"
+                enterKeyHint="go"
+                spellCheck={false}
+                maxLength={200}
+                lang={
+                  session.mode === 'typing' && session.script === 'kana'
+                    ? 'ja'
+                    : 'en'
+                }
+              />
+              <button
+                className="primary"
+                onPointerDown={keepKeyboard}
+                disabled={!!result || !answer.trim()}
+              >
+                Check
+              </button>
+            </form>
+          )}
           <div className="jp-review-answer" aria-live="polite">
-            <p className="eyebrow">
-              {result.revealed
-                ? 'The class form'
-                : result.correct
-                  ? 'That’s right'
-                  : 'Compare with the class form'}
-            </p>
-            <JapaneseText form={word} reading={reading} />
-            <p>{word.meaning}</p>
-            {word.note && <p className="muted">{word.note}</p>}
+            {!result ? (
+              <button
+                className="quiet jp-reveal"
+                onPointerDown={keepKeyboard}
+                onClick={() => setResult({ correct: false, revealed: true })}
+              >
+                Show me
+              </button>
+            ) : (
+              <div>
+                <p className="eyebrow">
+                  {result.revealed
+                    ? 'The class form'
+                    : result.correct
+                      ? 'That’s right'
+                      : 'Compare with the class form'}
+                </p>
+                <JapaneseText form={word} reading={reading} />
+                <p>{word.meaning}</p>
+                {word.note && (
+                  <p className="muted jp-review-note">{word.note}</p>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="jp-review-controls" data-ready={!!result}>
             <p className="jp-rate-label">How did that feel?</p>
             <div
               className="jp-ratings"
@@ -390,6 +451,8 @@ function Review({
                 <button
                   className="secondary"
                   key={rating}
+                  disabled={!result}
+                  onPointerDown={keepKeyboard}
                   onClick={() => rate(rating)}
                 >
                   {rating[0].toUpperCase() + rating.slice(1)}
@@ -397,7 +460,7 @@ function Review({
               ))}
             </div>
           </div>
-        )}
+        </div>
       </section>
     );
   }
