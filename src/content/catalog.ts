@@ -21,6 +21,18 @@ import {
   microbeEdges,
 } from './bio-source-questions';
 import { novaQuestions, virusAssignment } from './bio-videos';
+import {
+  chemistryLabAssignments,
+  chemistryLabs,
+  labConcepts,
+  labEdges,
+} from './chemistry-labs';
+import { recoveredLewisQuestions } from './chemistry-lewis';
+import { chemistryMatterAssignment } from './chemistry-matter';
+import {
+  recoveredIonQuestions,
+  recoveredValenceQuestions,
+} from './chemistry-electrons';
 
 export const snapshot = {
   date: '2026-10-06',
@@ -141,6 +153,18 @@ export const editions: Edition[] = courses.map((c, i) => ({
 }));
 
 export const sources: Source[] = [
+  {
+    id: 'chem-oct12-sources',
+    title: 'Reviewed SMG labs and Chemistry source audit',
+    type: 'original',
+    author: 'Atlas explanations based on the actual class sheets',
+    checked: '2026-10-12',
+    rights: 'original',
+    status: 'checked',
+    url: 'https://mrstcote.wordpress.com/',
+    notes:
+      'SMG 2A src-chemistry-2a37c550cd2e1d5eacd9; 2B src-chemistry-17d3dbec81a53a57d6ec; 2C src-chemistry-44af361b06011c9e71b5. Existing Hebden and note source IDs retained. Student experimental observations remain private.',
+  },
   {
     id: 'bio-oct12-sources',
     title: 'Reviewed Chapter 17/19 class sources and video evidence',
@@ -433,12 +457,12 @@ const lessonInputs: LessonInput[] = [
     'chemistry',
     'atomic',
     'Valence electrons',
-    'For main-group atoms, the outer-shell electrons are the ones most directly involved in bonding.',
+    'The assigned Hebden p.157 definition excludes the core and filled d/f subshells. Main-group s/p electrons and unfilled transition-metal d electrons can count; the page explicitly treats neutral Xe as zero.',
     'Atoms in the same main-group column share an outer-shell pattern. Reading that pattern from the configuration connects the periodic table to common ions and bonds.',
-    'Main-group outer shell: ns and np electrons',
+    'Write the configuration; exclude the core and filled d/f. Sc: 4s²3d¹ → 3; Cu: 4s¹3d¹⁰ → 1.',
     'How many valence electrons does sulfur have?',
     ['Sulfur ends in 3s² 3p⁴.', '2 + 4 = 6 outer-shell electrons.'],
-    'The final written subshell is not always the whole valence shell. Transition metals need additional care.',
+    'Do not use an s/p-only shortcut for an unfilled d subshell. Noble-gas outer-electron counts and the course’s zero-reactable convention must stay distinct; the closed-shell Cl⁻ item needs teacher confirmation.',
     ['electron-configuration'],
   ],
   [
@@ -1229,7 +1253,7 @@ for (const [id, kana, romaji, meaning, situation] of vocabulary)
     status: 'publishable',
   });
 
-concepts.push(...microbeConcepts);
+concepts.push(...microbeConcepts, ...labConcepts);
 export const coverageItems: CoverageItem[] = concepts.map((c) => ({
   id: `cover-${c.id}`,
   course: c.course,
@@ -1248,7 +1272,7 @@ export const edges: Edge[] = concepts.flatMap((c) =>
     reason: `${c.title} builds on ${concepts.find((x) => x.id === p)?.title}.`,
   })),
 );
-edges.push(...microbeEdges);
+edges.push(...microbeEdges, ...labEdges);
 edges.push(
   {
     from: 'jp-sumimasen',
@@ -2091,29 +2115,119 @@ export const legacyAssignmentTasks: Record<string, string[]> = {
 };
 export const assignments: Assignment[] = [
   ...(classroom.assignments as Assignment[]).map((a) =>
-    a.id === 'bio-c17-sections'
+    a.id === 'chemistry-hebden-lewis'
       ? {
           ...a,
           companionQuestions: [
-            ...recovered171,
             ...(a.companionQuestions ?? []),
+            ...recoveredLewisQuestions,
           ],
           originalAvailability:
-            'Reviewed original photos: all section questions 17.1–17.4 are captured.',
+            'The original p.188 #86 photograph is reviewed: all parts a–cc are captured. The existing q-86 overview retains its identity.',
+          summary:
+            'Build the actual supplied Lewis structures, keeping their printed connections. Count electrons before choosing bonds and lone pairs.',
         }
-      : a.id === 'c17-research'
+      : a.id === 'chemistry-hebden-bonding'
         ? {
             ...a,
-            companionQuestions: novaQuestions,
+            questionReferences: [
+              'p.166 #42–44',
+              'p.167 #45–46',
+              'p.168 #47',
+              'p.172 #57',
+              'p.177 #68',
+              'p.179 #72',
+              'p.182 #79,82',
+            ],
+            summary:
+              'Use the exact ranges printed on teacher-note p.24. Page 182 assigns 79 and 82; captured 80, 81 and 83 are separate references.',
             originalAvailability:
-              'Teacher PDF, exact timestamp-linked video, public English captions and official PBS transcript reviewed.',
+              'Reviewed raw textbook pages and teacher-note p.24. Unassigned captured questions remain separate reference help; checkpoint identities are retained for existing progress.',
           }
-        : a,
+        : a.id === 'bio-c17-sections'
+          ? {
+              ...a,
+              companionQuestions: [
+                ...recovered171,
+                ...(a.companionQuestions ?? []),
+              ],
+              originalAvailability:
+                'Reviewed original photos: all section questions 17.1–17.4 are captured.',
+            }
+          : a.id === 'c17-research'
+            ? {
+                ...a,
+                companionQuestions: novaQuestions,
+                originalAvailability:
+                  'Teacher PDF, exact timestamp-linked video, public English captions and official PBS transcript reviewed.',
+              }
+            : a.id === 'chemistry-hebden-electrons'
+              ? {
+                  ...a,
+                  originalAvailability:
+                    'Original pp.155–158 reviewed, including the complete #28 ion list and all sixteen #29 species. Historical overview checkpoint IDs remain valid.',
+                  reading: (a.reading ?? []).map((r) =>
+                    r.heading === 'The exact four assigned exercises'
+                      ? {
+                          ...r,
+                          text: '26: full configurations. 27: core notation for the same elements. 28: ion configurations in core notation. 29: use the definition on p.157: exclude the core and filled d/f subshells, include unfilled d electrons, and preserve the printed noble-gas convention.',
+                        }
+                      : r,
+                  ),
+                  companionQuestions: [
+                    ...(a.companionQuestions ?? []).map((q) =>
+                      q.id === 'q-29'
+                        ? {
+                            ...q,
+                            asking:
+                              'Use p.157’s definition, including unfilled d electrons and the printed noble-gas convention.',
+                            hints: [
+                              'Exclude core and filled d/f subshells. Unfilled d electrons count: the source examples explicitly give Sc 3, Cr 6 and Ni 10. Neutral Xe is explicitly treated as zero. The closed-shell Cl⁻ convention needs teacher confirmation.',
+                            ],
+                            example:
+                              'The actual p.157 examples count Sc as 3, Cr as 6, Ni as 10, Cu as 1, Zn as 2 and neutral Xe as zero.',
+                            steps: [
+                              {
+                                title: 'Read the section definition',
+                                text: 'Exclude the core and filled d/f subshells. An unfilled d subshell still contributes to the course’s valence count.',
+                              },
+                              {
+                                title: 'Check the species',
+                                text: 'Use the ion’s configuration, then compare with the p.157 examples. The closed-shell Cl⁻ convention remains unresolved in the supplied notes.',
+                              },
+                            ],
+                            checklist: [
+                              'Use the actual species listed in parts a–p below.',
+                              'Account for charge before identifying the remaining subshells.',
+                              'Do not substitute an s/p-only rule for the printed transition-metal examples.',
+                            ],
+                          }
+                        : q,
+                    ),
+                    ...recoveredIonQuestions,
+                    ...recoveredValenceQuestions,
+                  ],
+                }
+              : a.id === 'chemistry-measurement-notes'
+                ? {
+                    ...a,
+                    title:
+                      'Scientific Method & Measurements · pages 1–9 / Unit 2 · pages 1–13',
+                  }
+                : a.id === 'chemistry-bonding-notes'
+                  ? {
+                      ...a,
+                      title:
+                        'Lewis theory, bonding & intermolecular forces · pages 19–24',
+                    }
+                  : a,
   ),
   dynamicsAssignment,
   dynamicsNotesAssignment,
   ...recoveredBioAssignments,
   virusAssignment,
+  ...chemistryLabAssignments,
+  chemistryMatterAssignment,
 ];
 
 const event = (
@@ -2144,6 +2258,22 @@ const event = (
   public: true,
 });
 export const schedule: ScheduleEvent[] = [
+  ...chemistryLabs.map((lab) => ({
+    id: `${lab.id}-date`,
+    course: 'chemistry',
+    title: `Lab ${lab.number} · ${lab.title}`,
+    type: 'lab' as const,
+    dateNote: 'Source sheets are undated; confirm the classroom timing.',
+    confidence: 'unverified' as const,
+    status: 'date-unconfirmed' as const,
+    verified: '2026-10-12',
+    sources: ['chem-oct12-sources'],
+    notes:
+      'The actual experiment sheet is captured. No lab date is inferred from photo upload or from the old teacher site.',
+    concepts: ['observing-matter', 'physical-chemical-change'],
+    assignment: lab.id,
+    public: true as const,
+  })),
   event(
     'ni-sept28',
     undefined,

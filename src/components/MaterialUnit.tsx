@@ -30,6 +30,7 @@ import ReadableText from './ReadableText';
 import PhysicsUnit from './PhysicsUnit';
 import LifeSciences from './LifeSciences';
 import { JapaneseUnit } from './JapaneseMaterial';
+import Chemistry from './Chemistry';
 
 const kindIcon: Record<string, string> = {
   notes: 'book',
@@ -56,6 +57,7 @@ export default function MaterialUnit({
     [query, setQuery] = useState(''),
     [resources, setResources] = useState(false);
   useEffect(() => {
+    if (course === 'chemistry') return;
     const route = new URL(location.href);
     if (route.searchParams.has('view')) {
       route.searchParams.delete('view');
@@ -99,6 +101,7 @@ export default function MaterialUnit({
   if (course === 'japanese') return <JapaneseUnit unit={unit} />;
   if (course === 'life-sciences') return <LifeSciences unit={unit} />;
   if (course === 'physics') return <PhysicsUnit unit={unit} />;
+  if (course === 'chemistry') return <Chemistry unit={unit} />;
   return (
     <div className="unit-screen material-unit" data-course={course}>
       <div className="breadcrumbs">

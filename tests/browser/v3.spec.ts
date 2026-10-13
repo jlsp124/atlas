@@ -18,10 +18,6 @@ async function open(page: Page, path: string) {
       await expect(page.locator('.walkthrough')).toBeVisible();
   }
 }
-async function next(page: Page, count = 1) {
-  for (let i = 0; i < count; i++)
-    await page.getByRole('button', { name: 'Next step', exact: true }).click();
-}
 test('Physics opens a sparse unit list and old view links reach the same material sections', async ({
   page,
 }) => {
@@ -192,29 +188,26 @@ test('Hebden unit cancellation and Lewis/VSEPR build progressively while formal 
   page,
 }) => {
   await open(page, 'work/chemistry-hebden-conversions/?focus=1#q-16c');
-  await page
-    .getByRole('button', { name: 'Help me start', exact: true })
-    .click();
-  await next(page, 2);
-  await expect(page.locator('.cancelled-unit').first()).toHaveText('cm');
-  await expect(page.locator('.remaining-unit').last()).toContainText('mm');
-  await page.getByLabel('Your answer', { exact: true }).fill('158');
-  await page.getByLabel('Unit', { exact: true }).fill('mm');
-  await page.getByRole('button', { name: 'Check answer', exact: true }).click();
-  await expect(page.locator('.question-feedback')).toContainText(
-    'That matches',
-  );
+  const advanceChem = async () => {
+    const button = page
+      .locator('.chem-working')
+      .getByRole('button', { name: 'Next', exact: true });
+    while (await button.isEnabled()) await button.click();
+  };
+  await advanceChem();
+  await expect(
+    page.locator('.cancel-unit[data-cancel=true]').first(),
+  ).toHaveText('cm');
+  await expect(page.locator('.conversion-result')).toContainText('158 mm');
+  await expect(
+    page.locator('.chem-assignment input, .chem-assignment textarea'),
+  ).toHaveCount(0);
   await open(page, 'work/chemistry-hebden-lewis/?focus=1#q-86');
-  await page
-    .getByRole('button', { name: 'Help me start', exact: true })
-    .click();
-  await next(page, 3);
-  await expect(page.locator('.scene-lewis')).toContainText(
-    '0 electrons remain',
+  await advanceChem();
+  await expect(page.locator('.electron-budget')).toContainText(
+    '4 in lone pairs',
   );
-  await expect(page.locator('.guide-caption')).toContainText(
-    'bent molecular shape',
-  );
+  await expect(page.locator('.chem-working')).toContainText('bent');
   await open(page, 'work/electronic-structure/?focus=1#reading-0');
   await expect(page.locator('.restricted-work')).toBeVisible();
   await expect(page.locator('.story-stage')).toHaveCount(0);

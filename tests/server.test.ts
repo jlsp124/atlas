@@ -70,6 +70,28 @@ beforeEach(async () => {
     }),
     { mode: 0o600 },
   );
+  for (const id of [
+    'chemistry-matter-notes',
+    'chemistry-lab-2a',
+    'electronic-structure',
+  ])
+    await writeFile(
+      join(classSourceDir, `${id}.json`),
+      JSON.stringify({
+        title: 'Private Chemistry fixture',
+        captured: '2026-10-12',
+        status: 'transcription',
+        sections: [
+          {
+            heading: 'Fixture',
+            text: 'Private Chemistry text',
+            table: { headers: ['Reading', 'Unit'], rows: [['7', 'fixture']] },
+          },
+        ],
+        gaps: [],
+      }),
+      { mode: 0o600 },
+    );
   app = await createServer({ db, origin, secure: false, classSourceDir });
 });
 afterEach(async () => {
@@ -94,6 +116,17 @@ describe('accounts and authorization', () => {
     ).toBe(401);
     const ordinary = await account();
     expect(
+      (await app.inject('/class/sources/chemistry-matter-notes')).statusCode,
+    ).toBe(401);
+    expect(
+      (
+        await app.inject({
+          url: '/class/sources/chemistry-matter-notes',
+          headers: authed(ordinary),
+        })
+      ).statusCode,
+    ).toBe(403);
+    expect(
       (
         await app.inject({
           url: '/physics/sources/physics-motion-notes',
@@ -104,6 +137,14 @@ describe('accounts and authorization', () => {
     db.prepare("UPDATE users SET role='admin' WHERE id=?").run(
       ordinary.user.id,
     );
+    expect(
+      (
+        await app.inject({
+          url: '/class/sources/chemistry-matter-notes',
+          headers: authed(ordinary),
+        })
+      ).statusCode,
+    ).toBe(403);
     expect(
       (
         await app.inject({
@@ -124,6 +165,39 @@ describe('accounts and authorization', () => {
       cookie: login.headers['set-cookie']!.toString().split(';')[0],
       csrf: login.json().csrf,
     };
+    const chemistryCopy = await app.inject({
+      url: '/class/sources/chemistry-matter-notes',
+      headers: authed(owner),
+    });
+    expect(chemistryCopy.statusCode).toBe(200);
+    expect(chemistryCopy.headers['cache-control']).toBe('private, no-store');
+    expect(chemistryCopy.json().sections[0].table.rows).toEqual([
+      ['7', 'fixture'],
+    ]);
+    expect(
+      (
+        await app.inject({
+          url: '/class/sources/chemistry-lab-2a',
+          headers: authed(owner),
+        })
+      ).statusCode,
+    ).toBe(200);
+    expect(
+      (
+        await app.inject({
+          url: '/class/sources/electronic-structure',
+          headers: authed(owner),
+        })
+      ).statusCode,
+    ).toBe(404);
+    expect(
+      (
+        await app.inject({
+          url: '/physics/sources/chemistry-matter-notes',
+          headers: authed(owner),
+        })
+      ).statusCode,
+    ).toBe(404);
     const copy = await app.inject({
       url: '/physics/sources/physics-motion-notes',
       headers: authed(owner),

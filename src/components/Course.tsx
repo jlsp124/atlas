@@ -21,6 +21,7 @@ import Sheet from './Sheet';
 import LifeSciences from './LifeSciences';
 import Japanese from './Japanese';
 import MaterialRow from './MaterialRow';
+import Chemistry from './Chemistry';
 export default function Course({
   id,
   section,
@@ -84,6 +85,7 @@ export default function Course({
     .slice(0, 3);
   if (id === 'japanese') return <Japanese />;
   if (id === 'life-sciences') return <LifeSciences />;
+  if (id === 'chemistry') return <Chemistry />;
   if (id === 'physics')
     return (
       <div className="course-screen physics-course" data-course={id}>

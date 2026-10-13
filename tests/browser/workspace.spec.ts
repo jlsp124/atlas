@@ -20,10 +20,11 @@ async function open(page: Page, path: string) {
   await page.waitForTimeout(180); // Let the native page snapshot finish before inspection.
 }
 async function finish(page: Page) {
-  const guide = page.locator('.walkthrough');
+  const guide = page.locator('.walkthrough, .chem-working');
   let safety = 30;
   while (
-    await guide.getByRole('button', { name: 'Next', exact: true }).count()
+    (await guide.getByRole('button', { name: 'Next', exact: true }).count()) &&
+    (await guide.getByRole('button', { name: 'Next', exact: true }).isEnabled())
   ) {
     if (!safety--) throw new Error('Walkthrough did not finish');
     await guide.getByRole('button', { name: 'Next', exact: true }).click();
@@ -49,6 +50,27 @@ test('the generic Physics and Chemistry catalog opens as documents without answe
       ),
   )) {
     await open(page, 'work/' + a.id + '/');
+    if (a.course === 'chemistry') {
+      await expect(page.locator('.chem-screen h1')).toHaveText(a.title);
+      if (a.assistance === 'independent-only')
+        await expect(page.locator('.restricted-work')).toBeVisible();
+      else if (a.kind === 'lab')
+        await expect(
+          page.getByRole('navigation', { name: 'Lab stages' }),
+        ).toBeVisible();
+      else if (a.kind !== 'notes' && a.kind !== 'resource')
+        await expect(page.locator('.chem-question')).toHaveCount(
+          (a.companionQuestions?.length ?? 0) -
+            (a.id === 'chemistry-hebden-bonding' ? 3 : 0),
+        );
+      if (a.id !== 'chemistry-lab-2b')
+        await expect(
+          page.locator(
+            '.chem-screen input, .chem-screen textarea:not([readonly])',
+          ),
+        ).toHaveCount(0);
+      continue;
+    }
     await expect(page.locator('.assignment-document h1')).toHaveText(a.title);
     await expect(
       page.locator(
@@ -60,34 +82,37 @@ test('the generic Physics and Chemistry catalog opens as documents without answe
     );
   }
 });
-test('unit filters find textbook work and show a useful empty state', async ({
+test('Chemistry unit opens its assigned material and separate reference navigation', async ({
   page,
 }) => {
   await open(page, 'courses/chemistry/units/atomic/');
   await expect(
     page.getByRole('button', { name: 'Learn', exact: true }),
   ).toHaveCount(0);
-  await page.getByRole('button', { name: 'Textbook', exact: true }).click();
-  expect(
-    (await page.locator('.material-row').allTextContents()).join(' '),
-  ).not.toContain('details only');
+  await expect(page.locator('.chem-material-list')).toContainText('Hebden');
   await page
-    .getByRole('textbox', { name: 'Find material in this unit', exact: true })
-    .fill('no matching material');
-  await expect(
-    page.getByRole('heading', { name: 'No matching materials' }),
-  ).toBeVisible();
-  await page.getByRole('button', { name: 'Show all materials' }).click();
-  await expect(page.locator('.material-row')).toContainText(['Hebden']);
+    .getByRole('navigation', { name: 'Chemistry sections' })
+    .getByRole('link', { name: 'Notes', exact: true })
+    .click();
+  await expect(page.locator('.chem-material-list')).toContainText(
+    'Atomic number',
+  );
+  await page
+    .getByRole('navigation', { name: 'Chemistry sections' })
+    .getByRole('link', { name: 'Labs', exact: true })
+    .click();
+  await expect(page.locator('.chem-intro').last()).toContainText('No labs');
 });
 test('Lewis electrons persist and move from the budget into bonds and lone pairs', async ({
   page,
 }) => {
   await open(page, 'work/chemistry-hebden-lewis/');
+  await page.locator('#q-86 summary').click();
   await page
-    .getByRole('link', { name: 'Walk through question 86', exact: true })
+    .locator('#q-86')
+    .getByRole('button', { name: 'Show the working', exact: true })
     .click();
-  const guide = page.locator('.walkthrough');
+  const guide = page.locator('.chem-working');
   const first = await page.locator('.moving-electron').first().elementHandle();
   await guide.getByRole('button', { name: 'Next', exact: true }).click();
   await expect(guide.locator('.electron-budget')).toContainText('8 to place');
@@ -342,35 +367,19 @@ test('small phones reveal the new working and keep Japanese navigation visible',
   await page.setViewportSize({ width: 360, height: 800 });
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await open(page, 'work/chemistry-hebden-electrons/?step=5#q-26a');
-  const visibleAboveNavigation = async (selector: string) =>
-    page.evaluate((selector) => {
-      const target = document.querySelector(selector)!.getBoundingClientRect();
-      const footer = document
-        .querySelector('.walkthrough-footer')!
-        .getBoundingClientRect();
-      return target.top >= 0 && target.bottom <= footer.top;
-    }, selector);
-  await expect
-    .poll(() => visibleAboveNavigation('.teaching-diagram'))
-    .toBe(true);
-  await page
-    .locator('.walkthrough-footer')
-    .getByRole('button', { name: 'Next', exact: true })
-    .click();
-  await expect
-    .poll(() => visibleAboveNavigation('.paper-instruction'))
-    .toBe(true);
-  await expect(page.locator('.topbar')).toBeInViewport({ ratio: 1 });
+  await expect(page.locator('#q-26a .chem-working')).toBeVisible();
+  await finish(page);
+  await expect(page.locator('#q-26a .electron-count')).toContainText(
+    '15 placed',
+  );
   const back = page
-    .locator('.walkthrough-footer')
+    .locator('.chem-working')
     .getByRole('button', { name: 'Back', exact: true });
-  for (let i = 0; i < 6; i++) await back.click();
-  await expect(page.locator('.transforming-question')).toBeInViewport({
-    ratio: 1,
-  });
+  while (await back.isEnabled()) await back.click();
+  await expect(page.locator('#q-26a')).toHaveAttribute('open', '');
   await expect(
-    page.getByRole('button', { name: 'Whole assignment', exact: true }),
-  ).toBeInViewport({ ratio: 1 });
+    page.locator('.chem-working input, .chem-working textarea'),
+  ).toHaveCount(0);
   await open(page, 'work/greetings-practice/?step=0#q-5');
   await expect(
     page.getByRole('navigation', { name: 'Japanese sections' }),
@@ -422,12 +431,12 @@ test('focused paper is accessible and reflows in both themes with reduced motion
           () => document.documentElement.scrollWidth <= innerWidth + 1,
         ),
       ).toBe(true);
-      await expect(page.locator('.transforming-question')).toBeVisible();
+      await expect(page.locator('#q-86')).toHaveAttribute('open', '');
       await expect(
         page
-          .locator('.walkthrough-footer')
+          .locator('.chem-working')
           .getByRole('button', { name: 'Next', exact: true }),
-      ).toBeInViewport();
+      ).toBeVisible();
       expect(
         (
           await new AxeBuilder({ page })

@@ -244,6 +244,7 @@ export const scheduleSchema = z.object({
   type: z.enum([
     'test',
     'quiz',
+    'lab',
     'assignment',
     'project',
     'research',

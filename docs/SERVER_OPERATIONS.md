@@ -51,8 +51,8 @@ When `jovanpahal.com` is available, use `atlas.jovanpahal.com` for Pages and `ap
 
 `atlasctl stop` and `atlasctl restart` never remove the volume. Do not run `docker compose down -v`.
 
-## Private Physics class sources
+## Private class sources
 
-Faithful note captures and legible ticker measurements live only in `/app/data/class-sources` in the persistent data volume. The directory must be owned by the application UID with mode 700; JSON files must have mode 600. They are never copied into the repository, a static Pages artifact or a Docker build context. `GET /physics/sources/:id` requires the authenticated Jovan administrator account and returns `Cache-Control: private, no-store`. Other users and other administrators cannot open them. Incomplete captures carry explicit source gaps.
+Faithful note transcriptions and legible measured observations live only in `/app/data/class-sources` in the persistent data volume. The directory must be owned by the application UID with mode 700; JSON files must have mode 600. They are never copied into the repository, a static Pages artifact or a Docker build context. `GET /class/sources/:id` supports permitted Physics and Chemistry material and requires the authenticated Jovan administrator account. It returns `Cache-Control: private, no-store`. The legacy `/physics/sources/:id` route remains Physics-only. Other users and other administrators cannot open either route. Formal independent Chemistry hand-ins are rejected even if a corresponding file exists. Incomplete copies carry explicit source gaps; tables and reviewed diagrams may accompany the transcription.
 
 When copying runtime files from the host, preserve their application ownership (`docker cp -a` when host and container UIDs match), then verify that the non-root application can actually read them. A mode check alone does not verify ownership.

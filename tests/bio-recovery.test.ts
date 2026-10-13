@@ -33,7 +33,9 @@ it('keeps all real Chapter 19 sections separate and links every supported item t
   expect(
     assignments.find((a) => a.id === 'bio-c19-review')!.companionQuestions,
   ).toHaveLength(35);
-  const sourceIdeas = concepts.filter((c) => c.practiceMode === 'assignment');
+  const sourceIdeas = concepts.filter(
+    (c) => c.course === 'life-sciences' && c.practiceMode === 'assignment',
+  );
   expect(sourceIdeas).toHaveLength(9);
   expect(
     questions.some((q) => sourceIdeas.some((c) => q.concepts.includes(c.id))),

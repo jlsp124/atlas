@@ -1,4 +1,8 @@
-import Fastify, { LogController } from 'fastify';
+import Fastify, {
+  LogController,
+  type FastifyRequest,
+  type FastifyReply,
+} from 'fastify';
 import cookie from '@fastify/cookie';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
@@ -333,28 +337,40 @@ export async function createServer(options: ServerOptions = {}) {
   });
   // Owner's classroom transcripts and measurements are runtime-only files.
   // They never enter the public build, a shared account, or the static cache.
-  app.get('/physics/sources/:id', async (req, reply) => {
-    const authorized = await auth(req, reply, true);
-    if (!authorized) return;
-    reply.header('Cache-Control', 'private, no-store');
-    if (authorized.u.username.toLowerCase() !== 'jovan')
-      return reply.code(403).send({ error: 'Owner authorization required' });
-    const { id } = req.params as { id: string };
-    if (!assignments.some((a) => a.id === id && a.course === 'physics'))
-      return reply.code(404).send({ error: 'Class source unavailable' });
-    try {
-      const dir =
-        options.classSourceDir ??
-        join(process.env.DATA_DIR || './data', 'class-sources');
-      return privatePhysicsSourceSchema.parse(
-        JSON.parse(await readFile(join(dir, `${id}.json`), 'utf8')),
-      );
-    } catch {
-      return reply.code(404).send({
-        error: 'A faithful transcription is not yet available for this sheet.',
-      });
-    }
-  });
+  const classSource =
+    (allowedCourses: string[]) =>
+    async (req: FastifyRequest, reply: FastifyReply) => {
+      const authorized = await auth(req, reply, true);
+      if (!authorized) return;
+      reply.header('Cache-Control', 'private, no-store');
+      if (authorized.u.username.toLowerCase() !== 'jovan')
+        return reply.code(403).send({ error: 'Owner authorization required' });
+      const { id } = req.params as { id: string };
+      if (
+        !assignments.some(
+          (a) =>
+            a.id === id &&
+            allowedCourses.includes(a.course) &&
+            a.assistance !== 'independent-only',
+        )
+      )
+        return reply.code(404).send({ error: 'Class source unavailable' });
+      try {
+        const dir =
+          options.classSourceDir ??
+          join(process.env.DATA_DIR || './data', 'class-sources');
+        return privatePhysicsSourceSchema.parse(
+          JSON.parse(await readFile(join(dir, `${id}.json`), 'utf8')),
+        );
+      } catch {
+        return reply.code(404).send({
+          error:
+            'A faithful transcription is not yet available for this sheet.',
+        });
+      }
+    };
+  app.get('/physics/sources/:id', classSource(['physics']));
+  app.get('/class/sources/:id', classSource(['physics', 'chemistry']));
   app.post(
     '/auth/register',
     { config: { rateLimit: { max: 5, timeWindow: '1 hour' } } },

@@ -33,6 +33,39 @@ await writeFile(
   { mode: 0o600 },
 );
 const now = new Date().toISOString();
+for (const id of ['chemistry-matter-notes', 'chemistry-lab-2a'])
+  await writeFile(
+    join(classSourceDir, `${id}.json`),
+    JSON.stringify({
+      title: 'Chemistry class-note fixture',
+      captured: '2026-10-12',
+      status: 'partial-transcription',
+      sections: [
+        {
+          heading: 'Fixture table',
+          text: 'Owner-only Chemistry fixture.',
+          table: {
+            headers: ['Quantity', 'Value'],
+            rows: [['Test measurement', '7 fixture units']],
+          },
+        },
+        {
+          heading: 'Fixture diagram',
+          text: '',
+          sketch: {
+            caption: 'Test-only atom connections',
+            nodes: [
+              { label: 'A', x: 180, y: 150, dots: ['top'] },
+              { label: 'B', x: 360, y: 150, pairs: ['top', 'right'] },
+            ],
+            edges: [{ from: 0, to: 1, order: 2 }],
+          },
+        },
+      ],
+      gaps: ['Fixture blank remains _____.'],
+    }),
+    { mode: 0o600 },
+  );
 db.prepare('INSERT INTO users VALUES (?,?,?,?,?,?,?)').run(
   randomUUID(),
   'Jovan',

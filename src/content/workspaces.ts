@@ -149,7 +149,7 @@ export function eventUnit(e: ScheduleEvent) {
 }
 export function eventNote(e: ScheduleEvent) {
   if (!e.start)
-    return 'I’m still checking the test date. It may be Oct. 7 or 9; check the classroom board.';
+    return e.dateNote ?? 'Confirm the date from the classroom instructions.';
   if (e.id.startsWith('c19'))
     return 'Use the separate Chapter 19 assignments, video evidence and key ideas beside the teacher’s guide.';
   if (e.id === 'chem-test-oct16')
