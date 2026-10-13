@@ -269,7 +269,9 @@ test('definitions give useful context and backlinks without a graph', async ({
   await idea.getByRole('link', { name: /Relative dating/ }).click();
   await expect(page.locator('#relative-dating')).toHaveAttribute('open', '');
   await open(page, 'courses/life-sciences/key-ideas/#endosymbiosis');
-  await expect(page.locator('#endosymbiosis .life-backlinks a')).toBeVisible();
+  await expect(
+    page.locator('#endosymbiosis .life-backlinks a').first(),
+  ).toBeVisible();
   await expect(page.locator('.graph-canvas')).toHaveCount(0);
 });
 test('learn teaches one step, renders math, keeps confusion evidence and secondary AI', async ({

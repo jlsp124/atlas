@@ -151,7 +151,7 @@ export function eventNote(e: ScheduleEvent) {
   if (!e.start)
     return 'I’m still checking the test date. It may be Oct. 7 or 9; check the classroom board.';
   if (e.id.startsWith('c19'))
-    return 'I haven’t added Chapter 19 yet. Use the teacher’s guide for now.';
+    return 'Use the separate Chapter 19 assignments, video evidence and key ideas beside the teacher’s guide.';
   if (e.id === 'chem-test-oct16')
     return 'I have the date, but I’m still checking exactly what’s on it. You can review the material we’ve covered.';
   if (e.id === 'physics-quiz-oct6')
