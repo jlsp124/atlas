@@ -10,6 +10,10 @@ import type {
   Source,
 } from '../core/schema';
 import classroom from './ingestion/classroom.json' with { type: 'json' };
+import {
+  dynamicsAssignment,
+  dynamicsNotesAssignment,
+} from './physics-dynamics';
 
 export const snapshot = {
   date: '2026-10-06',
@@ -27,7 +31,12 @@ export const courses: Course[] = [
       'Describe motion. Make the signs, units and graphs tell the same story.',
     units: [
       { id: 'basic-skills', title: 'Unit 0 · Basic Skills', status: 'review' },
-      { id: 'kinematics', title: 'Unit 1 · Kinematics', status: 'current' },
+      { id: 'kinematics', title: 'Unit 1 · Kinematics', status: 'review' },
+      {
+        id: 'dynamics',
+        title: 'Unit 2 · Dynamics — Forces in 1D',
+        status: 'current',
+      },
     ],
   },
   {
@@ -103,7 +112,7 @@ export const editions: Edition[] = courses.map((c, i) => ({
   end: '2027-01-29',
   status: 'active',
   verified: snapshot.date,
-  currentUnit: ['kinematics', 'origins', 'greetings', 'bonding'][i],
+  currentUnit: ['dynamics', 'origins', 'greetings', 'bonding'][i],
   notes: [
     'The classroom board controls dates. A formula sheet is provided: practise choosing, rearranging and interpreting equations.',
     'Teacher calendar rechecked Oct. 5. C17 test Oct. 7; C19 quiz Oct. 9. Chapter 19 lessons remain pending content review.',
@@ -2059,7 +2068,11 @@ export const legacyAssignmentTasks: Record<string, string[]> = {
   'c17-research': ['fossils', 'dating', 'origins', 'evolution'],
   'greetings-practice': ['read', 'produce', 'contrast'],
 };
-export const assignments: Assignment[] = classroom.assignments as Assignment[];
+export const assignments: Assignment[] = [
+  ...(classroom.assignments as Assignment[]),
+  dynamicsAssignment,
+  dynamicsNotesAssignment,
+];
 
 const event = (
   id: string,

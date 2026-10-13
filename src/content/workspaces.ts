@@ -40,6 +40,8 @@ export const unitDescriptions: Record<string, string> = {
   'basic-skills':
     'A few tools you’ll use every time: units, algebra and graph slopes.',
   kinematics: 'Describe how things move, from direction to free fall.',
+  dynamics:
+    'Use force diagrams and Newton’s laws to explain and calculate changes in motion.',
   measurement: 'Make numbers, units and precision work together.',
   atomic: 'Get to know the atom, then follow its electrons.',
   bonding: 'Why atoms attract, bond and interact.',

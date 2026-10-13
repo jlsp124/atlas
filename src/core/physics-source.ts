@@ -3,7 +3,24 @@ export const privatePhysicsSourceSchema = z.object({
   title: z.string(),
   captured: z.string(),
   status: z.enum(['partial-transcription', 'transcription', 'measured-data']),
-  sections: z.array(z.object({ heading: z.string(), text: z.string() })),
+  sections: z.array(
+    z.object({
+      heading: z.string(),
+      text: z.string(),
+      diagram: z
+        .object({
+          caption: z.string(),
+          forces: z.array(
+            z.object({
+              label: z.string(),
+              direction: z.enum(['up', 'down', 'left', 'right']),
+              size: z.number().positive().max(2),
+            }),
+          ),
+        })
+        .optional(),
+    }),
+  ),
   gaps: z.array(z.string()),
   data: z
     .array(z.object({ time: z.number(), position: z.number() }))

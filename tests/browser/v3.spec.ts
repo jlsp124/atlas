@@ -27,7 +27,7 @@ test('Physics opens a sparse unit list and old view links reach the same materia
 }) => {
   await open(page, 'courses/physics/');
   await expect(page.locator('.current-work-band')).toHaveCount(0);
-  await expect(page.locator('.unit-row')).toHaveCount(2);
+  await expect(page.locator('.unit-row')).toHaveCount(3);
   await open(page, 'courses/physics/units/kinematics/?view=learn');
   await expect(page).toHaveURL(/\/kinematics\/$/);
   await expect(page.locator('.physics-unit')).toBeVisible();
@@ -42,7 +42,7 @@ test('Physics opens a sparse unit list and old view links reach the same materia
     }),
   ).toHaveCount(0);
   await open(page, 'courses/physics/learn/');
-  await expect(page).toHaveURL(/\/units\/kinematics\/$/);
+  await expect(page).toHaveURL(/\/units\/dynamics\/$/);
 });
 test('Physics overview and both old and current focus deep links preserve the actual question', async ({
   page,

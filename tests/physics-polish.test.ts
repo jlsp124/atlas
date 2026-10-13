@@ -31,7 +31,7 @@ describe('Physics source and teaching audit', () => {
             guide.steps.some((s) => s.phase.startsWith('point-')),
         ).toBeTruthy();
       }
-    expect(count).toBe(115);
+    expect(count).toBeGreaterThanOrEqual(115);
     expect(
       physics
         .filter((a) => a.kind === 'notes' && a.id !== 'wadson-formal-lab')

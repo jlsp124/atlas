@@ -12,6 +12,7 @@ import PhysicsGraph from './PhysicsGraph';
 import PhysicsPrompt from './PhysicsPrompt';
 import MotionDiagram from './MotionDiagram';
 import { questionGraphs } from '../core/physics-graphs';
+import DynamicsWorking from './DynamicsWorking';
 
 export default function QuestionWalkthrough({
   assignment: a,
@@ -223,7 +224,7 @@ export default function QuestionWalkthrough({
       text: q.prompt.slice(start, start + text.length),
     });
   };
-  for (const value of physics?.values ?? [])
+  for (const value of physics?.values ?? guide.dynamics?.values ?? [])
     addCue(value.source, `source-${value.symbol}`);
   if (unknown?.focus) addCue(unknown.focus, 'unknown-request', true);
   if (current.focus && current.phase !== 'unknown')
@@ -235,7 +236,7 @@ export default function QuestionWalkthrough({
     current.phase === 'unknown'
       ? 'unknown-request'
       : current.phase === 'known'
-        ? `source-${physics?.values.find((v) => current.write?.startsWith(symbols[v.symbol] + ' ='))?.symbol}`
+        ? `source-${(physics?.values ?? guide.dynamics?.values)?.find((v) => current.write?.startsWith((symbols[v.symbol] ?? v.symbol) + ' ='))?.symbol}`
         : `clue-${current.focus}`;
   const prompt = cues.flatMap((c) => {
     const before = q.prompt.slice(cursor, c.start);
@@ -314,7 +315,9 @@ export default function QuestionWalkthrough({
             </div>
           </div>
         </div>
-        {physics ? (
+        {guide.dynamics ? (
+          <DynamicsWorking guide={guide} step={index} />
+        ) : physics ? (
           <div className="physics-working" aria-label="Working on paper">
             <div className="known-values">
               {physics.values.map((v) => {

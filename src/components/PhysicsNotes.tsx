@@ -4,6 +4,7 @@ import { usePhysicsSource } from '../client/physics-source';
 import { unitTitle, unitUrl } from '../content/workspaces';
 import ReadableText from './ReadableText';
 import { Icon } from './Icons';
+import ForceDiagram from './ForceDiagram';
 
 export default function PhysicsNotes({
   assignment: a,
@@ -49,6 +50,7 @@ export default function PhysicsNotes({
                 <p>
                   <ReadableText text={section.text} />
                 </p>
+                {section.diagram && <ForceDiagram {...section.diagram} />}
               </section>
             ))}
           </article>

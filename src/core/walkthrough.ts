@@ -1,6 +1,10 @@
 import type { Assignment, CompanionQuestion } from './schema';
 import { physicsSetups } from '../content/walkthrough-values';
 import { writtenGuides } from '../content/walkthrough-guides';
+import {
+  dynamicsLessons,
+  type DynamicsLesson,
+} from '../content/physics-dynamics';
 
 export type GuideStep = {
   title: string;
@@ -59,8 +63,15 @@ export type ConfigurationWork = {
   shells: { name: string; count: number }[];
 };
 export type Walkthrough = {
-  kind: 'physics' | 'conversion' | 'configuration' | 'lewis' | 'reasoning';
+  kind:
+    | 'physics'
+    | 'dynamics'
+    | 'conversion'
+    | 'configuration'
+    | 'lewis'
+    | 'reasoning';
   steps: GuideStep[];
+  dynamics?: DynamicsLesson;
   physics?: PhysicsWork;
   conversion?: ConversionWork;
   configuration?: ConfigurationWork;
@@ -586,6 +597,61 @@ export function makeWalkthrough(
 ): Walkthrough {
   if (a.assistance === 'independent-only')
     throw new Error('Independent work has no walkthrough');
+  if (a.id === 'physics-forces-1-33') {
+    const dynamics = dynamicsLessons[q.number];
+    return {
+      kind: 'dynamics',
+      dynamics,
+      steps: [
+        {
+          title: 'Read the question',
+          text: q.asking,
+          phase: 'read',
+          write: 'Keep this question on your paper beside you.',
+        },
+        ...dynamics.clues.map((c) => ({
+          title: `Notice “${c.word}”`,
+          text: c.explanation,
+          focus: c.word,
+          phase: 'clue',
+          write: `Underline “${c.word}”.`,
+        })),
+        ...(dynamics.gap && !dynamics.values.length
+          ? []
+          : [
+              {
+                title: 'Choose one axis',
+                text: dynamics.axis,
+                phase: 'axis',
+                write: dynamics.axis,
+              },
+            ]),
+        ...dynamics.values.map((v) => ({
+          title: `Write ${v.symbol}`,
+          text:
+            v.source === 'Earth'
+              ? 'Wadson’s formula sheet supplies g = 9.8 m/s², equivalent to 9.8 N/kg. Keep the gravitational force downward on an up-positive axis.'
+              : `Take this value from the question${v.value < 0 ? '; its direction is negative on our chosen axis' : ''}. Keep the unit with the number.`,
+          phase: 'known',
+          focus: v.source,
+          write: `${v.symbol} = ${v.text} ${v.unit}`,
+        })),
+        {
+          title: 'What are we finding?',
+          text: q.asking,
+          phase: 'unknown',
+          write: `${dynamics.target} = ?`,
+        },
+        ...dynamics.steps.map((s, i) => ({ ...s, phase: `point-${i}` })),
+        {
+          title: dynamics.gap ? 'What is still needed' : 'Your final line',
+          text: dynamics.steps.at(-1)!.text,
+          write: dynamics.steps.at(-1)!.write,
+          phase: 'finish',
+        },
+      ],
+    };
+  }
   const written = writtenGuides[a.id]?.[q.id];
   if (written)
     return {

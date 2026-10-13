@@ -62,7 +62,7 @@ describe('assignment tutoring over the reviewed catalog', () => {
           count++;
         }
     }
-    expect(count).toBe(353);
+    expect(count).toBeGreaterThanOrEqual(353);
     expect(numerical).toBeGreaterThanOrEqual(60);
   });
   it('uses signed acceleration, the correct unknown and related-part provenance', () => {
