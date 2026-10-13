@@ -54,6 +54,7 @@ export const conceptSchema = z.object({
   unit: id,
   title: z.string(),
   kind: z.enum(['concept', 'procedure', 'vocabulary', 'kana', 'situation']),
+  practiceMode: z.enum(['standalone', 'assignment']).optional(),
   model: z.string().min(15),
   why: z.string().min(20),
   representation: z.string(),

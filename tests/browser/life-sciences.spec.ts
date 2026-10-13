@@ -76,7 +76,9 @@ test('Life Sciences separates real work, notes and key ideas', async ({
     path: testInfo.outputPath('life-ideas.png'),
     fullPage: true,
   });
-  await page.locator('#endosymbiosis .life-backlinks a').click();
+  await page
+    .locator('#endosymbiosis .life-backlinks a[href$="bio-c17-2/#q-17-2-4"]')
+    .click();
   await expect(page).toHaveURL(/bio-c17-2\/#q-17-2-4$/);
   await expect(page.locator('#q-17-2-4')).toHaveAttribute('open', '');
   expect(
@@ -110,7 +112,7 @@ test('legacy question links resolve and factual video work stays compact', async
   ).toBeVisible();
   await expect(page.locator('.life-video-question')).toHaveCount(15);
   await expect(page.locator('.life-video-links')).toContainText(
-    'A checked filled version is not available yet',
+    'public English captions and the official PBS transcript',
   );
   await expect(
     page.locator(
@@ -118,14 +120,14 @@ test('legacy question links resolve and factual video work stays compact', async
     ),
   ).toHaveCount(0);
 });
-test('unreviewed source work is labeled and definitions practice is separate', async ({
+test('recovered review work keeps assignment status clear and definitions practice separate', async ({
   page,
 }) => {
   await open(page, 'courses/life-sciences/assignments/bio-c17-assessment/');
-  await expect(page.locator('.life-reference')).toContainText(
+  await expect(page.locator('.life-assignment-intro').first()).toContainText(
     'not a confirmed assignment',
   );
-  await expect(page.locator('.life-question')).toHaveCount(0);
+  await expect(page.locator('.life-question')).toHaveCount(34);
   await page.getByRole('link', { name: 'Review', exact: true }).click();
   await expect(
     page.getByRole('heading', { name: 'Definitions review', exact: true }),

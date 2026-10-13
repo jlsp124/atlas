@@ -40,12 +40,15 @@ describe('Life Sciences source boundaries and navigation', () => {
       'q-17-2-5',
     ]);
   });
-  it('keeps unreviewed source prompts honest instead of generating missing work', () => {
-    for (const id of ['bio-c17-1', 'bio-c17-assessment', 'bio-c17-test-prep']) {
+  it('recovers captured Chapter 17 questions while keeping assignment status honest', () => {
+    for (const [id, count] of [
+      ['bio-c17-1', 6],
+      ['bio-c17-assessment', 34],
+      ['bio-c17-test-prep', 8],
+    ] as const) {
       const material = lifeMaterials.find((m) => m.id === id)!;
-      expect(material.kind).toBe('reference');
-      expect(material.questions).toEqual([]);
-      expect(material.availability).toBeTruthy();
+      expect(material.kind).toBe('questions');
+      expect(lifeQuestions(material)).toHaveLength(count);
     }
     expect(
       lifeMaterials.find((m) => m.id === 'bio-c17-assessment')?.availability,

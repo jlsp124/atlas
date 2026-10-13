@@ -17,6 +17,7 @@ import {
   LifeNotesLink,
 } from './LifeSciences';
 import LifeIdeaVisual from './LifeIdeaVisual';
+import { lifeVideos, videoEvidence } from '../content/bio-videos';
 import '../styles/life-sciences.css';
 
 export default function LifeSciencesAssignment({
@@ -96,12 +97,17 @@ export default function LifeSciencesAssignment({
       </div>
     );
   const sections = [...new Set(questions.map((q) => q.section))];
+  const video = lifeVideos[material.assignment as keyof typeof lifeVideos];
   return (
     <div className="life-screen life-assignment" data-course="life-sciences">
       <div className="breadcrumbs">
         <a href={url(`courses/life-sciences/units/${material.unit}/`)}>
           <Icon name="back" size={16} />
-          {material.unit === 'origins' ? 'Chapter 17' : 'Chapter 18'}
+          {material.unit === 'origins'
+            ? 'Chapter 17'
+            : material.unit === 'classification'
+              ? 'Chapter 18'
+              : 'Chapter 19'}
         </a>
       </div>
       <header className="life-page-heading">
@@ -110,6 +116,9 @@ export default function LifeSciencesAssignment({
         <p className="muted">{material.detail}</p>
       </header>
       <LifeNavigation current="assignments" />
+      {material.availability && material.kind !== 'reference' && (
+        <p className="life-assignment-intro">{material.availability}</p>
+      )}
       {(material.originalUrl || original?.originalUrl) && (
         <a
           className="life-source-link"
@@ -141,30 +150,87 @@ export default function LifeSciencesAssignment({
             find the evidence; write short facts on your paper.
           </p>
           <div className="life-video-links">
-            <a
-              href="https://www.youtube.com/watch?v=IuqmtcogwsE"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Watch NOVA
+            <a href={video.url} target="_blank" rel="noreferrer">
+              Watch {video.title}
               <Icon name="external" size={15} />
             </a>
-            <small>A checked filled version is not available yet.</small>
+            {'transcript' in video && (
+              <a href={video.transcript} target="_blank" rel="noreferrer">
+                PBS transcript <Icon name="external" size={15} />
+              </a>
+            )}
+            <small>{video.evidence}</small>
           </div>
           {sections.map((section) => (
             <section className="life-video-section" key={section}>
               <h2>{section}</h2>
               {questions
                 .filter((q) => q.section === section)
-                .map((q) => (
-                  <article className="life-video-question" id={q.id} key={q.id}>
-                    <span className="life-question-number">{q.number}</span>
-                    <div>
-                      <h3>{q.prompt}</h3>
-                      <p>{q.asking}</p>
-                    </div>
-                  </article>
-                ))}
+                .map((q) => {
+                  const evidence = videoEvidence[material.assignment]?.[q.id];
+                  const idea = lifeQuestionIdea(q);
+                  return (
+                    <article
+                      className="life-video-question"
+                      id={q.id}
+                      key={q.id}
+                    >
+                      <span className="life-question-number">{q.number}</span>
+                      <div>
+                        <h3>{q.prompt}</h3>
+                        <p>{q.asking}</p>
+                        {idea && (
+                          <a
+                            className="life-main-idea"
+                            href={url(lifeIdeaPath(idea.id))}
+                          >
+                            Main idea <Icon name="arrow" size={13} />
+                            {idea.title}
+                          </a>
+                        )}
+                        {evidence && (
+                          <div
+                            className="life-video-evidence"
+                            data-kind={evidence.kind}
+                          >
+                            <p className="meta">
+                              {evidence.kind === 'fact'
+                                ? 'Caption-supported fact'
+                                : 'Build your explanation'}
+                            </p>
+                            <p>{evidence.text}</p>
+                            {evidence.include &&
+                              evidence.kind === 'reasoning' && (
+                                <ul>
+                                  {evidence.include.map((item) => (
+                                    <li key={item}>{item}</li>
+                                  ))}
+                                </ul>
+                              )}
+                            {evidence.seconds !== undefined && (
+                              <a
+                                className="life-timestamp"
+                                href={`${video.url}&t=${evidence.seconds}s`}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                Evidence at {Math.floor(evidence.seconds / 60)}:
+                                {String(evidence.seconds % 60).padStart(2, '0')}{' '}
+                                <Icon name="external" size={13} />
+                              </a>
+                            )}
+                            {evidence.seconds === undefined && (
+                              <small>
+                                Reasoning prompt from the worksheet; no matching
+                                caption segment is claimed.
+                              </small>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </article>
+                  );
+                })}
             </section>
           ))}
         </>

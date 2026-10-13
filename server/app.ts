@@ -821,11 +821,18 @@ export async function createServer(options: ServerOptions = {}) {
       },
       content: {
         concepts: concepts.length,
-        missingPractice: concepts.filter(
-          (c) => !questions.some((q) => q.concepts.includes(c.id)),
+        missingPractice: concepts.filter((c) =>
+          c.practiceMode === 'assignment'
+            ? !assignments.some(
+                (a) =>
+                  a.assistance !== 'independent-only' &&
+                  a.companionQuestions?.some((q) => q.concepts.includes(c.id)),
+              )
+            : !questions.some((q) => q.concepts.includes(c.id)),
         ).length,
         missingTransfer: concepts.filter(
           (c) =>
+            c.practiceMode !== 'assignment' &&
             !questions.some(
               (q) => q.level === 'transfer' && q.concepts.includes(c.id),
             ),
@@ -836,7 +843,7 @@ export async function createServer(options: ServerOptions = {}) {
         unavailableSources: sources
           .filter((s) => s.status === 'unavailable')
           .map((s) => s.title),
-        note: 'Chapter 19 and complete course syllabuses remain outside the reviewed learning bank.',
+        note: 'Chapter 19 key ideas are supported by real assignment questions. Transfer-practice diagnostics apply to standalone practice concepts. Complete course syllabuses are not inferred.',
       },
     };
   });

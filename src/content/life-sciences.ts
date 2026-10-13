@@ -1,5 +1,6 @@
 import { assignments } from './catalog';
 import type { CompanionQuestion } from '../core/schema';
+import { microbeIdeas } from './bio-source-questions';
 
 export const lifeNotesUrl =
   'https://sites.google.com/view/ecl-life-sciences-11/notes';
@@ -27,7 +28,12 @@ const section = (
   return {
     id: `bio-c${chapter}-${part}`,
     assignment,
-    unit: chapter === 17 ? 'origins' : 'classification',
+    unit:
+      chapter === 17
+        ? 'origins'
+        : chapter === 18
+          ? 'classification'
+          : 'microorganisms',
     title: `${chapter}.${part} questions`,
     detail,
     kind: 'questions',
@@ -41,12 +47,7 @@ const section = (
   };
 };
 export const lifeMaterials: LifeMaterial[] = [
-  {
-    ...section(17, 1, 'The fossil record'),
-    kind: 'reference',
-    availability:
-      'The source inventory includes 17.1, but its numbered questions have not been reviewed for this companion. Use your textbook and the linked key ideas.',
-  },
+  section(17, 1, 'The fossil record · p.422'),
   section(17, 2, 'Earth’s early history'),
   section(17, 3, 'Evolution of multicellular life · p.434'),
   section(17, 4, 'Patterns of evolution · p.440'),
@@ -77,25 +78,29 @@ export const lifeMaterials: LifeMaterial[] = [
   },
   {
     id: 'bio-c17-assessment',
-    assignment: 'bio-c17-sections',
+    assignment: 'bio-c17-review',
     unit: 'origins',
     title: 'Chapter assessment',
     detail: 'pp.443–444 · available review material',
-    kind: 'reference',
-    questions: [],
+    kind: 'questions',
+    questions: assignments
+      .find((a) => a.id === 'bio-c17-review')!
+      .companionQuestions!.map((q) => q.id),
     availability:
-      'The source inventory includes pp.443–444; the vault capture confirms questions 1–26 on p.443. The whole assessment is available review material, not a confirmed assignment. Numbered help is not yet reviewed.',
+      'pp.443–444 and questions 1–34 are reviewed. Available review material, not a confirmed assignment.',
   },
   {
     id: 'bio-c17-test-prep',
-    assignment: 'bio-c17-sections',
+    assignment: 'bio-c17-test-prep',
     unit: 'origins',
     title: 'Standardized test prep',
     detail: 'p.445 · available review material',
-    kind: 'reference',
-    questions: [],
+    kind: 'questions',
+    questions: assignments
+      .find((a) => a.id === 'bio-c17-test-prep')!
+      .companionQuestions!.map((q) => q.id),
     availability:
-      'p.445 is recorded in the source inventory. Its individual questions and assignment status have not been verified for this companion.',
+      'p.445 and questions 1–8 are reviewed. Available review material; assignment status is not confirmed.',
   },
   section(18, 1, 'Finding order in diversity'),
   section(18, 2, 'Modern evolutionary classification'),
@@ -166,6 +171,46 @@ export const lifeMaterials: LifeMaterial[] = [
     availability:
       'p.467 is recorded in the source inventory. Use the original page; assignment status and numbered help are not yet confirmed.',
   },
+  section(19, 1, 'Bacteria · p.477'),
+  section(19, 2, 'Viruses · p.483'),
+  section(19, 3, 'Disease · p.490'),
+  {
+    id: 'bio-c19-assessment',
+    assignment: 'bio-c19-review',
+    unit: 'microorganisms',
+    title: 'Chapter 19 assessment',
+    detail: 'pp.493–494 · questions 1–35',
+    kind: 'questions',
+    questions: assignments
+      .find((a) => a.id === 'bio-c19-review')!
+      .companionQuestions!.map((q) => q.id),
+    availability:
+      'Available review material; no due date is established by the photographs.',
+  },
+  {
+    id: 'bio-virus-video',
+    assignment: 'bio-virus-video',
+    unit: 'microorganisms',
+    title: 'Understanding Viruses video',
+    detail: '17 questions & critical-thinking paragraph',
+    kind: 'video',
+    questions: assignments
+      .find((a) => a.id === 'bio-virus-video')!
+      .companionQuestions!.map((q) => q.id),
+    originalUrl:
+      'https://sites.google.com/view/ecl-life-sciences-11/bio1/c19-microbes',
+  },
+  {
+    id: 'bio-c19-study-guide',
+    assignment: 'bio-c19-sections',
+    unit: 'microorganisms',
+    title: 'Chapter 19 study guide',
+    detail: 'p.492 · reference',
+    kind: 'reference',
+    questions: [],
+    availability:
+      'The photographed study guide summarizes bacteria, viral cycles and disease. Use it beside the class notes and focused key ideas.',
+  },
 ];
 export const lifeMaterialPath = (id: string) =>
   `courses/life-sciences/assignments/${id}/`;
@@ -206,6 +251,14 @@ const idea = (
   ...options,
 });
 export const lifeIdeas: LifeIdea[] = [
+  ...microbeIdeas.map(([id, title, simple]) => ({
+    id,
+    concept: id,
+    title,
+    simple,
+    unit: 'microorganisms',
+    group: 'Viruses, bacteria & disease',
+  })),
   idea(
     'early-earth',
     'early-earth',

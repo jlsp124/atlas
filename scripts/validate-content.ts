@@ -98,18 +98,29 @@ export function validateContent(data = publicCatalog) {
     } catch (e) {
       errors.push(String(e));
     }
-    if (
-      !questions.some(
-        (q) => q.concepts.includes(c.id) && q.level === 'construction',
+    if (c.practiceMode === 'assignment') {
+      if (
+        !assignments.some(
+          (a) =>
+            a.assistance !== 'independent-only' &&
+            a.companionQuestions?.some((q) => q.concepts.includes(c.id)),
+        )
       )
-    )
-      errors.push(`No construction practice: ${c.id}`);
-    if (
-      !questions.some(
-        (q) => q.concepts.includes(c.id) && q.level === 'transfer',
+        errors.push(`Assignment idea has no actual question: ${c.id}`);
+    } else {
+      if (
+        !questions.some(
+          (q) => q.concepts.includes(c.id) && q.level === 'construction',
+        )
       )
-    )
-      errors.push(`No transfer practice: ${c.id}`);
+        errors.push(`No construction practice: ${c.id}`);
+      if (
+        !questions.some(
+          (q) => q.concepts.includes(c.id) && q.level === 'transfer',
+        )
+      )
+        errors.push(`No transfer practice: ${c.id}`);
+    }
     if (!edges.some((e) => e.from === c.id || e.to === c.id))
       errors.push(`Orphan concept: ${c.id}`);
   }
@@ -150,7 +161,11 @@ export function validateContent(data = publicCatalog) {
     for (const source of item.sources)
       if (!has(sources, source))
         errors.push(`Missing coverage source ${source}`);
-    if (!questions.some((q) => q.coverage.includes(item.id)))
+    if (
+      concepts.find((c) => c.id === item.concept)?.practiceMode !==
+        'assignment' &&
+      !questions.some((q) => q.coverage.includes(item.id))
+    )
       errors.push(`Coverage item has no practice: ${item.id}`);
   }
   for (const a of assignments) {

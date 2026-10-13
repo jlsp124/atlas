@@ -127,7 +127,7 @@ export default function LifeSciences({ unit }: { unit?: string }) {
         <section className="life-chapter" key={chapter.id}>
           <div className="section-heading">
             <h2>{chapter.title}</h2>
-            {chapter.id === 'origins' && !unit && (
+            {chapter.status === 'current' && !unit && (
               <span className="meta">Current material</span>
             )}
           </div>

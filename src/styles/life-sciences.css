@@ -299,6 +299,28 @@
   color: var(--muted);
   font-size: 12px;
 }
+.life-video-evidence {
+  border-left: 2px solid var(--accent);
+  padding: 4px 0 4px 18px;
+  margin-block: 12px 20px;
+  line-height: 1.7;
+}
+.life-video-evidence .meta {
+  margin: 0;
+  font-size: 10px;
+}
+.life-video-evidence ul {
+  padding-left: 18px;
+  font-size: 13px;
+}
+.life-video-evidence small {
+  display: block;
+  color: var(--muted);
+}
+.life-timestamp {
+  font-size: 12px;
+  color: var(--accent);
+}
 .life-video-section {
   margin-block: 30px;
 }

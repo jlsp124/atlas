@@ -14,6 +14,13 @@ import {
   dynamicsAssignment,
   dynamicsNotesAssignment,
 } from './physics-dynamics';
+import {
+  recovered171,
+  recoveredBioAssignments,
+  microbeConcepts,
+  microbeEdges,
+} from './bio-source-questions';
+import { novaQuestions, virusAssignment } from './bio-videos';
 
 export const snapshot = {
   date: '2026-10-06',
@@ -55,12 +62,12 @@ export const courses: Course[] = [
       {
         id: 'origins',
         title: 'Chapter 17 · Origins & Fossil Record',
-        status: 'current',
+        status: 'review',
       },
       {
         id: 'microorganisms',
         title: 'Chapter 19 · Viruses, Bacteria & Disease',
-        status: 'upcoming',
+        status: 'current',
       },
     ],
   },
@@ -112,10 +119,10 @@ export const editions: Edition[] = courses.map((c, i) => ({
   end: '2027-01-29',
   status: 'active',
   verified: snapshot.date,
-  currentUnit: ['dynamics', 'origins', 'greetings', 'bonding'][i],
+  currentUnit: ['dynamics', 'microorganisms', 'greetings', 'bonding'][i],
   notes: [
     'The classroom board controls dates. A formula sheet is provided: practise choosing, rearranging and interpreting equations.',
-    'Teacher calendar rechecked Oct. 5. C17 test Oct. 7; C19 quiz Oct. 9. Chapter 19 lessons remain pending content review.',
+    'Chapter 19 class photos reviewed Oct. 12. Section assignments and the teacher-linked virus video are available. Chapter 17 sections and NOVA retain their existing identities.',
     'Weekly vocabulary/kana checks are expected, but no future quiz dates are confirmed. Independent study only: AI and translators are prohibited for submitted class work.',
     'Oct. 5 quiz: notes through page 24 only. Lewis structures and molecular shape are taught content beyond that quiz boundary. Oct. 16 test scope remains unconfirmed. A clean data booklet is provided.',
   ][i],
@@ -134,6 +141,18 @@ export const editions: Edition[] = courses.map((c, i) => ({
 }));
 
 export const sources: Source[] = [
+  {
+    id: 'bio-oct12-sources',
+    title: 'Reviewed Chapter 17/19 class sources and video evidence',
+    type: 'original',
+    author: 'Atlas original explanations from class evidence',
+    checked: '2026-10-12',
+    rights: 'original',
+    status: 'checked',
+    url: 'https://sites.google.com/view/ecl-life-sciences-11/bio1/c19-microbes',
+    notes:
+      'Private registry: existing C17 src-life-sciences-8e12dd63dec93edd9733 and NOVA src-life-sciences-7784f2b11ca280bae635; C19 src-life-sciences-7f17abb16f157b535383; virus worksheet src-life-sciences-1b33d2a5a08b4f8706d0. No raw pages or caption transcripts are published.',
+  },
   {
     id: 'vault-physics',
     title: 'Current Physics notes & board-derived assessment update',
@@ -1210,6 +1229,7 @@ for (const [id, kana, romaji, meaning, situation] of vocabulary)
     status: 'publishable',
   });
 
+concepts.push(...microbeConcepts);
 export const coverageItems: CoverageItem[] = concepts.map((c) => ({
   id: `cover-${c.id}`,
   course: c.course,
@@ -1228,6 +1248,7 @@ export const edges: Edge[] = concepts.flatMap((c) =>
     reason: `${c.title} builds on ${concepts.find((x) => x.id === p)?.title}.`,
   })),
 );
+edges.push(...microbeEdges);
 edges.push(
   {
     from: 'jp-sumimasen',
@@ -2069,9 +2090,30 @@ export const legacyAssignmentTasks: Record<string, string[]> = {
   'greetings-practice': ['read', 'produce', 'contrast'],
 };
 export const assignments: Assignment[] = [
-  ...(classroom.assignments as Assignment[]),
+  ...(classroom.assignments as Assignment[]).map((a) =>
+    a.id === 'bio-c17-sections'
+      ? {
+          ...a,
+          companionQuestions: [
+            ...recovered171,
+            ...(a.companionQuestions ?? []),
+          ],
+          originalAvailability:
+            'Reviewed original photos: all section questions 17.1–17.4 are captured.',
+        }
+      : a.id === 'c17-research'
+        ? {
+            ...a,
+            companionQuestions: novaQuestions,
+            originalAvailability:
+              'Teacher PDF, exact timestamp-linked video, public English captions and official PBS transcript reviewed.',
+          }
+        : a,
+  ),
   dynamicsAssignment,
   dynamicsNotesAssignment,
+  ...recoveredBioAssignments,
+  virusAssignment,
 ];
 
 const event = (
@@ -2208,7 +2250,7 @@ export const schedule: ScheduleEvent[] = [
     'C19 · Viruses, bacteria & disease research',
     'research',
     '2026-10-06',
-    'Teacher research block. Chapter 19 learning pages have not yet been reviewed.',
+    'Teacher research block. Separate Chapter 19 questions, the virus video and key ideas are now available.',
     'teacher-confirmed',
     'bleecker-calendar',
     [],
@@ -2220,7 +2262,7 @@ export const schedule: ScheduleEvent[] = [
     'C19 · Sections 19.1/19.2 quiz',
     'quiz',
     '2026-10-09',
-    'Live source now provides a viruses/bacteria study guide. Original atlas coverage for this chapter is pending; use the teacher guide.',
+    'Teacher scope covers sections 19.1/19.2. Use the original class study guide alongside the reviewed question explanations.',
     'teacher-confirmed',
     'bleecker-calendar',
   ),
