@@ -280,6 +280,12 @@ export default function QuestionWalkthrough({
           </button>
         </div>
         <h2 className="transforming-question">{prompt}</h2>
+        {a.course === 'physics' && /diagram|draw.*force/i.test(q.prompt) && (
+          <p className="question-source-context">
+            Class diagram convention: use position dots at equal time intervals.
+            Force sketches are optional explanations.
+          </p>
+        )}
         {physics?.context && (
           <p className="question-source-context">
             <ReadableText text={physics.context} />
@@ -504,7 +510,7 @@ export default function QuestionWalkthrough({
               .map((s) => s.text)
               .join(
                 ' ',
-              )}\n\nFirst ask me for a clear photo of the original question, graph/table or measured tape with its ruler/timing, including all axis labels, units and scales. Wait for it. Do not invent the missing data. Then solve the exact question step by step: explain the wording, known values, signs (right/up positive unless the question defines otherwise), equation, substitution, units and final direction in words. Use Δd and Wadson’s formula sheet. Do not create extra questions or ask me to re-enter already visible work.`}
+              )}\n\nFirst ask me for a clear photo of the original question, graph/table or measured tape with its ruler/timing, including all axis labels, units and scales. Wait for it. Do not invent the missing data. Then solve the exact question step by step: explain the wording, known values, signs (right/up positive unless the question defines otherwise), equation, substitution, units and final direction in words. Use Δd and Wadson’s formula sheet. The class requires only dot diagrams for diagram responses; do not require other diagram types requested by the textbook. Do not create extra questions or ask me to re-enter already visible work.`}
           />
         )}
         <details className="walkthrough-help">

@@ -1,6 +1,7 @@
 import type { Walkthrough } from '../core/walkthrough';
 import ReadableText from './ReadableText';
 import ForceDiagram from './ForceDiagram';
+import DotDiagram from './DotDiagram';
 function DynamicsText({ text }: { text: string }) {
   const parts = text.split(
     /(?<![A-Za-z])(Fnet|Fhand|Fpull|Flift|Fg|FN|Fair|F1|F2|FA|FS|FK|Tmax|amax|gE|gM|WE|WM|Wcase|Ncart|Ncase|Nfloor|a0)(?![A-Za-z])/,
@@ -111,7 +112,17 @@ export default function DynamicsWorking({
               </details>
             )}
           </div>
-          {d.forces && <ForceDiagram forces={d.forces} />}
+          {d.dots && <DotDiagram motion={d.dots} />}
+          {d.forces && (
+            <details className="dynamics-earlier optional-force-sketch">
+              <summary>Optional force sketch</summary>
+              <p>
+                For class diagram responses, use dots. This sketch only helps
+                explain the forces.
+              </p>
+              <ForceDiagram forces={d.forces} />
+            </details>
+          )}
         </>
       )}
       <p className="paper-origin">

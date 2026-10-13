@@ -49,6 +49,7 @@ test('force working extracts values and explains gravity before isolating rope a
     'aria-label',
     /T up; mg down/,
   );
+  await expect(page.locator('.force-diagram svg')).not.toBeVisible();
   const width = await page.evaluate(() => ({
     document: document.documentElement.scrollWidth,
     viewport: innerWidth,
@@ -72,6 +73,23 @@ test('force working extracts values and explains gravity before isolating rope a
     path: info.outputPath('dynamics-working.png'),
     fullPage: true,
   });
+});
+
+test('class diagram responses use dots and keep force sketches optional', async ({
+  page,
+}) => {
+  await page.goto('/atlas/work/physics-forces-1-33/#q-3');
+  const next = page
+    .locator('.walkthrough')
+    .getByRole('button', { name: 'Next', exact: true });
+  for (let i = 0; i < 4; i++) await next.click();
+  await expect(page.locator('.dot-diagram svg')).toHaveAttribute(
+    'aria-label',
+    /Moving up: decreasing spacing/,
+  );
+  await expect(page.locator('.force-diagram svg')).not.toBeVisible();
+  await page.getByText('Optional force sketch', { exact: true }).click();
+  await expect(page.locator('.force-diagram svg')).toBeVisible();
 });
 
 test('missing textbook questions retain their places and do not acquire fabricated working', async ({

@@ -1,5 +1,6 @@
 import type { Assignment, CompanionQuestion } from '../core/schema';
 import type { GuideStep, KnownValue } from '../core/walkthrough';
+import type { DotMotion } from '../components/DotDiagram';
 
 export type ForceArrow = {
   label: string;
@@ -16,6 +17,7 @@ export type DynamicsLesson = {
   clues: { word: string; explanation: string }[];
   steps: GuideStep[];
   forces?: ForceArrow[];
+  dots?: DotMotion;
   result?: { value: number; unit: string; direction?: string };
   gap?: string;
 };
@@ -72,7 +74,7 @@ const lesson = (
 // remain numbered positions in the same assignment, never reconstructed questions.
 export const dynamicsLessons: Record<string, DynamicsLesson> = {
   '1': lesson(
-    'A skydiver falls downward through air at constant velocity. Draw motion and free-body diagrams; identify the net force and acceleration.',
+    'A skydiver falls downward through air at constant velocity. For the diagram response, use dots; identify the net force and acceleration.',
     'Separate the downward motion from the forces that change that motion.',
     '93',
     [],
@@ -80,7 +82,7 @@ export const dynamicsLessons: Record<string, DynamicsLesson> = {
     [
       step(
         'Identify the skydiver as the system',
-        'Draw forces ON the skydiver. Earth pulls downward; air pushes upward. A velocity arrow is not a force.',
+        'Identify forces ON the skydiver in words. Earth pulls downward; air pushes upward.',
         'Fg down; Fair up; v down.',
       ),
       step(
@@ -89,9 +91,9 @@ export const dynamicsLessons: Record<string, DynamicsLesson> = {
         'a = 0 → Fnet = ma = 0 → Fair = Fg.',
       ),
       step(
-        'Draw the motion separately',
-        'Equal downward spacing at equal time intervals shows constant downward velocity. Use equal-length opposing force arrows.',
-        'Equal downward motion arrows; equal upward/downward force arrows.',
+        'Draw equal-time position dots',
+        'Equal downward spacing at equal time intervals shows constant downward velocity. No force or velocity arrows are required for the class diagram response.',
+        'Equally spaced dots downward; Fnet = 0; a = 0.',
       ),
     ],
     {
@@ -103,10 +105,11 @@ export const dynamicsLessons: Record<string, DynamicsLesson> = {
         ),
       ],
       forces: [force('Fair', 'up'), force('Fg', 'down')],
+      dots: { direction: 'down', spacing: 'equal' },
     },
   ),
   '2': lesson(
-    'Hold a softball on your palm, then toss it up. Draw the motion and force diagrams during the toss while the ball is still touching your hand.',
+    'Hold a softball on your palm, then toss it up. Use a dot diagram during the toss while the ball is still touching your hand; explain the forces in words.',
     'Explain the upward push while the hand is still accelerating the ball.',
     '93',
     [],
@@ -123,8 +126,8 @@ export const dynamicsLessons: Record<string, DynamicsLesson> = {
         'Fhand − Fg = ma > 0 → Fhand > Fg.',
       ),
       step(
-        'Draw both representations',
-        'Draw upward motion dots with increasing spacing. The upward hand-force arrow is longer than the downward weight arrow. After release, remove the hand force.',
+        'Draw the position dots',
+        'Draw upward motion dots with increasing spacing. The hand force exceeds weight during the push. After release, the hand force disappears.',
         'While in contact during the toss: Fnet up; a up.',
       ),
     ],
@@ -137,10 +140,11 @@ export const dynamicsLessons: Record<string, DynamicsLesson> = {
         ),
       ],
       forces: [force('Fhand', 'up', 1.5), force('Fg', 'down')],
+      dots: { direction: 'up', spacing: 'increasing' },
     },
   ),
   '3': lesson(
-    'After the softball leaves your hand, it rises while slowing down. Ignore air resistance. Draw its motion and free-body diagrams.',
+    'After the softball leaves your hand, it rises while slowing down. Ignore air resistance. Use a dot diagram and explain the forces in words.',
     'Explain why upward velocity can accompany downward acceleration.',
     '93',
     [],
@@ -158,7 +162,7 @@ export const dynamicsLessons: Record<string, DynamicsLesson> = {
       ),
       step(
         'Show the slowing motion',
-        'Draw upward motion dots with decreasing spacing and upward velocity arrows getting shorter. The force arrow continues downward.',
+        'Draw upward motion dots with decreasing spacing. The smaller gaps show less distance travelled in each equal time interval. Gravity continues downward.',
         'v up; a and Fnet down.',
       ),
     ],
@@ -171,10 +175,11 @@ export const dynamicsLessons: Record<string, DynamicsLesson> = {
         ),
       ],
       forces: [force('Fg', 'down')],
+      dots: { direction: 'up', spacing: 'decreasing' },
     },
   ),
   '4': lesson(
-    'After the softball reaches its maximum height, it falls and speeds up. Ignore air resistance. Draw the motion and force diagrams.',
+    'After the softball reaches its maximum height, it falls and speeds up. Ignore air resistance. Use a dot diagram and explain the forces in words.',
     'Keep gravity acting at the top and throughout the fall.',
     '93',
     [],
@@ -192,14 +197,18 @@ export const dynamicsLessons: Record<string, DynamicsLesson> = {
       ),
       step(
         'Draw increasing spacing',
-        'Successive downward positions spread farther apart. Downward velocity arrows become longer; gravity’s force arrow stays the same.',
-        'Only Fg belongs on the free-body diagram.',
+        'Successive downward positions spread farther apart at equal time intervals. Each larger gap shows greater downward speed.',
+        'Dots spread farther apart downward; Fnet = Fg downward.',
       ),
     ],
-    { axis: vertical, forces: [force('Fg', 'down')] },
+    {
+      axis: vertical,
+      forces: [force('Fg', 'down')],
+      dots: { direction: 'down', spacing: 'increasing' },
+    },
   ),
   '5': lesson(
-    'Catch the falling softball in your hand and bring it to rest. Ignore air resistance. Draw its motion and free-body diagrams during the catch.',
+    'Catch the falling softball in your hand and bring it to rest. Ignore air resistance. Use a dot diagram during the catch and explain the forces in words.',
     'Find the force direction needed to remove downward velocity.',
     '93',
     [],
@@ -217,7 +226,7 @@ export const dynamicsLessons: Record<string, DynamicsLesson> = {
       ),
       step(
         'Distinguish catching from holding',
-        'During stopping, the upward arrow is longer. Once the ball is held at rest, the arrows become equal.',
+        'Downward dot gaps shrink during stopping. Once the ball is held at rest, successive positions overlap and the hand force balances weight.',
         'During catch: net force up. After stopping: net force zero.',
       ),
     ],
@@ -230,6 +239,7 @@ export const dynamicsLessons: Record<string, DynamicsLesson> = {
         ),
       ],
       forces: [force('Fhand', 'up', 1.5), force('Fg', 'down')],
+      dots: { direction: 'down', spacing: 'decreasing' },
     },
   ),
   '6': lesson(
@@ -368,7 +378,7 @@ export const dynamicsLessons: Record<string, DynamicsLesson> = {
     },
   ),
   '11': lesson(
-    'A crate experiences 317 N to the right and 173 N to the left. Initially at rest, it reaches 6.5 m/s to the right after five seconds. (a) Draw the forces. (b) Find the net force. (c) Find its mass.',
+    'A crate experiences 317 N to the right and 173 N to the left. Initially at rest, it reaches 6.5 m/s to the right after five seconds. (a) Use a dot diagram for the class diagram response. (b) Find the net force. (c) Find its mass.',
     'Combine a force sum with the observed change in velocity to find mass.',
     '97',
     [
@@ -381,8 +391,8 @@ export const dynamicsLessons: Record<string, DynamicsLesson> = {
     'm',
     [
       step(
-        'Draw the two horizontal forces',
-        'The rightward arrow is longer. Keep both forces on the crate’s diagram.',
+        'Identify the horizontal forces',
+        'The rightward force is larger. The crate gains rightward speed, so equal-time dot gaps increase toward the right.',
         'Fnet = 317 − 173 = 144 N right.',
       ),
       step(
@@ -412,6 +422,7 @@ export const dynamicsLessons: Record<string, DynamicsLesson> = {
         clue('after five seconds', 'The velocity change takes this interval.'),
       ],
       forces: [force('317 N', 'right', 1.6), force('173 N', 'left')],
+      dots: { direction: 'right', spacing: 'increasing' },
       result: { value: (144 * 5) / 6.5, unit: 'kg' },
     },
   ),
@@ -505,7 +516,7 @@ export const dynamicsLessons: Record<string, DynamicsLesson> = {
     'T and whether it exceeds Tmax',
     [
       step(
-        'Draw forces on the groceries',
+        'Identify forces on the groceries',
         'The sack pulls up with T. Gravity pulls down with mg. The acceleration is upward.',
         'T − mg = ma.',
       ),
@@ -625,14 +636,14 @@ export const dynamicsLessons: Record<string, DynamicsLesson> = {
     },
   ),
   '28': lesson(
-    'Lift a bowling ball with your hand, accelerating it upward. Identify forces on the ball, forces it exerts, and the objects receiving those forces.',
+    'Lift a bowling ball with your hand, accelerating it upward. Use dots for any diagram response. Identify forces on the ball, forces it exerts, and the objects receiving those forces.',
     'Keep forces ON the ball separate from third-law forces BY the ball.',
     '108',
     [],
     'the two interaction pairs',
     [
       step(
-        'Draw the ball’s free-body diagram',
+        'Identify forces on the ball',
         'Hand force acts up and Earth’s gravitational force acts down. Upward acceleration requires the hand force to exceed weight.',
         'Fhand→ball > Fearth→ball; Fnet is upward.',
       ),
@@ -650,6 +661,7 @@ export const dynamicsLessons: Record<string, DynamicsLesson> = {
     {
       axis: vertical,
       forces: [force('Fhand', 'up', 1.5), force('Fg', 'down')],
+      dots: { direction: 'up', spacing: 'increasing' },
     },
   ),
   '29': lesson(
@@ -675,27 +687,31 @@ export const dynamicsLessons: Record<string, DynamicsLesson> = {
         'Brick: a = g downward. Different masses can have equal interaction forces.',
       ),
     ],
-    { axis: vertical, forces: [force('Fg', 'down')] },
+    {
+      axis: vertical,
+      forces: [force('Fg', 'down')],
+      dots: { direction: 'down', spacing: 'increasing' },
+    },
   ),
   '30': lesson(
-    'A suitcase rests on a stationary airport luggage cart. Draw a free-body diagram for each object and identify the interaction pairs.',
+    'A suitcase rests on a stationary airport luggage cart. Use dot diagrams for the class diagram response, and identify forces and interaction pairs in words.',
     'Use a separate system boundary for suitcase and cart.',
     '108',
     [],
-    'the force diagrams and pairs',
+    'the stationary dots and interaction pairs',
     [
       step(
-        'Draw forces on the suitcase',
+        'Identify forces on the suitcase',
         'The cart pushes the suitcase up; Earth pulls it down. Since it rests, these forces balance.',
         'Suitcase: Ncart→case up; Wcase down; net force zero.',
       ),
       step(
-        'Draw forces on the cart',
+        'Identify forces on the cart',
         'The floor supports the cart up. The cart’s own weight and the suitcase’s downward contact force both act on it.',
         'Cart: Nfloor→cart up; Wcart down; Ncase→cart down.',
       ),
       step(
-        'Match interactions across diagrams',
+        'Match the interactions',
         'The cart-on-suitcase and suitcase-on-cart contact forces form one pair. The floor/cart and Earth/object interactions each have partners acting on the other object.',
         'Cart ↔ suitcase; floor ↔ cart; Earth ↔ suitcase; Earth ↔ cart.',
       ),
@@ -705,17 +721,21 @@ export const dynamicsLessons: Record<string, DynamicsLesson> = {
         'Third-law pairs act on different objects.',
       ),
     ],
-    { axis: vertical, forces: [force('Ncart', 'up'), force('Wcase', 'down')] },
+    {
+      axis: vertical,
+      forces: [force('Ncart', 'up'), force('Wcase', 'down')],
+      dots: { direction: 'still', spacing: 'overlapping' },
+    },
   ),
   '31': lesson(
-    'Toss a ball upward. After it leaves your hand, while it still moves up, draw its free-body diagram and identify forces it exerts on other objects. Ignore air resistance.',
+    'Toss a ball upward. After it leaves your hand, while it still moves up, use a dot diagram and identify forces it exerts on other objects. Ignore air resistance.',
     'Upward motion does not imply an upward force.',
     '108',
     [],
     'the ball–Earth interaction',
     [
       step(
-        'Remove the hand from the diagram',
+        'Remove the hand force after release',
         'There is no hand contact after release. The upward velocity records earlier motion; it is not a present force.',
         'Only Earth’s Fg acts on the ball, downward.',
       ),
@@ -730,7 +750,11 @@ export const dynamicsLessons: Record<string, DynamicsLesson> = {
         'v up; a down; speed decreases.',
       ),
     ],
-    { axis: vertical, forces: [force('Fg', 'down')] },
+    {
+      axis: vertical,
+      forces: [force('Fg', 'down')],
+      dots: { direction: 'up', spacing: 'decreasing' },
+    },
   ),
   '32': lesson(
     'Mika pulls a stuck tire with 201 N and Diego pulls in the same direction with 31 N. It just starts to move off the wheel. Find the force magnitude between the tire and wheel.',

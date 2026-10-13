@@ -1,4 +1,10 @@
 export const wadson = {
+  diagrams: {
+    required: 'dot diagrams',
+    explanation:
+      'For assigned diagram responses, use equal-time position dots. Other diagram types requested in the textbook are not required in class.',
+    evidence: ['student-supplied class clarification, October 12, 2026'],
+  },
   vectorDirection: {
     required: true,
     explanation:

@@ -6,6 +6,7 @@ import {
 } from '../src/content/physics-dynamics';
 import { makeWalkthrough } from '../src/core/walkthrough';
 import { validateContent } from '../scripts/validate-content';
+import { dotPositions } from '../src/components/DotDiagram';
 
 it('opens Dynamics as a new unit and keeps all 33 question identities in one assignment', () => {
   expect(
@@ -75,4 +76,16 @@ it('explains combinations and direction changes question by question', () => {
   expect(dynamicsLessons['5'].forces![0].size).toBeGreaterThan(
     dynamicsLessons['5'].forces![1].size,
   );
+});
+it('uses dot spacing to distinguish speeding up, slowing down, uniform motion and rest', () => {
+  const gaps = (n: string) => {
+    const positions = dotPositions(dynamicsLessons[n].dots!);
+    return positions.slice(1).map((p, i) => p - positions[i]);
+  };
+  expect(new Set(gaps('1')).size).toBe(1);
+  expect(gaps('2').every((g, i, gs) => i === 0 || g > gs[i - 1])).toBe(true);
+  expect(gaps('3').every((g, i, gs) => i === 0 || g < gs[i - 1])).toBe(true);
+  expect(dynamicsLessons['3'].dots!.direction).toBe('up');
+  expect(dynamicsLessons['5'].dots!.direction).toBe('down');
+  expect(gaps('30').every((g) => g === 0)).toBe(true);
 });
