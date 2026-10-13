@@ -41,7 +41,7 @@ export const unitDescriptions: Record<string, string> = {
     'A few tools you’ll use every time: units, algebra and graph slopes.',
   kinematics: 'Describe how things move, from direction to free fall.',
   dynamics:
-    'Use force diagrams and Newton’s laws to explain and calculate changes in motion.',
+    'Use forces and Newton’s laws to explain and calculate changes in motion.',
   measurement: 'Make numbers, units and precision work together.',
   atomic: 'Get to know the atom, then follow its electrons.',
   bonding: 'Why atoms attract, bond and interact.',
@@ -49,7 +49,7 @@ export const unitDescriptions: Record<string, string> = {
   classification: 'Read the relationships between living things.',
   origins: 'Use fossils and other evidence to understand the history of life.',
   microorganisms:
-    'Viruses, bacteria and disease. I haven’t added these lessons yet.',
+    'Use the separate bacteria and virus assignments beside the teacher’s notes.',
   writing: 'Match the written form to the sound, one small piece at a time.',
   greetings: 'Useful words and phrases for everyday situations.',
   numbers:
@@ -150,6 +150,7 @@ export function eventUnit(e: ScheduleEvent) {
 export function eventNote(e: ScheduleEvent) {
   if (!e.start)
     return e.dateNote ?? 'Confirm the date from the classroom instructions.';
+  if (e.id === 'c19-antimicrobial-lab') return e.notes;
   if (e.id.startsWith('c19'))
     return 'Use the separate Chapter 19 assignments, video evidence and key ideas beside the teacher’s guide.';
   if (e.id === 'chem-test-oct16')

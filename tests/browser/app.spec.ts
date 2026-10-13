@@ -501,6 +501,21 @@ test('calendar dates open prep and unconfirmed scope never creates pretend conte
     page.getByRole('button', { name: 'Prepare', exact: true }),
   ).toBeVisible();
   await open(page, 'prepare/c19-quiz-oct9/');
+  await expect(page.locator('.prep-screen > .meta')).toContainText(
+    'October 15',
+  );
+  await page
+    .getByText('Teacher’s full assessment scope', { exact: true })
+    .click();
+  await expect(page.locator('.teacher-scope')).toContainText(
+    'Peptidoglycan'.toLowerCase(),
+  );
+  await expect(
+    page.getByRole('link', { name: '19.1 questions', exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('link', { name: '19.2 questions', exact: true }),
+  ).toBeVisible();
   await expect(
     page.getByRole('button', { name: 'Prepare', exact: true }),
   ).toHaveCount(0);

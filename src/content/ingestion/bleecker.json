@@ -1,5 +1,5 @@
 {
-  "checked": "2026-10-07T05:56:08.793Z",
+  "checked": "2026-10-13T08:05:29.291Z",
   "scope": "Life Sciences 11 only; teacher descriptions and assessment scope retained; linked resources are an index, not redistribution permission.",
   "sources": [
     {
@@ -374,10 +374,10 @@
       "type": "calendar",
       "url": "https://calendar.google.com/calendar/ical/q87773ofbdnsahhi3vmatr59t0%40group.calendar.google.com/public/basic.ics",
       "finalUrl": "https://calendar.google.com/calendar/ical/q87773ofbdnsahhi3vmatr59t0%40group.calendar.google.com/public/basic.ics",
-      "checked": "2026-10-07T05:26:20.215Z",
+      "checked": "2026-10-13T08:05:29.291Z",
       "httpStatus": 200,
-      "sha256": "290d30dac40dd4be50c51955d32b116c3c92776808a311753d0f7d18104dd0dc",
-      "contentHash": "d65d970f494962e80e86062ede2b1ff58d1cf0d5ae94343c5584c2f07afe5935",
+      "sha256": "fd61c097266338c4ca265a602c377f74b2a5c7cfb81c8165bb47823803576160",
+      "contentHash": "a63c2328bd46f134d7103c5c5785169af7daf899b4539fb6dffc863faff3e8ee",
       "author": "J. Bleecker",
       "rights": "link-only",
       "rawEvidence": "Private archive; never publish",
@@ -501,22 +501,22 @@
           "assessmentScope": "Chapter 17 Study Guide - Process of Fossilization - Major rock types: igneous, metamorphic, sedimentary - In which rock type do fossils tend to form? - Index Fossils & what they tell us - Law of Superposition = Relative Dating of Fossils - Absolute Dating - using Half-Life (you'd better be able to read half-life graph...) - Earth's Major Eras: Paleozoic, Mesozoic, Cenozoic - Paleozoic - the age of the Monster Amphibians - Mesozoic - the age of the Monster Reptiles & radiation of life forms(mammals finally appear) - Cenozoic - what marks the end of the Mesozoic era (think asteroid...) - Early Earth - atmosphere, what the place was like, chemicals... Suitable for life? - Age of the Earth & How we know (hint: absolute dating) - The Urey-Miller Experiment = origin of organic compounds needed for life - Protenoid Microspheres - how are these related to early cells...? - Endosymbiotic Theory - origin of eukaryotic cells and organelles (mitochondrion, chloroplast) Patterns of Evolution 1. extinction 2. adaptive radiation 3. convergent evolution 4. coevolution 5. gradualism vs. punctuated equilibrium (speeds of evolution) 6. gene mutation's role in evolution - ex. Hox Gene Mutations"
         },
         {
-          "uid": "npaaqkocmpvcj2rn8f3hrspuk8@google.com",
-          "title": "Quiz - 19.1/19.2",
-          "start": "2026-10-09",
-          "endExclusive": "2026-10-10",
-          "description": "Viruses\n------------------------------\nAlive vs. Not Alive Debate Points\nStructure of the T-4 Bacteriophage (know the diagram)\nRNA vs. DNA viruses (e.g. HIV vs. Bacteriophage)\nLytic vs. Lysogenic Lifecycle\nVaccines\nAttenuated (live virus grown in eggs, ex. Flu Shot)\nHeat Killed Version (polio vaccine is like this)\nFamous Viruses and Diseases they Cause\nCold Virus (Rhinovirus), HIV, Polio myletus (polio)\n\nBacteria\n------------------------------\n3 Characteristics of Bacteria:\n1. Cell Wall composed of peptidoglycan\n2. No Nucleus\n3. Single, long DNA strand\n\nAnatomy of a Bacteria\nIn your notes, you were given E. coli. You must know all the parts in that diagram.\n\nCharacteristics of:\nEubacteria\nArchaebacteria\n\nMeans of Bacterial Motility (Motion)\nFlagella\nCilia\nNon-motility\n\nShapes of Bacteria\nCoccus, Spirillium, Bacillus\n\nGroupings of Bacteria\nStaphylococcus (clusters), Streptococcus (chains)\n\nStaining Techniques for Bacteria\nGram Stain Technique\nGram Positive (e.g. Bacillus anthracis)\nStructure of a Gram Positive Bacterial Cell Wall\nGram Negative (e.g. E. coli)\nStructure of a Gram Negative Cell Wall\nWhich are more antibiotic resistant – gram + or gram –\nExamples of Gram + and Gram – bacteria\n\nBacterial Reproduction\nBinary Fission = Asexual\nSex Pilus Transfer of DNA = Sexual",
-          "location": "",
-          "assessmentScope": "Viruses\n------------------------------\nAlive vs. Not Alive Debate Points\nStructure of the T-4 Bacteriophage (know the diagram)\nRNA vs. DNA viruses (e.g. HIV vs. Bacteriophage)\nLytic vs. Lysogenic Lifecycle\nVaccines\nAttenuated (live virus grown in eggs, ex. Flu Shot)\nHeat Killed Version (polio vaccine is like this)\nFamous Viruses and Diseases they Cause\nCold Virus (Rhinovirus), HIV, Polio myletus (polio)\n\nBacteria\n------------------------------\n3 Characteristics of Bacteria:\n1. Cell Wall composed of peptidoglycan\n2. No Nucleus\n3. Single, long DNA strand\n\nAnatomy of a Bacteria\nIn your notes, you were given E. coli. You must know all the parts in that diagram.\n\nCharacteristics of:\nEubacteria\nArchaebacteria\n\nMeans of Bacterial Motility (Motion)\nFlagella\nCilia\nNon-motility\n\nShapes of Bacteria\nCoccus, Spirillium, Bacillus\n\nGroupings of Bacteria\nStaphylococcus (clusters), Streptococcus (chains)\n\nStaining Techniques for Bacteria\nGram Stain Technique\nGram Positive (e.g. Bacillus anthracis)\nStructure of a Gram Positive Bacterial Cell Wall\nGram Negative (e.g. E. coli)\nStructure of a Gram Negative Cell Wall\nWhich are more antibiotic resistant – gram + or gram –\nExamples of Gram + and Gram – bacteria\n\nBacterial Reproduction\nBinary Fission = Asexual\nSex Pilus Transfer of DNA = Sexual"
-        },
-        {
           "uid": "00gpijce404al58ag2a7ai845r@google.com",
           "title": "Antimicrobial Lab",
-          "start": "2026-10-13",
-          "endExclusive": "2026-10-15",
+          "start": "2026-10-14",
+          "endExclusive": "2026-10-16",
           "description": "",
           "location": "",
           "assessmentScope": ""
+        },
+        {
+          "uid": "npaaqkocmpvcj2rn8f3hrspuk8@google.com",
+          "title": "Quiz - 19.1/19.2",
+          "start": "2026-10-15",
+          "endExclusive": "2026-10-16",
+          "description": "Viruses\n------------------------------\nAlive vs. Not Alive Debate Points\nStructure of the T-4 Bacteriophage (know the diagram)\nRNA vs. DNA viruses (e.g. HIV vs. Bacteriophage)\nLytic vs. Lysogenic Lifecycle\nVaccines\nAttenuated (live virus grown in eggs, ex. Flu Shot)\nHeat Killed Version (polio vaccine is like this)\nFamous Viruses and Diseases they Cause\nCold Virus (Rhinovirus), HIV, Polio myletus (polio)\n\nBacteria\n------------------------------\n3 Characteristics of Bacteria:\n1. Cell Wall composed of peptidoglycan\n2. No Nucleus\n3. Single, long DNA strand\n\nAnatomy of a Bacteria\nIn your notes, you were given E. coli. You must know all the parts in that diagram.\n\nCharacteristics of:\nEubacteria\nArchaebacteria\n\nMeans of Bacterial Motility (Motion)\nFlagella\nCilia\nNon-motility\n\nShapes of Bacteria\nCoccus, Spirillium, Bacillus\n\nGroupings of Bacteria\nStaphylococcus (clusters), Streptococcus (chains)\n\nStaining Techniques for Bacteria\nGram Stain Technique\nGram Positive (e.g. Bacillus anthracis)\nStructure of a Gram Positive Bacterial Cell Wall\nGram Negative (e.g. E. coli)\nStructure of a Gram Negative Cell Wall\nWhich are more antibiotic resistant – gram + or gram –\nExamples of Gram + and Gram – bacteria\n\nBacterial Reproduction\nBinary Fission = Asexual\nSex Pilus Transfer of DNA = Sexual",
+          "location": "",
+          "assessmentScope": "Viruses\n------------------------------\nAlive vs. Not Alive Debate Points\nStructure of the T-4 Bacteriophage (know the diagram)\nRNA vs. DNA viruses (e.g. HIV vs. Bacteriophage)\nLytic vs. Lysogenic Lifecycle\nVaccines\nAttenuated (live virus grown in eggs, ex. Flu Shot)\nHeat Killed Version (polio vaccine is like this)\nFamous Viruses and Diseases they Cause\nCold Virus (Rhinovirus), HIV, Polio myletus (polio)\n\nBacteria\n------------------------------\n3 Characteristics of Bacteria:\n1. Cell Wall composed of peptidoglycan\n2. No Nucleus\n3. Single, long DNA strand\n\nAnatomy of a Bacteria\nIn your notes, you were given E. coli. You must know all the parts in that diagram.\n\nCharacteristics of:\nEubacteria\nArchaebacteria\n\nMeans of Bacterial Motility (Motion)\nFlagella\nCilia\nNon-motility\n\nShapes of Bacteria\nCoccus, Spirillium, Bacillus\n\nGroupings of Bacteria\nStaphylococcus (clusters), Streptococcus (chains)\n\nStaining Techniques for Bacteria\nGram Stain Technique\nGram Positive (e.g. Bacillus anthracis)\nStructure of a Gram Positive Bacterial Cell Wall\nGram Negative (e.g. E. coli)\nStructure of a Gram Negative Cell Wall\nWhich are more antibiotic resistant – gram + or gram –\nExamples of Gram + and Gram – bacteria\n\nBacterial Reproduction\nBinary Fission = Asexual\nSex Pilus Transfer of DNA = Sexual"
         },
         {
           "uid": "5ebtd5aaj675ijqmgblbt3fd5t@google.com",

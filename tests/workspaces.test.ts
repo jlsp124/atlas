@@ -103,11 +103,29 @@ describe('V2 presentation over preserved content', () => {
   });
   it('retains upcoming and uncertain assessment boundaries', () => {
     const c19 = schedule.find((e) => e.id === 'c19-quiz-oct9')!;
+    expect(c19.start).toBe('2026-10-15');
+    expect(c19.verified).toBe('2026-10-13');
     expect(c19.concepts).toEqual([]);
     expect(eventUnit(c19)).toBe('microorganisms');
+    const lab = schedule.find((e) => e.id === 'c19-antimicrobial-lab')!;
+    expect([lab.start, lab.end]).toEqual(['2026-10-14', '2026-10-15']);
+    expect(lab.assignment).toBeUndefined();
+    expect(lab.notes).toContain('sheet has not been supplied');
     const unknown = schedule.find((e) => e.id === 'physics-test-unconfirmed')!;
     expect(unknown.start).toBeUndefined();
     expect(eventPath(unknown)).toBe('prepare/physics-test-unconfirmed/');
+  });
+  it('search discovers the new source-backed work across subjects', () => {
+    for (const [query, path] of [
+      ['Forces in 1D', 'work/physics-forces-1-33/'],
+      ['Chapter 17 assessment', 'work/bio-c17-review/'],
+      ['Understanding Viruses', 'work/bio-virus-video/'],
+      ['Making Observations', 'work/chemistry-lab-2a/'],
+      ['Heating Cooling', 'work/chemistry-lab-2b/'],
+    ])
+      expect(searchAtlas(query).some((result) => result.path === path)).toBe(
+        true,
+      );
   });
   it('definitions and backlinks always reference real learning IDs', () => {
     expect(

@@ -16,7 +16,12 @@ import { Icon } from './Icons';
 import Coverage from './Coverage';
 import QuestionSession from './QuestionSession';
 import { Lesson } from './Lesson';
-import { lifeIdeas, lifeIdeaPath } from '../content/life-sciences';
+import {
+  lifeIdeas,
+  lifeIdeaPath,
+  lifeMaterials,
+  lifeMaterialPath,
+} from '../content/life-sciences';
 export default function Preparation({ id }: { id: string }) {
   const e = schedule.find((e) => e.id === id)!,
     state = useLearner(),
@@ -46,18 +51,19 @@ export default function Preparation({ id }: { id: string }) {
     course === 'life-sciences'
       ? ingestion.sources
           .flatMap((s) => s.calendarEvents)
-          .find((event) =>
-            event.title
-              .toLowerCase()
-              .includes(
-                id.startsWith('c17')
-                  ? 'c17 test'
-                  : id.startsWith('c18')
-                    ? 'c18 test'
-                    : 'c19 quiz',
-              ),
+          .find(
+            (event) =>
+              event.start === e.start &&
+              /quiz|test/i.test(event.title) &&
+              event.assessmentScope,
           )?.assessmentScope
       : undefined;
+  const c19Sections =
+    id === 'c19-quiz-oct9'
+      ? lifeMaterials.filter(
+          (m) => m.id === 'bio-c19-1' || m.id === 'bio-c19-2',
+        )
+      : [];
   if (started)
     return (
       <div className="flow-screen" data-course={course}>
@@ -174,9 +180,20 @@ export default function Preparation({ id }: { id: string }) {
       ) : (
         <>
           <p>
-            I haven’t added the lessons for this yet. Start with the teacher’s
-            guide.
+            {c19Sections.length
+              ? 'Use the real section questions and teacher’s guide for this quiz.'
+              : 'Start with the teacher’s guide. Additional material needs the actual source.'}
           </p>
+          {c19Sections.map((m) => (
+            <a
+              className="material-row"
+              key={m.id}
+              href={url(lifeMaterialPath(m.id))}
+            >
+              {m.title}
+              <Icon name="arrow" size={16} />
+            </a>
+          ))}
           {(teacherUnitResources[unit] ?? []).map((r) => (
             <a
               className="primary"
